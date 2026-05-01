@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { BootScene } from './scenes/BootScene.js'
+import { SplashScene } from './scenes/SplashScene.js'
 import { MenuScene } from './scenes/MenuScene.js'
 import { GameScene } from './scenes/GameScene.js'
 import { UIScene } from './scenes/UIScene.js'
@@ -20,7 +21,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MenuScene, GameScene, UIScene, GameOverScene],
+  scene: [BootScene, SplashScene, MenuScene, GameScene, UIScene, GameOverScene],
 }
 
 new Phaser.Game(config)

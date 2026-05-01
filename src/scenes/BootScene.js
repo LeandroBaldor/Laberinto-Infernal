@@ -165,7 +165,7 @@ export class BootScene extends Phaser.Scene {
         }
       }
 
-      this.scene.start('MenuScene')
+      this.scene.start('SplashScene')
     })
     this.load.start()
   }

@@ -298,21 +298,7 @@ export class MenuScene extends Phaser.Scene {
     // ── Música de menú ─────────────────────────────────────────
     if (this.cache.audio.exists('musica_menu')) {
       this._menuMusic = this.sound.add('musica_menu', { loop: true, volume: 0.5 })
-
-      const tryPlay = () => {
-        if (this._menuMusic && !this._menuMusic.isPlaying) {
-          this._menuMusic.play()
-        }
-      }
-
-      if (this.sound.context && this.sound.context.state === 'suspended') {
-        this.sound.once('unlocked', tryPlay)
-      } else {
-        tryPlay()
-      }
-
-      this.input.once('pointerdown', tryPlay)
-      this.input.keyboard.once('keydown', tryPlay)
+      this._menuMusic.play()
     }
     this._btnSound = this.cache.audio.exists('musica_boton_menu')
       ? this.sound.add('musica_boton_menu', { volume: 0.8 })
