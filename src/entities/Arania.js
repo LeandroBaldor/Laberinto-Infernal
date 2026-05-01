@@ -16,8 +16,7 @@ export class Arania extends Monster {
     this.stepInterval   = 550 + Math.random() * 250
 
     this.setDisplaySize(TILE * 5, TILE * 5)
-    this.body.setSize(this.frame.realWidth, this.frame.realHeight)
-    this.body.setOffset(0, 0)
+    this.body.setSize(TILE * 3.5, TILE * 3.5)
 
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY

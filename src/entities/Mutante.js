@@ -86,7 +86,7 @@ export class Mutante extends Monster {
 
     if (time > this._lastSound + 5000) {
       this._lastSound = time
-      if (this.scene.sound.get('sonidos_monster')) {
+      if (this.scene.cache.audio.exists('sonidos_monster')) {
         this.scene.sound.play('sonidos_monster', { volume: 1.0 })
       }
     }

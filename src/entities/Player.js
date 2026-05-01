@@ -296,34 +296,47 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   _showSlashEffect() {
-    const dirs = { right: 0, left: Math.PI, up: -Math.PI / 2, down: Math.PI / 2 }
-    const angle = dirs[this.facingDir] ?? 0
-    const reach = TILE * 1.6
-    const cx = this.x + Math.cos(angle) * reach * 0.5
-    const cy = this.y + Math.sin(angle) * reach * 0.5
+    const dirAngles  = { right: 0, left: Math.PI, up: -Math.PI / 2, down: Math.PI / 2 }
+    const dirDegrees = { right: 0, left: 180, up: -90, down: 90 }
+    const angle = dirAngles[this.facingDir] ?? 0
+    const reach = TILE * 1.8
 
-    const g = this.scene.add.graphics().setDepth(15)
-    const spread = Math.PI / 2.2
-    const r1 = reach * 0.4, r2 = reach
-
-    g.lineStyle(4, 0xffffff, 0.9)
-    g.beginPath()
-    g.arc(this.x, this.y, r1, angle - spread / 2, angle + spread / 2, false)
-    g.strokePath()
-
-    g.lineStyle(3, 0xaaddff, 0.7)
-    g.beginPath()
-    g.arc(this.x, this.y, (r1 + r2) / 2, angle - spread / 2.5, angle + spread / 2.5, false)
-    g.strokePath()
-
-    g.lineStyle(2, 0x88bbff, 0.5)
-    g.beginPath()
-    g.arc(this.x, this.y, r2 * 0.85, angle - spread / 3.5, angle + spread / 3.5, false)
-    g.strokePath()
-
+    // Lunge: cuerpo salta hacia adelante y vuelve
+    const lx = this.x + Math.cos(angle) * TILE * 0.6
+    const ly = this.y + Math.sin(angle) * TILE * 0.6
     this.scene.tweens.add({
-      targets: g, alpha: 0, duration: 180, ease: 'Quad.easeOut',
-      onComplete: () => g.destroy(),
+      targets: this, x: lx, y: ly,
+      duration: 60, ease: 'Sine.easeOut',
+      yoyo: true,
+      onComplete: () => { if (this.body && this.active) this.body.reset(this.x, this.y) },
+    })
+
+    // Rotación del cuerpo: giro rápido en dirección del ataque
+    const swing = dirDegrees[this.facingDir] ?? 0
+    this.scene.tweens.add({
+      targets: this, angle: swing + 30,
+      duration: 70, ease: 'Sine.easeIn', yoyo: true,
+    })
+
+    // Ícono de espada que aparece en el punto de impacto y desaparece
+    if (this.scene.textures.exists('sword')) {
+      const sx = this.x + Math.cos(angle) * reach
+      const sy = this.y + Math.sin(angle) * reach
+      const swordIcon = this.scene.add.image(sx, sy, 'sword')
+        .setDisplaySize(TILE * 1.4, TILE * 1.4)
+        .setAngle(dirDegrees[this.facingDir] + 45)
+        .setDepth(20)
+        .setAlpha(1)
+      this.scene.tweens.add({
+        targets: swordIcon, alpha: 0, scaleX: 1.4, scaleY: 1.4,
+        duration: 200, ease: 'Quad.easeOut',
+        onComplete: () => swordIcon.destroy(),
+      })
+    }
+
+    // Flash blanco alrededor del jugador
+    this.scene.tweens.add({
+      targets: this, alpha: 0.3, duration: 50, yoyo: true,
     })
   }
 
