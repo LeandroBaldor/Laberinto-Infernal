@@ -176,7 +176,12 @@ export class Serpiente extends Monster {
       this.lastSpit = time
       if (this._sound) this._sound.setVolume(1.0)
       this._spitEffect()
-      if (this.active) this.scene.spawnPoisonBullet(this.x, this.y, player.x, player.y, this.attackDamage)
+      if (this.active) {
+        const [fdc, fdr] = this._forwardDir()
+        const mouthX = this.x + fdc * TILE
+        const mouthY = this.y + fdr * TILE
+        this.scene.spawnPoisonBullet(mouthX, mouthY, player.x, player.y, this.attackDamage)
+      }
     }
 
     if (this.moving) return
