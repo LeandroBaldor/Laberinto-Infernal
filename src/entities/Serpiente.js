@@ -175,12 +175,14 @@ export class Serpiente extends Monster {
     if (tileDist <= this.spitRange && tileDist > 1 && time > this.lastSpit + this.spitCooldown) {
       this.lastSpit = time
       if (this._sound) this._sound.setVolume(1.0)
-      this._spitEffect()
+      // Green flash on body
+      this.setTint(0x44ff44)
+      this.scene.time.delayedCall(120, () => { if (this.active) this.clearTint() })
       if (this.active) {
         const [fdc, fdr] = this._forwardDir()
         const mouthX = this.x + fdc * TILE
         const mouthY = this.y + fdr * TILE
-        this.scene.spawnPoisonBullet(mouthX, mouthY, player.x, player.y, this.attackDamage)
+        this.scene.spawnSerpenteBullet(mouthX, mouthY, player.x, player.y, this.attackDamage)
       }
     }
 
@@ -202,36 +204,4 @@ export class Serpiente extends Monster {
     }
   }
 
-  _spitEffect() {
-    // Green flash on the body
-    this.setTint(0x44ff44)
-    this.scene.time.delayedCall(120, () => {
-      if (this.active) this.clearTint()
-    })
-
-    // Scale pulse — quick open-mouth lunge
-    const sx = this._baseScaleX
-    const sy = this._baseScaleY
-    this.scene.tweens.add({
-      targets: this,
-      scaleX: sx * 1.25,
-      scaleY: sy * 1.25,
-      duration: 80,
-      ease: 'Sine.easeOut',
-      yoyo: true,
-    })
-
-    // Green acid burst particles at mouth position
-    const particles = this.scene.add.particles(this.x, this.y, 'poison_bullet', {
-      speed: { min: 30, max: 90 },
-      angle: { min: -30, max: 30 },
-      scale: { start: 0.7, end: 0 },
-      tint: [0x00ff44, 0x44ff00],
-      lifespan: 300,
-      quantity: 6,
-      emitting: false,
-    })
-    particles.explode(6)
-    this.scene.time.delayedCall(400, () => particles.destroy())
-  }
 }

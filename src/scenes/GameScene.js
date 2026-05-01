@@ -794,6 +794,18 @@ export class GameScene extends Phaser.Scene {
     })
   }
 
+  spawnSerpenteBullet(fromX, fromY, toX, toY, damage, speed = 380) {
+    const proj = this.physics.add.image(fromX, fromY, 'bullet')
+    proj.setDisplaySize(10, 10).setDepth(12).setTint(0x44ff44)
+    proj.projType = 'poison'
+    proj.damage   = damage
+    const angle = Math.atan2(toY - fromY, toX - fromX)
+    proj.setRotation(angle)
+    proj.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed)
+    this.enemyProjectiles.add(proj)
+    this.time.delayedCall(2000, () => { if (proj.active) proj.destroy() })
+  }
+
   spawnAcidSplash(x, y) {
     const p = this.add.particles(x, y, 'poison_bullet', {
       speed: { min: 40, max: 130 },
