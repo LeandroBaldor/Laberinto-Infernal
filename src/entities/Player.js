@@ -1,7 +1,7 @@
 const TILE = 32
 
 export const WEAPON_STATS = {
-  sword:   { label: 'ESPADA',      dmg: 5,   ranged: false, ammoPerPickup: 10, speed: 0,   tint: null       },
+  sword:   { label: 'ESPADA',      dmg: 5,   ranged: false, ammoPerPickup: 20, speed: 0,   tint: null       },
   arrow:   { label: 'FLECHAS',     dmg: 2.5, ranged: true,  ammoPerPickup: 8,  speed: 400, tint: null       },
   shotgun: { label: 'ESCOPETA',    dmg: 10,  ranged: true,  ammoPerPickup: 5,  speed: 350, tint: 0xff6600   },
   future:  { label: 'ARG.FUTURO',  dmg: 15,  ranged: true,  ammoPerPickup: 4,  speed: 620, tint: 0x00ddff   },
