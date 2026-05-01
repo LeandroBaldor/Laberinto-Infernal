@@ -4,36 +4,37 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.load.image('player', '/personaje_principal.png')
-    this.load.image('hedge_sheet', '/hedge_tiles.png')
-    this.load.image('monster_raw',   '/monster.png')
-    this.load.image('serpiente_raw', '/serpiente.png')
-    this.load.image('arania_raw',    '/arania.png')
+    const base = import.meta.env.BASE_URL
+    this.load.image('player', `${base}personaje_principal.png`)
+    this.load.image('hedge_sheet', `${base}hedge_tiles.png`)
+    this.load.image('monster_raw',   `${base}monster.png`)
+    this.load.image('serpiente_raw', `${base}serpiente.png`)
+    this.load.image('arania_raw',    `${base}arania.png`)
 
     // Bush wall tiles
-    this.load.image('bush_tile_raw',      '/bush_tile.png')
-    this.load.image('bush_tile_bomb_raw', '/bush_tile_bomb.png')
+    this.load.image('bush_tile_raw',      `${base}bush_tile.png`)
+    this.load.image('bush_tile_bomb_raw', `${base}bush_tile_bomb.png`)
     // Floor tile
-    this.load.image('floor_tile_raw', '/floor_tile.png')
+    this.load.image('floor_tile_raw', `${base}floor_tile.png`)
 
     // Weapon pickup sprites (floor items)
-    this.load.image('pickup_sword_raw',   '/espada.png')
-    this.load.image('pickup_arrow_raw',   '/flechas.png')
-    this.load.image('pickup_shotgun_raw', '/escopeta.png')
-    this.load.image('pickup_future_raw',  '/arma_futuro.png')
+    this.load.image('pickup_sword_raw',   `${base}espada.png`)
+    this.load.image('pickup_arrow_raw',   `${base}flechas.png`)
+    this.load.image('pickup_shotgun_raw', `${base}escopeta.png`)
+    this.load.image('pickup_future_raw',  `${base}arma_futuro.png`)
 
     // Player sprites per weapon
-    this.load.image('player_sword_raw',    '/personaje_principal_espada.png')
-    this.load.image('player_arrow_raw',    '/personaje_principal_flecha.png')
-    this.load.image('player_shotgun_raw',  '/personaje_principal_escopeta.png')
-    this.load.image('player_future_raw',   '/personaje_principal_armafuturo.png')
+    this.load.image('player_sword_raw',    `${base}personaje_principal_espada.png`)
+    this.load.image('player_arrow_raw',    `${base}personaje_principal_flecha.png`)
+    this.load.image('player_shotgun_raw',  `${base}personaje_principal_escopeta.png`)
+    this.load.image('player_future_raw',   `${base}personaje_principal_armafuturo.png`)
 
-    this.load.image('robot_raw', '/robot.png')
+    this.load.image('robot_raw', `${base}robot.png`)
 
     // Armor pickup boxes
-    this.load.image('armor_silver_raw', '/caja_plateada.png')
-    this.load.image('armor_gold_raw',   '/caja_oro.png')
-    this.load.image('armor_future_raw', '/caja_futuro.png')
+    this.load.image('armor_silver_raw', `${base}caja_plateada.png`)
+    this.load.image('armor_gold_raw',   `${base}caja_oro.png`)
+    this.load.image('armor_future_raw', `${base}caja_futuro.png`)
 
     // Armor player sprites: 3 armors × 5 weapon states = 15 images
     const _armorDefs = [
@@ -49,27 +50,27 @@ export class BootScene extends Phaser.Scene {
     ]
     for (const a of _armorDefs) {
       // No-weapon variant: file has no weapon suffix
-      this.load.image(`player_${a.id}_none_raw`, `/personaje_principal_armadura_${a.es}.png`)
+      this.load.image(`player_${a.id}_none_raw`, `${base}personaje_principal_armadura_${a.es}.png`)
       for (const w of _armorWeaponDefs) {
         this.load.image(
           `player_${a.id}_${w.id}_raw`,
-          `/personaje_principal_armadura_${a.es}_${w.es}.png`
+          `${base}personaje_principal_armadura_${a.es}_${w.es}.png`
         )
       }
     }
 
-    this.load.audio('musica_nivel_1',          '/musica_nivel_1.mp3')
-    this.load.audio('musica_menu',             '/musica_menu.mp3')
-    this.load.audio('musica_boton_menu',       '/musica_boton_menu.mp3')
-    this.load.audio('sonidos_pies_protagonista',`/sonidos_pies_protagonista.mp3?t=${Date.now()}`)
-    this.load.audio('sonido_arana',              '/sonido_araña.mp3')
-    this.load.audio('sonido_arana_grito',        '/sonido_araña_grito.mp3')
-    this.load.audio('sonidos_serpiente',          '/sonidos_serpiente.mp3')
-    this.load.audio('sonidos_serpiente_gritando', '/sonidos_serpiente_gritando.mp3')
-    this.load.audio('sonidos_arma_espada',        '/sonidos_arma_espada.mp3')
-    this.load.audio('sonidos_arma_flecha',        '/sonidos_arma_flecha.mp3')
-    this.load.audio('sonidos_arma_escopeta',      '/sonidos_arma_escopeta.mp3')
-    this.load.audio('sonidos_arma_futuro',        '/sonidos_arma_futuro.mp3')
+    this.load.audio('musica_nivel_1',          `${base}musica_nivel_1.mp3`)
+    this.load.audio('musica_menu',             `${base}musica_menu.mp3`)
+    this.load.audio('musica_boton_menu',       `${base}musica_boton_menu.mp3`)
+    this.load.audio('sonidos_pies_protagonista',`${base}sonidos_pies_protagonista.mp3?t=${Date.now()}`)
+    this.load.audio('sonido_arana',              `${base}sonido_araña.mp3`)
+    this.load.audio('sonido_arana_grito',        `${base}sonido_araña_grito.mp3`)
+    this.load.audio('sonidos_serpiente',          `${base}sonidos_serpiente.mp3`)
+    this.load.audio('sonidos_serpiente_gritando', `${base}sonidos_serpiente_gritando.mp3`)
+    this.load.audio('sonidos_arma_espada',        `${base}sonidos_arma_espada.mp3`)
+    this.load.audio('sonidos_arma_flecha',        `${base}sonidos_arma_flecha.mp3`)
+    this.load.audio('sonidos_arma_escopeta',      `${base}sonidos_arma_escopeta.mp3`)
+    this.load.audio('sonidos_arma_futuro',        `${base}sonidos_arma_futuro.mp3`)
 
     let monsterLoaded   = false
     let robotLoaded     = false
