@@ -77,7 +77,7 @@ export class Arania extends Monster {
       let vol = 0
       if (onScreen) {
         const dist = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y)
-        vol = Phaser.Math.Clamp(1 - dist / 600, 0, 0.25)
+        vol = Phaser.Math.Clamp(1 - dist / 600, 0, 0.45)
       }
       this._sound.setVolume(vol)
     }

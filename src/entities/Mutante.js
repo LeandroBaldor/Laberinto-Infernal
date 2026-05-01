@@ -90,7 +90,7 @@ export class Mutante extends Monster {
       const onScreen = this.x > wv.x && this.x < wv.right &&
                        this.y > wv.y && this.y < wv.bottom
       if (onScreen && this.scene.cache.audio.exists('sonidos_monster')) {
-        this.scene.sound.play('sonidos_monster', { volume: 0.3 })
+        this.scene.sound.play('sonidos_monster', { volume: 0.15 })
       }
     }
 
