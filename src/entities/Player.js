@@ -1,7 +1,7 @@
 const TILE = 32
 
 export const WEAPON_STATS = {
-  sword:   { label: 'ESPADA',      dmg: 5,   ranged: false, ammoPerPickup: -1, speed: 0,   tint: null       },
+  sword:   { label: 'ESPADA',      dmg: 5,   ranged: false, ammoPerPickup: 10, speed: 0,   tint: null       },
   arrow:   { label: 'FLECHAS',     dmg: 2.5, ranged: true,  ammoPerPickup: 8,  speed: 400, tint: null       },
   shotgun: { label: 'ESCOPETA',    dmg: 10,  ranged: true,  ammoPerPickup: 5,  speed: 350, tint: 0xff6600   },
   future:  { label: 'ARG.FUTURO',  dmg: 15,  ranged: true,  ammoPerPickup: 4,  speed: 620, tint: 0x00ddff   },
@@ -252,6 +252,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   // ── combat ────────────────────────────────────────────────────────────────
   _swordAttack() {
     const dmg = WEAPON_STATS.sword.dmg * this.damageMultiplier
+
+    // Consume 1 use
+    const currentAmmo = this.inventory.get('sword')
+    const newAmmo = currentAmmo - 1
+    this.inventory.set('sword', newAmmo)
+    this.scene.events.emit('ammoChanged', newAmmo)
+    if (newAmmo <= 0) {
+      this.inventory.delete('sword')
+      const remaining = [...this.inventory.keys()]
+      this.activeWeapon = remaining.length > 0 ? remaining[0] : null
+      this._emitWeaponState()
+    }
+
+    // Slash visual effect
+    this._showSlashEffect()
+
     this.scene.tweens.add({ targets: this, alpha: 0.6, duration: 80, yoyo: true })
     if (this.scene.cache.audio.exists('sonidos_arma_espada'))
       this.scene.sound.play('sonidos_arma_espada', { volume: 0.7 })
@@ -277,6 +293,38 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     }
     if (!hitAny) this.scene.showFloatingText(this.x, this.y - 20, 'ESPADA!', '#ffdd88')
+  }
+
+  _showSlashEffect() {
+    const dirs = { right: 0, left: Math.PI, up: -Math.PI / 2, down: Math.PI / 2 }
+    const angle = dirs[this.facingDir] ?? 0
+    const reach = TILE * 1.6
+    const cx = this.x + Math.cos(angle) * reach * 0.5
+    const cy = this.y + Math.sin(angle) * reach * 0.5
+
+    const g = this.scene.add.graphics().setDepth(15)
+    const spread = Math.PI / 2.2
+    const r1 = reach * 0.4, r2 = reach
+
+    g.lineStyle(4, 0xffffff, 0.9)
+    g.beginPath()
+    g.arc(this.x, this.y, r1, angle - spread / 2, angle + spread / 2, false)
+    g.strokePath()
+
+    g.lineStyle(3, 0xaaddff, 0.7)
+    g.beginPath()
+    g.arc(this.x, this.y, (r1 + r2) / 2, angle - spread / 2.5, angle + spread / 2.5, false)
+    g.strokePath()
+
+    g.lineStyle(2, 0x88bbff, 0.5)
+    g.beginPath()
+    g.arc(this.x, this.y, r2 * 0.85, angle - spread / 3.5, angle + spread / 3.5, false)
+    g.strokePath()
+
+    this.scene.tweens.add({
+      targets: g, alpha: 0, duration: 180, ease: 'Quad.easeOut',
+      onComplete: () => g.destroy(),
+    })
   }
 
   shoot(bullets) {
