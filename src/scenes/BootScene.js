@@ -71,6 +71,7 @@ export class BootScene extends Phaser.Scene {
     this.load.audio('sonidos_arma_flecha',        `${base}sonidos_arma_flecha.mp3`)
     this.load.audio('sonidos_arma_escopeta',      `${base}sonidos_arma_escopeta.mp3`)
     this.load.audio('sonidos_arma_futuro',        `${base}sonidos_arma_futuro.mp3`)
+    this.load.audio('sonidos_monster',            `${base}sonidos_monster.mp3`)
 
     let monsterLoaded   = false
     let robotLoaded     = false

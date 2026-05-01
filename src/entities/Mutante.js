@@ -21,6 +21,7 @@ export class Mutante extends Monster {
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY
     this._stepCount  = 0
+    this._lastSound  = Math.random() * 5000
   }
 
   getInfoLines() {
@@ -82,6 +83,13 @@ export class Mutante extends Monster {
 
   update(time, player) {
     if (!this.active) return
+
+    if (time > this._lastSound + 5000) {
+      this._lastSound = time
+      if (this.scene.sound.get('sonidos_monster')) {
+        this.scene.sound.play('sonidos_monster', { volume: 0.6 })
+      }
+    }
 
     // Slow idle sway even when standing still — gives zombie unease
     if (!this.moving) {
