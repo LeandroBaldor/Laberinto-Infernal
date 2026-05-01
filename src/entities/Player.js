@@ -89,6 +89,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     if (!this.activeWeapon) this.activeWeapon = type
     this._emitWeaponState()
+    this._playPickupSound()
   }
 
   pickupArmor(type) {
@@ -100,6 +101,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.ammoMultiplier = stats.ammoMult
     this.scene.events.emit('armorChanged', this.armor, this.armorMax, this.armorType)
     this._updateSprite()
+    this._playPickupSound()
+  }
+
+  _playPickupSound() {
+    if (this.scene.cache.audio.exists('sonido_pickup')) {
+      this.scene.sound.play('sonido_pickup', { volume: 0.7 })
+    }
   }
 
   immobilize(duration) {
