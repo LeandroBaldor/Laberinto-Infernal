@@ -128,15 +128,19 @@ export class Serpiente extends Monster {
   update(time, player) {
     if (!this.active) return
 
-    // ── Volumen dinámico por proximidad ───────────────────────────────────────
+    // ── Volumen dinámico — solo la serpiente más cercana al jugador suena ──────
     if (this._sound) {
       const wv  = this.scene.cameras.main.worldView
       const onScreen = this.x > wv.x && this.x < wv.right &&
                        this.y > wv.y && this.y < wv.bottom
       let vol = 0
       if (onScreen) {
-        const dist = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y)
-        vol = Phaser.Math.Clamp(1 - dist / 500, 0, 1.0)
+        const myDist = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y)
+        const isClosest = !this.scene.monsters.getChildren().some(m =>
+          m !== this && m.active && m.monsterType === 'serpiente' &&
+          Phaser.Math.Distance.Between(m.x, m.y, player.x, player.y) < myDist
+        )
+        if (isClosest) vol = Phaser.Math.Clamp(1 - myDist / 500, 0, 1.0)
       }
       this._sound.setVolume(vol)
     }
