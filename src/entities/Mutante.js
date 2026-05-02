@@ -6,17 +6,18 @@ export class Mutante extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y, 'monster')
 
-    this.monsterType  = 'mutante'
-    this.health       = 25
-    this.maxHealth    = 25
-    this.scoreValue   = 50
-    this.attackDamage = 2.5
-    this.detectionRange = 8
-    this.attackCooldown = 1000
-    this.stepInterval   = 480 + Math.random() * 320
+    this.monsterType     = 'mutante'
+    this.health          = 25
+    this.maxHealth       = 25
+    this.scoreValue      = 50
+    this.attackDamage    = 2.5
+    this.detectionRange  = 8
+    this.territoryRadius = 10
+    this.attackCooldown  = 1000
+    this.stepInterval    = 480 + Math.random() * 320
 
-    this.setDisplaySize(TILE * 2, TILE * 2)
-    this.body.setSize(TILE, TILE)
+    this.setDisplaySize(TILE * 4, TILE * 4)
+    this.body.setSize(TILE * 2, TILE * 2)
 
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY
@@ -59,7 +60,7 @@ export class Mutante extends Monster {
       ease: 'Sine.easeIn',
       yoyo: true,
       onComplete: () => {
-        this.scene.tweens.add({
+        if (this.scene && this.active) this.scene.tweens.add({
           targets: this,
           scaleX: bsx, scaleY: bsy, angle: 0,
           duration: 130, ease: 'Sine.easeOut',
@@ -91,7 +92,7 @@ export class Mutante extends Monster {
                        this.y > wv.y && this.y < wv.bottom
       if (onScreen && this.scene.cache.audio.exists('sonidos_monster')) {
         this.scene._mutanteSoundLast = time
-        this.scene.sound.play('sonidos_monster', { volume: 0.15 })
+        this.scene.sound.play('sonidos_monster', { volume: 0.45 })
       }
     }
 
@@ -116,8 +117,11 @@ export class Mutante extends Monster {
     if (time < this._lastStep + this.stepInterval) return
     this._lastStep = time
 
-    if (tileDist <= this.detectionRange) {
+    this._updateAiState(player, tileDist)
+    if (this.aiState === 'CHASE') {
       this._chasePlayer(player)
+    } else if (this.aiState === 'RETURN') {
+      this._returnHome()
     } else {
       this._patrol()
     }

@@ -23,23 +23,12 @@ export class UIScene extends Phaser.Scene {
 
     this.add.rectangle(0, 0, width, 70, 0x000000, 0.88).setOrigin(0, 0)
 
-    // ── KEY indicator (top-left, below lives) ─────────────────────────────────
-    this._hasKey = false
-    this.keyIcon = this.add.text(14, 56, '🗝 SIN LLAVE', {
-      fontSize: '11px', fontFamily: 'Courier New', color: '#884400',
-    })
-
-    // ── VIDAS (extremo izquierdo) ─────────────────────────────────────────────
-    this.livesText = this.add.text(12, 8, this._livesStr(this.lives), {
-      fontSize: '22px', fontFamily: 'Courier New', color: '#ff3333',
-      stroke: '#000000', strokeThickness: 3,
-    })
-    this.add.text(12, 34, 'VIDAS', {
-      fontSize: '9px', fontFamily: 'Courier New', color: '#882222',
-    })
-
-    // ── BARRA + NÚMERO DE VIDA ────────────────────────────────────────────────
-    const barX = 90
+    // ── CORAZONES (vidas) + BARRA + NÚMERO DE VIDA ───────────────────────────
+    const barX = 150
+    this.livesText = this.add.text(barX - 4, 22, this._livesStr(this.lives), {
+      fontSize: '30px', fontFamily: 'Courier New', color: '#ff3333',
+      stroke: '#000000', strokeThickness: 2,
+    }).setOrigin(1, 0.5)
     this.add.rectangle(barX, 16, 102, 12, 0x550000).setOrigin(0, 0)
     this.healthBar = this.add.rectangle(barX + 1, 17, 100, 10, 0xff2222).setOrigin(0, 0)
     this.healthNum = this.add.text(barX + 108, 6, String(Math.ceil(this.playerHealth)), {
@@ -58,9 +47,9 @@ export class UIScene extends Phaser.Scene {
       fontSize: '14px', fontFamily: 'Courier New', color: '#aaaaff',
       stroke: '#000000', strokeThickness: 2,
     })
-    this.add.text(barX, 58, 'ESCUDO', {
-      fontSize: '8px', fontFamily: 'Courier New', color: '#333355',
-    })
+    this.add.text(barX - 4, 44, 'ARMADURA', {
+      fontSize: '20px', fontFamily: 'Courier New', color: '#5555aa',
+    }).setOrigin(1, 0.5)
     const initPct = this._armorMax > 0 ? this._armor / this._armorMax : 0
     this.armorBar.setSize(100 * initPct, 8)
     if (this._armorMax === 0) {
@@ -86,7 +75,7 @@ export class UIScene extends Phaser.Scene {
     }).setOrigin(0.5, 0.5)
 
     const counterStyle = (color) => ({
-      fontSize: '16px', fontFamily: 'Courier New', color,
+      fontSize: '24px', fontFamily: 'Courier New', color,
       stroke: '#000000', strokeThickness: 3,
     })
     this.mutantText = this.add.text(cx(1), midY,
@@ -98,7 +87,7 @@ export class UIScene extends Phaser.Scene {
 
     // ── SCORE + NIVEL ─────────────────────────────────────────────────────────
     this.scoreText = this.add.text(cx(4), midY, `SCORE: ${this.score}`, {
-      fontSize: '18px', fontFamily: 'Courier New', color: '#aaaaff',
+      fontSize: '27px', fontFamily: 'Courier New', color: '#aaaaff',
       stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5, 0.5)
     this.add.text(cx(4), labelY, `NIVEL ${this.level}`, {
@@ -133,14 +122,8 @@ export class UIScene extends Phaser.Scene {
       this.araniaText.setText(`Araña Kaiju: ${arania}`)
     })
 
-    game.events.on('keyPickedUp', () => {
-      this._hasKey = true
-      this.keyIcon.setText('🗝 LLAVE ✓')
-      this.keyIcon.setColor('#ffdd00')
-      this.tweens.add({
-        targets: this.keyIcon,
-        alpha: 0.3, duration: 200, yoyo: true, repeat: 3,
-      })
+    game.events.on('livesChanged', (lives) => {
+      this.livesText.setText(this._livesStr(lives))
     })
 
     game.events.on('armorChanged', (armor, armorMax, armorType) => {

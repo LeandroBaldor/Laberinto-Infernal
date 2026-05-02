@@ -101,7 +101,7 @@ export class GameScene extends Phaser.Scene {
     this.exit.setTint(0xff3333)
     this.tweens.add({
       targets: this.exit, alpha: 0.4, scaleX: 1.1, scaleY: 1.1,
-      duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      duration: 700, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
     })
     this.exitRing = this.add.graphics().setDepth(2)
     this.exitRing.fillStyle(0xff2200, 0.2)
@@ -121,7 +121,7 @@ export class GameScene extends Phaser.Scene {
     this.tweens.add({
       targets: this.keyItem,
       y: keyY - 4, angle: 8,
-      duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      duration: 800, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
     })
     // Golden glow ring under key
     const keyRing = this.add.graphics().setDepth(3)
@@ -192,7 +192,7 @@ export class GameScene extends Phaser.Scene {
         const tile = this[def.groupKey].create(wx, wy, 'weapon_tile').setDepth(2)
         this.tweens.add({
           targets: tile, alpha: 0.55,
-          duration: 700 + n * 120, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+          duration: 700 + n * 120, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
         })
 
         // Weapon icon: blinks and grows 50%
@@ -201,7 +201,7 @@ export class GameScene extends Phaser.Scene {
         this.tweens.add({
           targets: icon,
           scaleX: baseScale * 1.5, scaleY: baseScale * 1.5, alpha: 0.5,
-          duration: 700 + n * 120, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+          duration: 700 + n * 120, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
         })
         tile.icon = icon
       }
@@ -236,11 +236,11 @@ export class GameScene extends Phaser.Scene {
         usedCells.add(`${cell.row},${cell.col}`)
         const ax = cell.col * TILE + TILE / 2
         const ay = cell.row * TILE + TILE / 2
-        const box = this[def.groupKey].create(ax, ay, def.texKey).setDepth(2).setDisplaySize(TILE, TILE)
+        const box = this[def.groupKey].create(ax, ay, def.texKey).setDepth(2).setDisplaySize(TILE * 1.25, TILE * 1.25)
         box.refreshBody()
         this.tweens.add({
           targets: box, alpha: 0.7,
-          duration: 800 + n * 180, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+          duration: 800 + n * 180, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
         })
       }
     }
@@ -272,6 +272,7 @@ export class GameScene extends Phaser.Scene {
 
     for (const def of armorPickupDefs) {
       this.physics.add.overlap(this.player, this[def.groupKey], (player, box) => {
+        this.tweens.killTweensOf(box)
         box.destroy()
         player.pickupArmor(def.aType)
         player.heal(def.hpBonus)
@@ -282,7 +283,8 @@ export class GameScene extends Phaser.Scene {
 
     for (const def of weaponDefs) {
       this.physics.add.overlap(this.player, this[def.groupKey], (player, sprite) => {
-        if (sprite.icon) sprite.icon.destroy()
+        if (sprite.icon) { this.tweens.killTweensOf(sprite.icon); sprite.icon.destroy() }
+        this.tweens.killTweensOf(sprite)
         sprite.destroy()
         player.pickupWeapon(def.wType)
         this.score += 2
@@ -549,7 +551,7 @@ export class GameScene extends Phaser.Scene {
     this.tweens.killTweensOf(this.exit)
     this.tweens.add({
       targets: this.exit, alpha: 0.5, scaleX: 1.15, scaleY: 1.15,
-      duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      duration: 900, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
     })
     this.exitRing.clear()
     this.exitRing.fillStyle(0x00ff66, 0.18)
@@ -618,6 +620,7 @@ export class GameScene extends Phaser.Scene {
 
   onPlayerDied() {
     this.lives -= 1
+    this.events.emit('livesChanged', this.lives)
     this.cameras.main.shake(500, 0.02)
     this.time.delayedCall(700, () => {
       this.cameras.main.fadeOut(800, 150, 0, 0)
@@ -794,16 +797,60 @@ export class GameScene extends Phaser.Scene {
     })
   }
 
-  spawnSerpenteBullet(fromX, fromY, toX, toY, damage, speed = 380) {
-    const proj = this.physics.add.image(fromX, fromY, 'bullet')
-    proj.setDisplaySize(10, 10).setDepth(12).setTint(0x44ff44)
+  spawnAraniaBullet(fromX, fromY, toX, toY, damage, speed = 420) {
+    if (this.enemyProjectiles.getLength() >= 40) return
+    const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
+    proj.setDisplaySize(22, 22).setDepth(12).setTint(0xcc44ff)
     proj.projType = 'poison'
     proj.damage   = damage
-    const angle = Math.atan2(toY - fromY, toX - fromX)
-    proj.setRotation(angle)
-    proj.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed)
+    const dx = toX - fromX, dy = toY - fromY
+    const horizontal = Math.abs(dx) >= Math.abs(dy)
+    const vx = horizontal ? Math.sign(dx) * speed : 0
+    const vy = horizontal ? 0 : Math.sign(dy) * speed
+    proj.setRotation(horizontal ? (dx >= 0 ? 0 : Math.PI) : (dy >= 0 ? Math.PI / 2 : -Math.PI / 2))
     this.enemyProjectiles.add(proj)
-    this.time.delayedCall(2000, () => { if (proj.active) proj.destroy() })
+    proj.body.setVelocity(vx, vy)
+    const trail = this.add.particles(0, 0, 'poison_bullet', {
+      follow: proj,
+      scale: { start: 0.5, end: 0 },
+      alpha: { start: 0.8, end: 0 },
+      tint: [0xcc44ff, 0x9922cc, 0xff88ff],
+      lifespan: 250,
+      frequency: 40,
+    })
+    trail.setDepth(11)
+    this.time.delayedCall(2200, () => {
+      if (proj.active) proj.destroy()
+      if (trail.active) trail.destroy()
+    })
+  }
+
+  spawnSerpenteBullet(fromX, fromY, toX, toY, damage, speed = 400) {
+    if (this.enemyProjectiles.getLength() >= 40) return
+    const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
+    proj.setDisplaySize(20, 20).setDepth(12).setTint(0x44ff44)
+    proj.projType = 'poison'
+    proj.damage   = damage
+    const dx = toX - fromX, dy = toY - fromY
+    const horizontal = Math.abs(dx) >= Math.abs(dy)
+    const vx = horizontal ? Math.sign(dx) * speed : 0
+    const vy = horizontal ? 0 : Math.sign(dy) * speed
+    proj.setRotation(horizontal ? (dx >= 0 ? 0 : Math.PI) : (dy >= 0 ? Math.PI / 2 : -Math.PI / 2))
+    this.enemyProjectiles.add(proj)
+    proj.body.setVelocity(vx, vy)
+    const trail = this.add.particles(0, 0, 'poison_bullet', {
+      follow: proj,
+      scale: { start: 0.5, end: 0 },
+      alpha: { start: 0.8, end: 0 },
+      tint: [0x44ff44, 0x22cc22, 0x88ff44],
+      lifespan: 250,
+      frequency: 40,
+    })
+    trail.setDepth(11)
+    this.time.delayedCall(2200, () => {
+      if (proj.active) proj.destroy()
+      if (trail.active) trail.destroy()
+    })
   }
 
   spawnAcidSplash(x, y) {
@@ -821,6 +868,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   spawnWeb(fromX, fromY, toX, toY) {
+    if (this.enemyProjectiles.getLength() >= 40) return
     const proj = this.physics.add.image(fromX, fromY, 'web_bullet')
     proj.setDisplaySize(12, 12).setDepth(12)
     proj.projType = 'web'

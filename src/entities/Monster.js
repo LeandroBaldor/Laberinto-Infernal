@@ -14,6 +14,11 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     this.gridRow = Math.round((y - TILE / 2) / TILE)
     this.moving = false
 
+    this.homeCol = this.gridCol
+    this.homeRow = this.gridRow
+    this.territoryRadius = 9
+    this.aiState = 'PATROL'
+
     this.monsterType = 'mutant'
     this.health = 25
     this.maxHealth = 25
@@ -83,11 +88,47 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     if (time < this._lastStep + this.stepInterval) return
     this._lastStep = time
 
-    if (tileDist <= this.detectionRange) {
+    this._updateAiState(player, tileDist)
+    if (this.aiState === 'CHASE') {
       this._chasePlayer(player)
+    } else if (this.aiState === 'RETURN') {
+      this._returnHome()
     } else {
       this._patrol()
     }
+  }
+
+  _updateAiState(player, tileDist) {
+    const myDistFromHome = Math.abs(this.gridCol - this.homeCol) + Math.abs(this.gridRow - this.homeRow)
+    if (tileDist <= this.detectionRange && myDistFromHome <= this.territoryRadius) {
+      this.aiState = 'CHASE'
+    } else if (this.aiState === 'CHASE') {
+      this.aiState = 'RETURN'
+    }
+  }
+
+  _returnHome() {
+    const dCol = this.homeCol - this.gridCol
+    const dRow = this.homeRow - this.gridRow
+
+    if (dCol === 0 && dRow === 0) {
+      this.aiState = 'PATROL'
+      return
+    }
+
+    const moves = []
+    if (Math.abs(dCol) >= Math.abs(dRow)) {
+      if (dCol !== 0) moves.push([this.gridCol + Math.sign(dCol), this.gridRow])
+      if (dRow !== 0) moves.push([this.gridCol, this.gridRow + Math.sign(dRow)])
+    } else {
+      if (dRow !== 0) moves.push([this.gridCol, this.gridRow + Math.sign(dRow)])
+      if (dCol !== 0) moves.push([this.gridCol + Math.sign(dCol), this.gridRow])
+    }
+
+    for (const [col, row] of moves) {
+      if (this.stepTo(col, row)) return
+    }
+    this._patrol()
   }
 
   _chasePlayer(player) {
@@ -116,7 +157,10 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
       [dirs[i], dirs[j]] = [dirs[j], dirs[i]]
     }
     for (const [dc, dr] of dirs) {
-      if (this.stepTo(this.gridCol + dc, this.gridRow + dr)) return
+      const nc = this.gridCol + dc
+      const nr = this.gridRow + dr
+      if (Math.abs(nc - this.homeCol) + Math.abs(nr - this.homeRow) > this.territoryRadius) continue
+      if (this.stepTo(nc, nr)) return
     }
   }
 

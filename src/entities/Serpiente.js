@@ -6,14 +6,15 @@ export class Serpiente extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y, 'serpiente')
 
-    this.monsterType    = 'serpiente'
-    this.health         = 50
-    this.maxHealth      = 50
-    this.scoreValue     = 100
-    this.attackDamage   = 5
-    this.detectionRange = 12
-    this.attackCooldown = 1500
-    this.stepInterval   = 420 + Math.random() * 200
+    this.monsterType     = 'serpiente'
+    this.health          = 50
+    this.maxHealth       = 50
+    this.scoreValue      = 100
+    this.attackDamage    = 5
+    this.detectionRange  = 12
+    this.territoryRadius = 10
+    this.attackCooldown  = 1500
+    this.stepInterval    = 420 + Math.random() * 200
 
     const srcImg = scene.textures.get('serpiente').getSourceImage()
     const natW = srcImg.width  || 1
@@ -44,6 +45,7 @@ export class Serpiente extends Monster {
       this._scream = null
     }
     this._lastScream = 0
+    this._lastVolUpdate = 0
   }
 
   die() {
@@ -129,18 +131,19 @@ export class Serpiente extends Monster {
     if (!this.active) return
 
     // ── Volumen dinámico — solo la serpiente más cercana al jugador suena ──────
-    if (this._sound) {
+    if (this._sound && time > this._lastVolUpdate + 150) {
+      this._lastVolUpdate = time
       const wv  = this.scene.cameras.main.worldView
       const onScreen = this.x > wv.x && this.x < wv.right &&
                        this.y > wv.y && this.y < wv.bottom
       let vol = 0
       if (onScreen) {
-        const myDist = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y)
+        const myDist2 = (this.x - player.x) ** 2 + (this.y - player.y) ** 2
         const isClosest = !this.scene.monsters.getChildren().some(m =>
           m !== this && m.active && m.monsterType === 'serpiente' &&
-          Phaser.Math.Distance.Between(m.x, m.y, player.x, player.y) < myDist
+          (m.x - player.x) ** 2 + (m.y - player.y) ** 2 < myDist2
         )
-        if (isClosest) vol = Phaser.Math.Clamp(1 - myDist / 500, 0, 1.0)
+        if (isClosest) vol = Phaser.Math.Clamp(1 - Math.sqrt(myDist2) / 400, 0, 0.7)
       }
       this._sound.setVolume(vol)
     }
@@ -176,17 +179,29 @@ export class Serpiente extends Monster {
       }
     }
 
-    if (tileDist <= this.spitRange && tileDist > 1 && time > this.lastSpit + this.spitCooldown) {
+    this._updateAiState(player, tileDist)
+
+    if (this.aiState === 'CHASE' && tileDist <= this.spitRange && tileDist > 1 && time > this.lastSpit + this.spitCooldown) {
       this.lastSpit = time
       if (this._sound) this._sound.setVolume(1.0)
       // Green flash on body
       this.setTint(0x44ff44)
       this.scene.time.delayedCall(120, () => { if (this.active) this.clearTint() })
       if (this.active) {
+        // Turn head toward player (cardinal snap) before spitting
+        const pdx = player.x - this.x
+        const pdy = player.y - this.y
+        if (Math.abs(pdx) >= Math.abs(pdy)) {
+          this.setFlipX(pdx > 0)
+          this._moveAngle = 0
+        } else {
+          this.setFlipX(false)
+          this._moveAngle = pdy > 0 ? -90 : 90
+        }
         const [fdc, fdr] = this._forwardDir()
-        const mouthX = this.x + fdc * TILE
-        const mouthY = this.y + fdr * TILE
-        this.scene.spawnSerpenteBullet(mouthX, mouthY, player.x, player.y, this.attackDamage)
+        const mouthX = this.x + fdc * TILE * 1.5
+        const mouthY = this.y + fdr * TILE * 1.5
+        this.scene.spawnSerpenteBullet(mouthX, mouthY, mouthX + fdc * 1000, mouthY + fdr * 1000, this.attackDamage)
       }
     }
 
@@ -201,11 +216,36 @@ export class Serpiente extends Monster {
     if (time < this._lastStep + this.stepInterval) return
     this._lastStep = time
 
-    if (tileDist <= this.detectionRange) {
-      this._chasePlayer(player)
+    if (this.aiState === 'CHASE') {
+      if (tileDist < 3) {
+        this._retreatFrom(player)
+      } else if (tileDist <= this.spitRange) {
+        // En rango de disparo — no avanzar, dejar que el spit ataque
+      } else {
+        this._chasePlayer(player)
+      }
+    } else if (this.aiState === 'RETURN') {
+      this._returnHome()
     } else {
       this._patrol()
     }
+  }
+
+  _retreatFrom(player) {
+    const dCol = this.gridCol - player.gridCol
+    const dRow = this.gridRow - player.gridRow
+    const moves = []
+    if (Math.abs(dCol) >= Math.abs(dRow)) {
+      if (dCol !== 0) moves.push([this.gridCol + Math.sign(dCol), this.gridRow])
+      if (dRow !== 0) moves.push([this.gridCol, this.gridRow + Math.sign(dRow)])
+    } else {
+      if (dRow !== 0) moves.push([this.gridCol, this.gridRow + Math.sign(dRow)])
+      if (dCol !== 0) moves.push([this.gridCol + Math.sign(dCol), this.gridRow])
+    }
+    for (const [col, row] of moves) {
+      if (this.stepTo(col, row)) return
+    }
+    this._patrol()
   }
 
 }

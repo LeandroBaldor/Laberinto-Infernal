@@ -19,7 +19,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this)
     scene.physics.add.existing(this)
 
-    this.setDisplaySize(TILE * 2.25, TILE * 2.25)
+    this.setDisplaySize(TILE * 2.8125, TILE * 2.8125)
     this.body.setSize(TILE, TILE)
     this.setDepth(10)
 
@@ -151,10 +151,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (variant && this.scene.textures.exists(variant)) key = variant
     }
     if (this.texture.key !== key) this.setTexture(key)
-    const sz = (this.armorType === 'silver' || this.armorType === 'gold')
-      ? TILE * 2.25 * 1.25
-      : TILE * 2.25
-    this.setDisplaySize(sz, sz)
+    this.setDisplaySize(TILE * 2.8125, TILE * 2.8125)
   }
 
   // ── movement ──────────────────────────────────────────────────────────────
@@ -214,11 +211,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     let dc = 0, dr = 0
     if      (cursors.left.isDown  || wasd.left.isDown)  { dc = -1; this.facingLeft = true;  this.facingDir = 'left'  }
     else if (cursors.right.isDown || wasd.right.isDown) { dc =  1; this.facingLeft = false; this.facingDir = 'right' }
-    else if (cursors.up.isDown    || wasd.up.isDown)    { dr = -1; this.facingDir = 'up'   }
-    else if (cursors.down.isDown  || wasd.down.isDown)  { dr =  1; this.facingDir = 'down' }
+    else if (cursors.up.isDown    || wasd.up.isDown)    { dr = -1; this.facingLeft = false; this.facingDir = 'up'   }
+    else if (cursors.down.isDown  || wasd.down.isDown)  { dr =  1; this.facingLeft = false; this.facingDir = 'down' }
 
     const dirChanged = dc !== this._heldDc || dr !== this._heldDr
     this._heldDc = dc; this._heldDr = dr
+
+    if (dc !== 0 || dr !== 0 || dirChanged) {
+      if      (this.facingDir === 'up')   this.setAngle(-90)
+      else if (this.facingDir === 'down') this.setAngle(90)
+      else                                this.setAngle(0)
+    }
 
     if (!this.moving && (dc !== 0 || dr !== 0)) {
       if (dirChanged) {

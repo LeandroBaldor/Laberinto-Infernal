@@ -297,7 +297,7 @@ export class MenuScene extends Phaser.Scene {
 
     // ── Música de menú ─────────────────────────────────────────
     if (this.cache.audio.exists('musica_menu')) {
-      this._menuMusic = this.sound.add('musica_menu', { loop: true, volume: 0.5 })
+      this._menuMusic = this.sound.add('musica_menu', { loop: true, volume: 1.5 })
       this._menuMusic.play()
     }
     this._btnSound = this.cache.audio.exists('musica_boton_menu')

@@ -6,14 +6,15 @@ export class Arania extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y, 'arania')
 
-    this.monsterType    = 'arania'
-    this.health         = 100
-    this.maxHealth      = 100
-    this.scoreValue     = 300
-    this.attackDamage   = 10
-    this.detectionRange = 999
-    this.attackCooldown = 2000
-    this.stepInterval   = 550 + Math.random() * 250
+    this.monsterType     = 'arania'
+    this.health          = 400
+    this.maxHealth       = 400
+    this.scoreValue      = 300
+    this.attackDamage    = 10
+    this.detectionRange  = 999
+    this.territoryRadius = 10
+    this.attackCooldown  = 2000
+    this.stepInterval    = 550 + Math.random() * 250
 
     this.setDisplaySize(TILE * 5, TILE * 5)
     this.body.setSize(TILE * 3.5, TILE * 3.5)
@@ -21,9 +22,12 @@ export class Arania extends Monster {
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY
 
-    this.webCooldown = 15000
-    this.lastWeb     = 0
-    this.webRange    = 12
+    this.webCooldown  = 15000
+    this.lastWeb      = 0
+    this.webRange     = 12
+    this.biteCooldown = 4000
+    this.lastBite     = 0
+    this.biteRange    = 10
 
     try {
       this._sound = scene.sound.add('sonido_arana', { loop: true, volume: 0 })
@@ -37,6 +41,7 @@ export class Arania extends Monster {
       this._scream = null
     }
     this._lastScream = 0
+    this._lastVolUpdate = 0
   }
 
   getInfoLines() {
@@ -70,18 +75,19 @@ export class Arania extends Monster {
     if (!this.active) return
 
     // ── Volumen dinámico — solo la araña más cercana al jugador suena ─────────
-    if (this._sound) {
+    if (this._sound && time > this._lastVolUpdate + 150) {
+      this._lastVolUpdate = time
       const wv  = this.scene.cameras.main.worldView
       const onScreen = this.x > wv.x && this.x < wv.right &&
                        this.y > wv.y && this.y < wv.bottom
       let vol = 0
       if (onScreen) {
-        const myDist = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y)
+        const myDist2 = (this.x - player.x) ** 2 + (this.y - player.y) ** 2
         const isClosest = !this.scene.monsters.getChildren().some(m =>
           m !== this && m.active && m.monsterType === 'arania' &&
-          Phaser.Math.Distance.Between(m.x, m.y, player.x, player.y) < myDist
+          (m.x - player.x) ** 2 + (m.y - player.y) ** 2 < myDist2
         )
-        if (isClosest) vol = Phaser.Math.Clamp(1 - myDist / 600, 0, 0.45)
+        if (isClosest) vol = Phaser.Math.Clamp(1 - Math.sqrt(myDist2) / 400, 0, 0.7)
       }
       this._sound.setVolume(vol)
     }
@@ -119,20 +125,34 @@ export class Arania extends Monster {
     const dy = Math.abs(this.gridRow - player.gridRow)
     const tileDist = dx + dy
 
+    this._updateAiState(player, tileDist)
+
     if (tileDist <= 2 && time > this.lastAttack + this.attackCooldown) {
       player.takeDamage(this.attackDamage)
       this.lastAttack = time
       return
     }
 
-    if (tileDist <= this.webRange && tileDist > 2 && time > this.lastWeb + this.webCooldown) {
+    if (this.aiState === 'CHASE' && tileDist <= this.webRange && tileDist > 2 && time > this.lastWeb + this.webCooldown) {
       this.lastWeb = time
       this.scene.spawnWeb(this.x, this.y, player.x, player.y)
+    }
+
+    if (this.aiState === 'CHASE' && tileDist <= this.biteRange && tileDist > 1 && time > this.lastBite + this.biteCooldown) {
+      this.lastBite = time
+      const rad = Phaser.Math.DegToRad(this.angle + 90)
+      this.scene.spawnAraniaBullet(this.x, this.y, this.x + Math.cos(rad) * 1000, this.y + Math.sin(rad) * 1000, this.attackDamage)
     }
 
     if (time < this._lastStep + this.stepInterval) return
     this._lastStep = time
 
-    this._chasePlayer(player)
+    if (this.aiState === 'CHASE') {
+      this._chasePlayer(player)
+    } else if (this.aiState === 'RETURN') {
+      this._returnHome()
+    } else {
+      this._patrol()
+    }
   }
 }
