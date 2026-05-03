@@ -9,7 +9,6 @@ import { GameOverScene } from './scenes/GameOverScene.js'
 const config = {
   type: Phaser.AUTO,
   backgroundColor: '#0d1a04',
-  pixelArt: true,
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,

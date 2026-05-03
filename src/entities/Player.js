@@ -1,10 +1,12 @@
 const TILE = 32
 
 export const WEAPON_STATS = {
-  sword:   { label: 'ESPADA',      dmg: 5,   ranged: false, ammoPerPickup: 20, speed: 0,   tint: null       },
-  arrow:   { label: 'FLECHAS',     dmg: 2.5, ranged: true,  ammoPerPickup: 8,  speed: 400, tint: null       },
-  shotgun: { label: 'ESCOPETA',    dmg: 10,  ranged: true,  ammoPerPickup: 5,  speed: 350, tint: 0xff6600   },
-  future:  { label: 'ARG.FUTURO',  dmg: 15,  ranged: true,  ammoPerPickup: 4,  speed: 620, tint: 0x00ddff   },
+  sword:         { label: 'ESPADA',         dmg: 5,   ranged: false, ammoPerPickup: 20, speed: 0,   tint: null,     cooldown: 600 },
+  arrow:         { label: 'FLECHAS',        dmg: 2.5, ranged: true,  ammoPerPickup: 8,  speed: 400, tint: null,     cooldown: 400 },
+  shotgun:       { label: 'ESCOPETA',       dmg: 10,  ranged: true,  ammoPerPickup: 5,  speed: 350, tint: 0xff6600, cooldown: 500 },
+  future:        { label: 'ARG.FUTURO',     dmg: 15,  ranged: true,  ammoPerPickup: 4,  speed: 620, tint: 0x00ddff, cooldown: 350 },
+  ametralladora: { label: 'AMETRALLADORA',  dmg: 8,   ranged: true,  ammoPerPickup: 30, speed: 500, tint: 0xffcc00, cooldown: 150 },
+  lanzallamas:   { label: 'LANZALLAMAS',    dmg: 22,  ranged: true,  ammoPerPickup: 12, speed: 220, tint: 0xff4400, cooldown: 280 },
 }
 
 export const ARMOR_STATS = {
@@ -134,6 +136,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   _updateSprite() {
+    const weaponMap = {
+      sword: 'player_sword', arrow: 'player_arrow', shotgun: 'player_shotgun',
+      future: 'player_future', ametralladora: 'player_ametralladora', lanzallamas: 'player_lanzallamas',
+    }
     let key = 'player'
     if (this.armorType) {
       const weaponSuffix = this.activeWeapon || 'none'
@@ -141,13 +147,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (this.scene.textures.exists(candidate)) {
         key = candidate
       } else {
-        const map = { sword: 'player_sword', arrow: 'player_arrow', shotgun: 'player_shotgun', future: 'player_future' }
-        const variant = this.activeWeapon && map[this.activeWeapon]
+        const variant = this.activeWeapon && weaponMap[this.activeWeapon]
         if (variant && this.scene.textures.exists(variant)) key = variant
       }
     } else {
-      const map = { sword: 'player_sword', arrow: 'player_arrow', shotgun: 'player_shotgun', future: 'player_future' }
-      const variant = this.activeWeapon && map[this.activeWeapon]
+      const variant = this.activeWeapon && weaponMap[this.activeWeapon]
       if (variant && this.scene.textures.exists(variant)) key = variant
     }
     if (this.texture.key !== key) this.setTexture(key)
@@ -241,7 +245,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (this._footstepSound?.isPlaying) this._footstepSound.stop()
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.shootKey) && time > this.lastShot + this.shootCooldown) {
+    const cd = (this.activeWeapon && WEAPON_STATS[this.activeWeapon]?.cooldown) || this.shootCooldown
+    const shootFired = this.activeWeapon === 'ametralladora'
+      ? this.shootKey.isDown
+      : Phaser.Input.Keyboard.JustDown(this.shootKey)
+    if (shootFired && time > this.lastShot + cd) {
       if (this.activeWeapon === 'sword') {
         this._swordAttack()
         this.lastShot = time
@@ -357,10 +365,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (!b) return
     b.setDepth(9)
     b.setVelocity(vx, vy)
-    b.lifespan = 1500
     b.damage = stats.dmg * this.damageMultiplier
     if (stats.tint) b.setTint(stats.tint)
-    if (this.activeWeapon === 'shotgun') b.setScale(1.6)
+    if (this.activeWeapon === 'shotgun')       { b.setScale(1.6); b.lifespan = 1500 }
+    else if (this.activeWeapon === 'lanzallamas') { b.setScale(3.0); b.lifespan = 380 }
+    else b.lifespan = 1500
 
     const _weaponSounds = { arrow: 'sonidos_arma_flecha', shotgun: 'sonidos_arma_escopeta', future: 'sonidos_arma_futuro' }
     const _sndKey = _weaponSounds[this.activeWeapon]

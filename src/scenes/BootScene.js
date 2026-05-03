@@ -5,7 +5,7 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     const base = import.meta.env.BASE_URL
-    this.load.image('player', `${base}personaje_principal.png`)
+    this.load.image('player', `${base}personaje_principal.png?t=${Date.now()}`)
     this.load.image('hedge_sheet', `${base}hedge_tiles.png`)
     this.load.image('monster_raw',   `${base}monster.png`)
     this.load.image('serpiente_raw', `${base}serpiente.png`)
@@ -23,20 +23,47 @@ export class BootScene extends Phaser.Scene {
     this.load.image('pickup_shotgun_raw', `${base}escopeta.png`)
     this.load.image('pickup_future_raw',  `${base}arma_futuro.png`)
 
-    // Player sprites per weapon
-    this.load.image('player_sword_raw',    `${base}personaje_principal_espada.png`)
-    this.load.image('player_arrow_raw',    `${base}personaje_principal_flecha.png`)
-    this.load.image('player_shotgun_raw',  `${base}personaje_principal_escopeta.png`)
-    this.load.image('player_future_raw',   `${base}personaje_principal_armafuturo.png`)
+    // Player sprites per weapon (cache-bust so updated files always load)
+    const _tsp = Date.now()
+    this.load.image('player_sword_raw',    `${base}personaje_principal_espada.png?t=${_tsp}`)
+    this.load.image('player_arrow_raw',    `${base}personaje_principal_flecha.png?t=${_tsp}`)
+    this.load.image('player_shotgun_raw',  `${base}personaje_principal_escopeta.png?t=${_tsp}`)
+    this.load.image('player_future_raw',   `${base}personaje_principal_armafuturo.png?t=${_tsp}`)
 
     this.load.image('robot_raw', `${base}robot.png`)
+
+    // Nivel 2 tiles (cache-bust so updated images always load)
+    const _tst = Date.now()
+    this.load.image('metalic_floor_raw',   `${base}Nivel_2/metalic_floor.png?t=${_tst}`)
+    this.load.image('metalic_tile_raw',    `${base}Nivel_2/metalic_tile.png?t=${_tst}`)
+    this.load.image('metalic_tile_2_raw',  `${base}Nivel_2/metalic_tile_2.png?t=${_tst}`)
+
+    // Nivel 2 robots
+    this.load.image('robot_t700_raw',     `${base}Nivel_2/robot.png`)
+    this.load.image('robot_calavera_raw', `${base}Nivel_2/robot_calavera.png`)
+    this.load.image('robot_nave_raw',     `${base}Nivel_2/robot_nave.png`)
+
+    // Nivel 2 armas pickup (nuevos diseños)
+    this.load.image('pickup_sword_l2_raw',         `${base}Nivel_2/espada.png`)
+    this.load.image('pickup_arrow_l2_raw',         `${base}Nivel_2/flechas.png`)
+    this.load.image('pickup_shotgun_l2_raw',       `${base}Nivel_2/escopeta.png`)
+    this.load.image('pickup_future_l2_raw',        `${base}Nivel_2/arma_futuro.png`)
+    this.load.image('pickup_ametralladora_raw',    `${base}Nivel_2/ametralladora.png`)
+    this.load.image('pickup_lanzallamas_raw',      `${base}Nivel_2/lanzallamas.png`)
+
+    // Nivel 2 personaje con ametralladora
+    this.load.image('player_ametralladora_raw',        `${base}Nivel_2/personaje_principal_ametralladora.png`)
+    this.load.image('player_silver_ametralladora_raw', `${base}Nivel_2/personaje_principal_armadura_plateada_ametralladora.png`)
+    this.load.image('player_gold_ametralladora_raw',   `${base}Nivel_2/personaje_principal_armadura_dorada_ametralladora.png`)
+    this.load.image('player_future_ametralladora_raw', `${base}Nivel_2/personaje_principal_armadura_futuro_ametralladora.png`)
 
     // Armor pickup boxes
     this.load.image('armor_silver_raw', `${base}caja_plateada.png`)
     this.load.image('armor_gold_raw',   `${base}caja_oro.png`)
     this.load.image('armor_future_raw', `${base}caja_futuro.png`)
 
-    // Armor player sprites: 3 armors × 5 weapon states = 15 images
+    // Armor player sprites: 3 armors × weapon states
+    const _ts = Date.now()
     const _armorDefs = [
       { id: 'silver', es: 'plateada' },
       { id: 'gold',   es: 'dorada'   },
@@ -49,15 +76,20 @@ export class BootScene extends Phaser.Scene {
       { id: 'future',  es: 'arma_futuro' },
     ]
     for (const a of _armorDefs) {
-      // No-weapon variant: file has no weapon suffix
-      this.load.image(`player_${a.id}_none_raw`, `${base}personaje_principal_armadura_${a.es}.png`)
+      this.load.image(`player_${a.id}_none_raw`, `${base}personaje_principal_armadura_${a.es}.png?t=${_ts}`)
       for (const w of _armorWeaponDefs) {
         this.load.image(
           `player_${a.id}_${w.id}_raw`,
-          `${base}personaje_principal_armadura_${a.es}_${w.es}.png`
+          `${base}personaje_principal_armadura_${a.es}_${w.es}.png?t=${_ts}`
         )
       }
     }
+
+    // Nivel 2: lanzallamas por armadura (fondo negro, en Nivel_2/)
+    this.load.image('player_lanzallamas_raw',        `${base}Nivel_2/personaje_principal_lanzallamas.png?t=${_ts}`)
+    this.load.image('player_silver_lanzallamas_raw', `${base}Nivel_2/personaje_principal_armadura_plateada_lanzallamas.png?t=${_ts}`)
+    this.load.image('player_gold_lanzallamas_raw',   `${base}Nivel_2/personaje_principal_armadura_dorada_lanzallamas.png?t=${_ts}`)
+    this.load.image('player_future_lanzallamas_raw', `${base}Nivel_2/personaje_principal_armadura_futuro_lanzallamas.png?t=${_ts}`)
 
     this.load.audio('musica_nivel_1',          `${base}musica_nivel_1.mp3`)
     this.load.audio('musica_menu',             `${base}musica_menu.mp3`)
@@ -119,18 +151,55 @@ export class BootScene extends Phaser.Scene {
       // Floor tile: replace procedural floor textures if image loaded
       if (loaded.has('floor_tile_raw')) this._makeFloorTilesFromImage('floor_tile_raw')
 
-      // Override procedural weapon pickup textures with real images if available
-      const pickupPairs = [
+      // Nivel 2 tiles
+      if (loaded.has('metalic_floor_raw'))  this._makeMetalFloorTiles('metalic_floor_raw')
+      if (loaded.has('metalic_tile_raw'))   this._makeMetalWallTile('metalic_tile_raw',   'wall_l2')
+      if (loaded.has('metalic_tile_2_raw')) this._makeMetalWallTile('metalic_tile_2_raw', 'wall_l2_2')
+
+      // Nivel 2 robots (strip white background)
+      if (loaded.has('robot_t700_raw'))     this._stripWhiteBackgroundAs('robot_t700_raw',     'robot_t700')
+      if (loaded.has('robot_calavera_raw')) this._stripWhiteBackgroundAs('robot_calavera_raw', 'robot_calavera')
+      if (loaded.has('robot_nave_raw'))     this._stripWhiteBackgroundAs('robot_nave_raw',     'robot_nave')
+
+      // Weapon pickup sprites — root folder (white bg)
+      const pickupPairsWhite = [
         ['pickup_sword_raw',   'sword'],
         ['pickup_arrow_raw',   'arrow'],
         ['pickup_shotgun_raw', 'shotgun'],
         ['pickup_future_raw',  'future_weapon'],
       ]
-      for (const [src, dest] of pickupPairs) {
+      for (const [src, dest] of pickupPairsWhite) {
         if (loaded.has(src)) this._stripWhiteBackgroundAs(src, dest)
       }
+      // Nivel_2 versions override the above with updated designs (black bg)
+      const pickupPairsBlack = [
+        ['pickup_sword_l2_raw',       'sword'],
+        ['pickup_arrow_l2_raw',       'arrow'],
+        ['pickup_shotgun_l2_raw',     'shotgun'],
+        ['pickup_future_l2_raw',      'future_weapon'],
+        ['pickup_ametralladora_raw',  'ametralladora'],
+        ['pickup_lanzallamas_raw',    'lanzallamas'],
+      ]
+      for (const [src, dest] of pickupPairsBlack) {
+        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 25)
+      }
 
-      // Register player weapon sprites
+      // Nivel 2 personaje con ametralladora y lanzallamas (fondo negro)
+      const nivel2Sprites = [
+        ['player_ametralladora_raw',        'player_ametralladora'],
+        ['player_silver_ametralladora_raw', 'player_silver_ametralladora'],
+        ['player_gold_ametralladora_raw',   'player_gold_ametralladora'],
+        ['player_future_ametralladora_raw', 'player_future_ametralladora'],
+        ['player_lanzallamas_raw',          'player_lanzallamas'],
+        ['player_silver_lanzallamas_raw',   'player_silver_lanzallamas'],
+        ['player_gold_lanzallamas_raw',     'player_gold_lanzallamas'],
+        ['player_future_lanzallamas_raw',   'player_future_lanzallamas'],
+      ]
+      for (const [src, dest] of nivel2Sprites) {
+        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 8)
+      }
+
+      // Register player weapon sprites (black background — use flood fill)
       const playerPairs = [
         ['player_sword_raw',   'player_sword'],
         ['player_arrow_raw',   'player_arrow'],
@@ -138,7 +207,7 @@ export class BootScene extends Phaser.Scene {
         ['player_future_raw',  'player_future'],
       ]
       for (const [src, dest] of playerPairs) {
-        if (loaded.has(src)) this._stripWhiteBackgroundAs(src, dest)
+        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 8)
       }
 
       // Armor box pickups
@@ -162,7 +231,7 @@ export class BootScene extends Phaser.Scene {
         for (const w of weaponDefs) {
           const rawKey  = `player_${a.id}_${w.id}_raw`
           const destKey = `player_${a.id}_${w.id}`
-          if (loaded.has(rawKey)) this._stripWhiteBackgroundAs(rawKey, destKey)
+          if (loaded.has(rawKey)) this._stripBlackBackgroundFloodFill(rawKey, destKey, 8)
         }
       }
 
@@ -969,5 +1038,45 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(26, 28, 3, 1); g.fillRect(27, 27, 1, 3)
     g.generateTexture('weapon_tile', 32, 32)
     g.destroy()
+  }
+
+  // ─── NIVEL 2: piso metálico (diamond plate) — imagen a resolución nativa ──
+  _makeMetalFloorTiles(rawKey) {
+    const src = this.textures.get(rawKey).getSourceImage()
+    const sw = src.width, sh = src.height
+    // Four crops from different quadrants for visual variety
+    const cw = Math.floor(sw * 0.6), ch = Math.floor(sh * 0.6)
+    const crops = [
+      [0,       0      ],
+      [sw - cw, 0      ],
+      [0,       sh - ch],
+      [sw - cw, sh - ch],
+    ]
+    const floorKeys = ['floor_l2', 'floor_l2b', 'floor_l2c', 'floor_l2d']
+
+    floorKeys.forEach((key, i) => {
+      const [sx, sy] = crops[i]
+      const canvas = document.createElement('canvas')
+      canvas.width = cw; canvas.height = ch
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(src, sx, sy, cw, ch, 0, 0, cw, ch)
+      if (this.textures.exists(key)) this.textures.remove(key)
+      this.textures.addCanvas(key, canvas)
+    })
+    this.textures.remove(rawKey)
+  }
+
+  // ─── NIVEL 2: muro metálico sci-fi — imagen a su resolución nativa ────────
+  _makeMetalWallTile(rawKey, destKey) {
+    const src = this.textures.get(rawKey).getSourceImage()
+    // Keep the texture at native resolution; GameScene uses setDisplaySize to fit TILE×TILE.
+    // Phaser's bilinear filter (pixelArt disabled) handles the smooth downscale on GPU.
+    const canvas = document.createElement('canvas')
+    canvas.width = src.width; canvas.height = src.height
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(src, 0, 0)
+    if (this.textures.exists(destKey)) this.textures.remove(destKey)
+    this.textures.addCanvas(destKey, canvas)
+    this.textures.remove(rawKey)
   }
 }
