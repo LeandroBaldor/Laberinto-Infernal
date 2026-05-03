@@ -3,6 +3,7 @@ export class MenuScene extends Phaser.Scene {
   constructor() {
     super({ key: 'MenuScene' })
     this.state = 'main' // 'main' | 'levels' | 'levelDetail'
+    this._selectedLevel = 1
   }
 
   create() {
@@ -124,7 +125,7 @@ export class MenuScene extends Phaser.Scene {
       repeat: -1,
     })
 
-    // ── LEVEL SELECT STATE ──────────────────────────────────
+    // ── LEVEL SELECT STATE (dropdown) ──────────────────────
     this.levelGroup = this.add.group()
 
     const cx = width / 2
@@ -134,53 +135,119 @@ export class MenuScene extends Phaser.Scene {
       fontSize: '20px', fontFamily: font, color: '#ffffff', resolution: dpr,
     }).setOrigin(0.5)
 
-    // Caja principal
-    const boxH = 72
-    const levelBox = this.add.graphics()
-    levelBox.lineStyle(2, 0x00ff88, 0.8)
-    levelBox.strokeRoundedRect(cx - 240, by + 20, 480, boxH, 10)
-    levelBox.fillStyle(0x00ff88, 0.06)
-    levelBox.fillRoundedRect(cx - 240, by + 20, 480, boxH, 10)
+    const ddW = 320, ddH = 52, ddY = by + 22
+    const ddX0 = cx - ddW / 2
 
-    // Nombre del nivel
-    const chapterTitle = this.add.text(cx, by + 56, 'Nivel 1: Amenaza Radioactiva', {
-      fontSize: '18px', fontFamily: font, fontStyle: 'bold',
-      color: '#00ff88',
-      shadow: { offsetX: 0, offsetY: 0, color: '#00ff88', blur: 8, fill: true },
-      resolution: dpr,
+    const levelOpts = [
+      { level: 1, label: 'NIVEL 1', sub: 'Amenaza Radioactiva'          },
+      { level: 2, label: 'NIVEL 2', sub: 'La Rebelión de las Máquinas'  },
+    ]
+
+    this._ddOpen = false
+
+    // ── Caja colapsada (siempre visible en levelGroup) ──
+    const ddSelBox   = this.add.graphics()
+    const ddSelLabel = this.add.text(cx - 10, ddY + 16, 'NIVEL 1', {
+      fontSize: '13px', fontFamily: font, color: '#00aa66', resolution: dpr,
+    }).setOrigin(0.5)
+    const ddSelSub   = this.add.text(cx - 10, ddY + 35, 'Amenaza Radioactiva', {
+      fontSize: '14px', fontFamily: font, fontStyle: 'bold', color: '#00ff88', resolution: dpr,
+    }).setOrigin(0.5)
+    const ddArrow    = this.add.text(cx + ddW / 2 - 18, ddY + ddH / 2, '▼', {
+      fontSize: '14px', fontFamily: font, color: '#00ff88', resolution: dpr,
     }).setOrigin(0.5)
 
-    // Zona clickeable sobre la caja del nivel
-    const onLevelClick = () => {
-      this._btnSound?.play()
-      this.state = 'levelDetail'
-      this.setGroupVisible(this.levelGroup, false)
-      this.setGroupVisible(this.levelDetailGroup, true)
+    const redrawSel = (open) => {
+      ddSelBox.clear()
+      ddSelBox.lineStyle(2, 0x00ff88, open ? 1 : 0.75)
+      const r = open ? { tl: 8, tr: 8, bl: 0, br: 0 } : 8
+      ddSelBox.strokeRoundedRect(ddX0, ddY, ddW, ddH, r)
+      ddSelBox.fillStyle(0x00ff88, open ? 0.15 : 0.08)
+      ddSelBox.fillRoundedRect(ddX0, ddY, ddW, ddH, r)
+      ddArrow.setText(open ? '▲' : '▼')
     }
+    redrawSel(false)
 
-    const levelHitbox = this.add.zone(cx, by + 56, 480, boxH)
-      .setInteractive({ useHandCursor: true })
-    levelHitbox.on('pointerdown', onLevelClick)
+    // ── Lista desplegable ──
+    this._ddListGroup = this.add.group()
+    const itemH = 50
+    const listH = levelOpts.length * itemH
 
-    chapterTitle.setInteractive({ useHandCursor: true })
-    chapterTitle.on('pointerdown', onLevelClick)
+    const listBg = this.add.graphics()
+    listBg.lineStyle(2, 0x00ff88, 0.75)
+    listBg.strokeRoundedRect(ddX0, ddY + ddH, ddW, listH, { tl: 0, tr: 0, bl: 8, br: 8 })
+    listBg.fillStyle(0x080d10, 0.96)
+    listBg.fillRoundedRect(ddX0, ddY + ddH, ddW, listH, { tl: 0, tr: 0, bl: 8, br: 8 })
+    this._ddListGroup.add(listBg)
 
-    const levelHint = this.add.text(cx, by + 118, 'ESC para volver', {
+    levelOpts.forEach((opt, i) => {
+      const iy   = ddY + ddH + i * itemH
+      const itemBg = this.add.graphics()
+
+      const draw = (hover) => {
+        itemBg.clear()
+        if (hover) { itemBg.fillStyle(0x00ff88, 0.14); itemBg.fillRect(ddX0 + 2, iy, ddW - 4, itemH) }
+        if (i > 0) { itemBg.lineStyle(1, 0x224433, 0.6); itemBg.lineBetween(ddX0 + 8, iy, ddX0 + ddW - 8, iy) }
+      }
+      draw(false)
+
+      const labT = this.add.text(cx, iy + 13, opt.label, {
+        fontSize: '13px', fontFamily: font, color: '#00aa66', resolution: dpr,
+      }).setOrigin(0.5)
+      const subT = this.add.text(cx, iy + 32, opt.sub, {
+        fontSize: '13px', fontFamily: font, fontStyle: 'bold', color: '#00ff88', resolution: dpr,
+      }).setOrigin(0.5)
+
+      const hit = this.add.zone(cx, iy + itemH / 2, ddW, itemH).setInteractive({ useHandCursor: true })
+      hit.on('pointerover', () => draw(true))
+      hit.on('pointerout',  () => draw(false))
+      hit.on('pointerdown', () => {
+        this._btnSound?.play()
+        this._selectedLevel = opt.level
+        // actualizar caja colapsada
+        ddSelLabel.setText(opt.label)
+        ddSelSub.setText(opt.sub)
+        // cerrar dropdown y arrancar juego
+        this._ddOpen = false
+        redrawSel(false)
+        this.setGroupVisible(this._ddListGroup, false)
+        this.startGame()
+      })
+
+      this._ddListGroup.add(itemBg)
+      this._ddListGroup.add(labT)
+      this._ddListGroup.add(subT)
+      this._ddListGroup.add(hit)
+    })
+
+    this._ddListGroup.getChildren().forEach(o => o.setVisible(false))
+
+    // ── Toggle al hacer click en la caja ──
+    const selHit = this.add.zone(cx, ddY + ddH / 2, ddW, ddH).setInteractive({ useHandCursor: true })
+    selHit.on('pointerdown', () => {
+      this._ddOpen = !this._ddOpen
+      redrawSel(this._ddOpen)
+      this.setGroupVisible(this._ddListGroup, this._ddOpen)
+      if (this._ddOpen) this._ddListGroup.getChildren().forEach(o => this.children.bringToTop(o))
+    })
+
+    const levelHint = this.add.text(cx, ddY + ddH + 20, 'ESC para volver', {
       fontSize: '13px', fontFamily: font, color: '#556666', resolution: dpr,
     }).setOrigin(0.5)
 
     this.levelGroup.add(levelHeader)
-    this.levelGroup.add(levelBox)
-    this.levelGroup.add(chapterTitle)
-    this.levelGroup.add(levelHitbox)
+    this.levelGroup.add(ddSelBox)
+    this.levelGroup.add(ddSelLabel)
+    this.levelGroup.add(ddSelSub)
+    this.levelGroup.add(ddArrow)
+    this.levelGroup.add(selHit)
     this.levelGroup.add(levelHint)
 
     this.setGroupVisible(this.levelGroup, false)
 
-    // ── LEVEL DETAIL STATE ─────────────────────────────────
+    // ── LEVEL DETAIL STATE (shared panel, content driven by _selectedLevel) ──
     this.levelDetailGroup = this.add.group()
 
-    // Fondo completo que cubre el menú principal
     const detailBg = this.add.graphics()
     detailBg.fillGradientStyle(0x0a0a0f, 0x0a0a0f, 0x0d0d1a, 0x0d0d1a, 1)
     detailBg.fillRect(0, 0, width, height)
@@ -194,87 +261,90 @@ export class MenuScene extends Phaser.Scene {
     }
     this.levelDetailGroup.add(detailBg)
 
-    // Título del capítulo
-    this.levelDetailGroup.add(
-      this.add.text(cx, height * 0.13, 'Capítulo 1: Amenaza Radioactiva', {
-        fontSize: '22px', fontFamily: font, fontStyle: 'bold',
-        color: '#00ff88',
-        shadow: { offsetX: 0, offsetY: 0, color: '#00ff88', blur: 10, fill: true },
-        resolution: dpr,
-      }).setOrigin(0.5)
-    )
-
-    const dsep1 = this.add.graphics()
-    dsep1.lineStyle(1, 0x335544, 0.8)
-    dsep1.lineBetween(cx - 280, height * 0.19, cx + 280, height * 0.19)
-    this.levelDetailGroup.add(dsep1)
-
-    const detailMonsters = [
-      { key: 'monster',   name: 'Mutantes',       vida: 25,  dano: 2.5, cantidad: 50 },
-      { key: 'serpiente', name: 'Mega Serpientes', vida: 50,  dano: 5,   cantidad: 25 },
-      { key: 'arania',    name: 'Arañas Kaiju',    vida: 100, dano: 10,  cantidad: 5  },
+    const levelDefs = [
+      {
+        title: 'Capítulo 1: Amenaza Radioactiva',
+        color: '#00ff88', shadowColor: '#00ff88', sepColor: 0x335544,
+        nameColor: '#00cc88',
+        monsters: [
+          { key: 'monster',   name: 'Mutantes',         vida: 25,  dano: 2.5, cantidad: 50 },
+          { key: 'serpiente', name: 'Mega Serpientes',   vida: 50,  dano: 5,   cantidad: 25 },
+          { key: 'arania',    name: 'Arañas Kaiju',      vida: 100, dano: 10,  cantidad: 5  },
+        ],
+        playable: true,
+      },
+      {
+        title: 'Capítulo 2: La Rebelión de las Máquinas',
+        color: '#ff6644', shadowColor: '#ff4422', sepColor: 0x554433,
+        nameColor: '#cc8866',
+        monsters: [
+          { key: 'robot_asesino', name: 'Robot T-800',  vida: 25,  dano: 5,  cantidad: 50 },
+          { key: 'kill_machine',  name: 'Kill Machine', vida: 50,  dano: 10, cantidad: 25, spriteScale: 1.6 },
+          { key: 'exterminador',  name: 'Exterminador', vida: 300, dano: 10, cantidad: 5  },
+        ],
+        playable: false,
+      },
     ]
 
-    // Columnas de monstruos
-    const cols = [cx - 200, cx, cx + 200]
+    const dcols = [cx - 200, cx, cx + 200]
 
-    // Iconos: escala proporcional con bounding box 160×120
-    detailMonsters.forEach(({ key }, i) => {
-      const img = this.add.image(cols[i], height * 0.35, key).setAlpha(0.95)
-      const scale = Math.min(240 / img.width, 180 / img.height)
-      img.setScale(scale)
+    const chapterTitleObj = this.add.text(cx, height * 0.13, '', {
+      fontSize: '20px', fontFamily: font, fontStyle: 'bold',
+      color: '#00ff88',
+      shadow: { offsetX: 0, offsetY: 0, color: '#00ff88', blur: 10, fill: true },
+      resolution: dpr,
+    }).setOrigin(0.5)
+    this.levelDetailGroup.add(chapterTitleObj)
+
+    const dsep1 = this.add.graphics()
+    this.levelDetailGroup.add(dsep1)
+
+    const monsterImgs = dcols.map(x => {
+      const img = this.add.image(x, height * 0.35, 'monster').setAlpha(0.95)
       this.levelDetailGroup.add(img)
+      return img
     })
-
-    // Nombres
-    detailMonsters.forEach(({ name }, i) => {
-      this.levelDetailGroup.add(
-        this.add.text(cols[i], height * 0.50, name, {
-          fontSize: '16px', fontFamily: font, fontStyle: 'bold',
-          color: '#00cc88', resolution: dpr,
-        }).setOrigin(0.5)
-      )
+    const monsterNames = dcols.map(x => {
+      const t = this.add.text(x, height * 0.50, '', {
+        fontSize: '16px', fontFamily: font, fontStyle: 'bold',
+        color: '#00cc88', resolution: dpr,
+      }).setOrigin(0.5)
+      this.levelDetailGroup.add(t)
+      return t
     })
 
     const dsep2 = this.add.graphics()
-    dsep2.lineStyle(1, 0x335544, 0.8)
-    dsep2.lineBetween(cx - 280, height * 0.56, cx + 280, height * 0.56)
     this.levelDetailGroup.add(dsep2)
 
-    // Filas de stats — etiqueta alineada a la derecha antes de la primera columna
     const statRows = [
       { label: 'Puntos de vida',      statKey: 'vida'     },
       { label: 'Puntos de daño',      statKey: 'dano'     },
       { label: 'Cantidad en el mapa', statKey: 'cantidad' },
     ]
-    const statYs = [height * 0.64, height * 0.71, height * 0.78]
+    const statYs = [height * 0.62, height * 0.69, height * 0.76]
 
-    statRows.forEach(({ label, statKey }, ri) => {
-      const y = statYs[ri]
-
-      // Etiqueta right-aligned antes de la primera columna de valores
-      this.levelDetailGroup.add(
-        this.add.text(cx - 220, y, label + ':', {
-          fontSize: '16px', fontFamily: font, color: '#88aaaa', resolution: dpr,
-        }).setOrigin(1, 0.5)
-      )
-
-      detailMonsters.forEach((m, i) => {
-        this.levelDetailGroup.add(
-          this.add.text(cols[i], y, String(m[statKey]), {
-            fontSize: '18px', fontFamily: font, fontStyle: 'bold',
-            color: '#ffffff', resolution: dpr,
-          }).setOrigin(0.5)
-        )
-      })
+    statRows.forEach(({ label }, ri) => {
+      const t = this.add.text(cx - 220, statYs[ri], label + ':', {
+        fontSize: '15px', fontFamily: font, color: '#88aaaa', resolution: dpr,
+      }).setOrigin(1, 0.5)
+      this.levelDetailGroup.add(t)
     })
 
+    const statValues = statRows.map((_, ri) =>
+      dcols.map(x => {
+        const t = this.add.text(x, statYs[ri], '', {
+          fontSize: '17px', fontFamily: font, fontStyle: 'bold',
+          color: '#ffffff', resolution: dpr,
+        }).setOrigin(0.5)
+        this.levelDetailGroup.add(t)
+        return t
+      })
+    )
+
     const dsep3 = this.add.graphics()
-    dsep3.lineStyle(1, 0x335544, 0.8)
-    dsep3.lineBetween(cx - 280, height * 0.84, cx + 280, height * 0.84)
     this.levelDetailGroup.add(dsep3)
 
-    const detailPlay = this.add.text(cx, height * 0.91, '▶   JUGAR', {
+    const detailPlay = this.add.text(cx, height * 0.89, '▶   JUGAR', {
       fontSize: '26px', fontFamily: font, fontStyle: 'bold',
       color: '#00ff88',
       shadow: { offsetX: 0, offsetY: 0, color: '#00ff88', blur: 10, fill: true },
@@ -283,9 +353,54 @@ export class MenuScene extends Phaser.Scene {
     detailPlay.on('pointerdown', () => { this._btnSound?.play(); this.startGame() })
     this.levelDetailGroup.add(detailPlay)
 
-    this.tweens.add({
-      targets: detailPlay, alpha: 0.4, duration: 600, yoyo: true, repeat: -1,
-    })
+    const detailLocked = this.add.text(cx, height * 0.89, '🔒  Completá el Nivel 1 para jugar este capítulo', {
+      fontSize: '14px', fontFamily: font, color: '#556677', resolution: dpr,
+    }).setOrigin(0.5)
+    this.levelDetailGroup.add(detailLocked)
+
+    this.tweens.add({ targets: detailPlay, alpha: 0.4, duration: 600, yoyo: true, repeat: -1 })
+
+    const detailBack = this.add.text(cx, height * 0.95, 'ESC para volver', {
+      fontSize: '13px', fontFamily: font, color: '#445555', resolution: dpr,
+    }).setOrigin(0.5)
+    this.levelDetailGroup.add(detailBack)
+
+    // Refreshes detail panel based on _selectedLevel
+    this._refreshDetailPanel = () => {
+      const def = levelDefs[this._selectedLevel - 1]
+
+      chapterTitleObj.setText(def.title)
+      chapterTitleObj.setStyle({ color: def.color, fontSize: '20px', fontFamily: font, fontStyle: 'bold' })
+      chapterTitleObj.setShadow(0, 0, def.shadowColor, 10, true)
+
+      dsep1.clear()
+      dsep1.lineStyle(1, def.sepColor, 0.8)
+      dsep1.lineBetween(cx - 280, height * 0.19, cx + 280, height * 0.19)
+
+      def.monsters.forEach(({ key, name, spriteScale }, i) => {
+        const texKey = this.textures.exists(key) ? key : 'monster'
+        monsterImgs[i].setTexture(texKey)
+        const extra = spriteScale ?? 1.0
+        const base = Math.min(240 / monsterImgs[i].width, 180 / monsterImgs[i].height)
+        monsterImgs[i].setScale(base * extra).setAlpha(0.95)
+        monsterNames[i].setText(name).setStyle({ color: def.nameColor })
+      })
+
+      dsep2.clear()
+      dsep2.lineStyle(1, def.sepColor, 0.8)
+      dsep2.lineBetween(cx - 280, height * 0.56, cx + 280, height * 0.56)
+
+      statRows.forEach(({ statKey }, ri) => {
+        def.monsters.forEach((m, i) => statValues[ri][i].setText(String(m[statKey])))
+      })
+
+      dsep3.clear()
+      dsep3.lineStyle(1, def.sepColor, 0.8)
+      dsep3.lineBetween(cx - 280, height * 0.82, cx + 280, height * 0.82)
+
+      detailPlay.setVisible(def.playable)
+      detailLocked.setVisible(!def.playable)
+    }
 
     this.setGroupVisible(this.levelDetailGroup, false)
 
@@ -321,23 +436,22 @@ export class MenuScene extends Phaser.Scene {
       this.setGroupVisible(this.mainGroup, false)
       this.setGroupVisible(this.levelGroup, true)
     } else if (this.state === 'levels') {
-      this.state = 'levelDetail'
-      this.setGroupVisible(this.levelGroup, false)
-      this.setGroupVisible(this.levelDetailGroup, true)
-    } else if (this.state === 'levelDetail') {
-      this.startGame()
+      // Enter confirma la selección actual y arranca
+      if (!this._ddOpen) this.startGame()
     }
   }
 
   handleEsc() {
-    if (this.state === 'levelDetail') {
-      this.state = 'levels'
-      this.setGroupVisible(this.levelDetailGroup, false)
-      this.setGroupVisible(this.levelGroup, true)
-    } else if (this.state === 'levels') {
-      this.state = 'main'
-      this.setGroupVisible(this.levelGroup, false)
-      this.setGroupVisible(this.mainGroup, true)
+    if (this.state === 'levels') {
+      if (this._ddOpen) {
+        // Cierra el dropdown sin volver atrás
+        this._ddOpen = false
+        this.setGroupVisible(this._ddListGroup, false)
+      } else {
+        this.state = 'main'
+        this.setGroupVisible(this.levelGroup, false)
+        this.setGroupVisible(this.mainGroup, true)
+      }
     }
   }
 
@@ -345,7 +459,7 @@ export class MenuScene extends Phaser.Scene {
     this.input.keyboard.removeAllListeners()
     this.cameras.main.fadeOut(400, 0, 0, 0)
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.start('GameScene', { level: 1 })
+      this.scene.start('GameScene', { level: this._selectedLevel })
     })
   }
 }
