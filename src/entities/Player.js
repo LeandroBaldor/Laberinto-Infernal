@@ -5,8 +5,8 @@ export const WEAPON_STATS = {
   arrow:         { label: 'FLECHAS',        dmg: 2.5, ranged: true,  ammoPerPickup: 8,  speed: 400, tint: null,     cooldown: 400 },
   shotgun:       { label: 'ESCOPETA',       dmg: 10,  ranged: true,  ammoPerPickup: 5,  speed: 350, tint: 0xff6600, cooldown: 500 },
   future:        { label: 'ARG.FUTURO',     dmg: 15,  ranged: true,  ammoPerPickup: 4,  speed: 620, tint: 0x00ddff, cooldown: 350 },
-  ametralladora: { label: 'AMETRALLADORA',  dmg: 8,   ranged: true,  ammoPerPickup: 30, speed: 500, tint: 0xffcc00, cooldown: 150 },
-  lanzallamas:   { label: 'LANZALLAMAS',    dmg: 22,  ranged: true,  ammoPerPickup: 12, speed: 220, tint: 0xff4400, cooldown: 280 },
+  ametralladora: { label: 'AMETRALLADORA',  dmg: 25,  ranged: true,  ammoPerPickup: 30, speed: 500, tint: 0xffcc00, cooldown: 150 },
+  lanzallamas:   { label: 'LANZALLAMAS',    dmg: 40,  ranged: true,  ammoPerPickup: 10, speed: 220, tint: 0xff4400, cooldown: 2000 },
 }
 
 export const ARMOR_STATS = {
@@ -66,6 +66,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this._nextMoveTime   = Infinity
     this._heldDc = 0
     this._heldDr = 0
+
+    this._lanzallamasFiring = false
+    this._lanzallamasFiringTimer = null
   }
 
   // ── compat getters so GameScene / UIScene still work ──────────────────────
@@ -136,9 +139,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   _updateSprite() {
+    const lanzaKey = this._lanzallamasFiring && this.scene.textures.exists('player_lanzallamas_disparo')
+      ? 'player_lanzallamas_disparo'
+      : 'player_lanzallamas'
     const weaponMap = {
       sword: 'player_sword', arrow: 'player_arrow', shotgun: 'player_shotgun',
-      future: 'player_future', ametralladora: 'player_ametralladora', lanzallamas: 'player_lanzallamas',
+      future: 'player_future', ametralladora: 'player_ametralladora', lanzallamas: lanzaKey,
     }
     let key = 'player'
     if (this.armorType) {
@@ -368,7 +374,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     b.damage = stats.dmg * this.damageMultiplier
     if (stats.tint) b.setTint(stats.tint)
     if (this.activeWeapon === 'shotgun')       { b.setScale(1.6); b.lifespan = 1500 }
-    else if (this.activeWeapon === 'lanzallamas') { b.setScale(3.0); b.lifespan = 380 }
+    else if (this.activeWeapon === 'lanzallamas') {
+      b.setScale(3.0); b.lifespan = 380
+      this._lanzallamasFiring = true
+      this._updateSprite()
+      if (this._lanzallamasFiringTimer) this._lanzallamasFiringTimer.remove()
+      this._lanzallamasFiringTimer = this.scene.time.delayedCall(2000, () => {
+        this._lanzallamasFiring = false
+        this._lanzallamasFiringTimer = null
+        this._updateSprite()
+      })
+    }
     else b.lifespan = 1500
 
     const _weaponSounds = { arrow: 'sonidos_arma_flecha', shotgun: 'sonidos_arma_escopeta', future: 'sonidos_arma_futuro' }

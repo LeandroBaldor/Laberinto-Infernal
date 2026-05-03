@@ -49,7 +49,8 @@ export class BootScene extends Phaser.Scene {
     this.load.image('pickup_shotgun_l2_raw',       `${base}Nivel_2/escopeta.png`)
     this.load.image('pickup_future_l2_raw',        `${base}Nivel_2/arma_futuro.png`)
     this.load.image('pickup_ametralladora_raw',    `${base}Nivel_2/ametralladora.png`)
-    this.load.image('pickup_lanzallamas_raw',      `${base}Nivel_2/lanzallamas.png`)
+    this.load.image('pickup_lanzallamas_raw',        `${base}Nivel_2/lanzallamas.png`)
+    this.load.image('player_lanzallamas_disparo_raw', `${base}Nivel_2/lanzallamas_disparo.png`)
 
     // Nivel 2 personaje con ametralladora
     this.load.image('player_ametralladora_raw',        `${base}Nivel_2/personaje_principal_ametralladora.png`)
@@ -190,10 +191,11 @@ export class BootScene extends Phaser.Scene {
         ['player_silver_ametralladora_raw', 'player_silver_ametralladora'],
         ['player_gold_ametralladora_raw',   'player_gold_ametralladora'],
         ['player_future_ametralladora_raw', 'player_future_ametralladora'],
-        ['player_lanzallamas_raw',          'player_lanzallamas'],
+        ['player_lanzallamas_raw',            'player_lanzallamas'],
         ['player_silver_lanzallamas_raw',   'player_silver_lanzallamas'],
         ['player_gold_lanzallamas_raw',     'player_gold_lanzallamas'],
         ['player_future_lanzallamas_raw',   'player_future_lanzallamas'],
+        ['player_lanzallamas_disparo_raw',  'player_lanzallamas_disparo'],
       ]
       for (const [src, dest] of nivel2Sprites) {
         if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 8)
