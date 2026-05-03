@@ -5,7 +5,6 @@ import { Mutante } from '../entities/Mutante.js'
 import { Serpiente } from '../entities/Serpiente.js'
 import { Arania } from '../entities/Arania.js'
 import { Robot } from '../entities/Robot.js'
-import { RobotAsesino } from '../entities/RobotAsesino.js'
 import { KillMachine } from '../entities/KillMachine.js'
 import { Exterminador } from '../entities/Exterminador.js'
 
@@ -40,8 +39,11 @@ export class GameScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, worldWidth, worldHeight)
     this.walls = this.physics.add.staticGroup()
 
+    const _hasWall2 = this.textures.exists('wall_l2_2')
     const WALL_KEYS = this.level >= 2
-      ? ['metal_wall', 'metal_wall', 'metal_wall2', 'metal_wall2', 'metal_wall3']
+      ? (_hasWall2
+          ? ['wall_l2', 'wall_l2', 'wall_l2', 'wall_l2', 'wall_l2', 'wall_l2_2']
+          : ['wall_l2'])
       : [
           'wall', 'wall', 'wall',
           'wall2', 'wall2',
@@ -54,7 +56,7 @@ export class GameScene extends Phaser.Scene {
           'wall_bomb',
         ]
     const FLOOR_KEYS = this.level >= 2
-      ? ['metal_floor', 'metal_floor', 'metal_floor2', 'metal_floor3']
+      ? ['floor_l2', 'floor_l2b', 'floor_l2c', 'floor_l2d']
       : ['floor', 'floor', 'floor', 'floor2', 'floor3']
 
     for (let r = 0; r < this.mazeRows; r++) {
@@ -63,11 +65,14 @@ export class GameScene extends Phaser.Scene {
         const y = r * TILE + TILE / 2
         if (this.mazeGrid[r][c] === 1) {
           const wKey = WALL_KEYS[Math.floor(Math.random() * WALL_KEYS.length)]
-          const ws = this.walls.create(x, y, wKey).setDepth(1)
-          if (this.level >= 2) { ws.setDisplaySize(TILE, TILE); ws.refreshBody() }
+          const angle = this.level >= 2 ? [0, 90, 180, 270][Math.floor(Math.random() * 4)] : 0
+          const w = this.walls.create(x, y, wKey).setDepth(1).setAngle(angle)
+          if (this.level >= 2) w.setDisplaySize(TILE, TILE)
         } else {
           const fKey = FLOOR_KEYS[Math.floor(Math.random() * FLOOR_KEYS.length)]
-          this.add.image(x, y, fKey).setDepth(0)
+          const angle = this.level >= 2 ? [0, 90, 180, 270][Math.floor(Math.random() * 4)] : 0
+          const f = this.add.image(x, y, fKey).setDepth(0).setAngle(angle)
+          if (this.level >= 2) f.setDisplaySize(TILE, TILE)
         }
       }
     }
@@ -155,56 +160,46 @@ export class GameScene extends Phaser.Scene {
     }
 
     if (this.level === 1) {
-      // Level 1: mutantes, serpientes, arañas
       this.mutantCount    = 50
       this.serpienteCount = 25
       this.araniaCount    = 5
+      this.t700Count      = 0
+      this.killMachineCount = 0
+      this.exterminadorCount = 0
 
       for (let i = 0; i < this.mutantCount; i++) {
         spawnEnemy(Mutante, (m) => {
-          m.detectionRange = Math.min(8 + this.level * 3, 22)
-          m.stepInterval   = Math.max(300, 550 - this.level * 40) + Math.random() * 100
-          m.attackDamage   = 2.5 + (this.level - 1) * 0.5
+          m.detectionRange = 11
+          m.stepInterval   = 510 + Math.random() * 100
+          m.attackDamage   = 2.5
         })
       }
       for (let i = 0; i < this.serpienteCount; i++) spawnEnemy(Serpiente, null)
       for (let i = 0; i < this.araniaCount; i++) spawnEnemy(Arania, null)
-    } else if (this.level === 2) {
-      // Level 2: robots — reuse same counters for the UI
-      this.mutantCount    = 50  // Robot Asesino
-      this.serpienteCount = 25  // Kill Machine
-      this.araniaCount    = 5   // Exterminador
-
-      for (let i = 0; i < this.mutantCount; i++)    spawnEnemy(RobotAsesino, null)
-      for (let i = 0; i < this.serpienteCount; i++) spawnEnemy(KillMachine, null)
-      for (let i = 0; i < this.araniaCount; i++)    spawnEnemy(Exterminador, null)
     } else {
-      // Level 3+: mix of all
-      this.mutantCount    = 50 + (this.level - 2) * 10
-      this.serpienteCount = 25 + (this.level - 2) * 5
-      this.araniaCount    = 5  + (this.level - 2) * 2
+      this.mutantCount       = 0
+      this.serpienteCount    = 0
+      this.araniaCount       = 0
+      this.t700Count         = 50
+      this.killMachineCount  = 25
+      this.exterminadorCount = 5
 
-      for (let i = 0; i < this.mutantCount; i++) {
-        spawnEnemy(Mutante, (m) => {
-          m.detectionRange = Math.min(8 + this.level * 3, 22)
-          m.stepInterval   = Math.max(300, 550 - this.level * 40) + Math.random() * 100
-          m.attackDamage   = 2.5 + (this.level - 1) * 0.5
-        })
-      }
-      for (let i = 0; i < this.serpienteCount; i++) spawnEnemy(RobotAsesino, null)
-      for (let i = 0; i < this.araniaCount; i++)    spawnEnemy(KillMachine, null)
+      for (let i = 0; i < this.t700Count; i++) spawnEnemy(Robot, null)
+      for (let i = 0; i < this.killMachineCount; i++) spawnEnemy(KillMachine, null)
+      for (let i = 0; i < this.exterminadorCount; i++) spawnEnemy(Exterminador, null)
     }
 
     this.enemyProjectiles = this.physics.add.group()
 
     // ── Weapon pickups ───────────────────────────────────────────────────────
     const weaponDefs = [
-      { groupKey: 'swords',              wType: 'sword',          texKey: 'sword',          count: 150, tint: 0xffdd44 },
-      { groupKey: 'arrowPickups',        wType: 'arrow',          texKey: 'arrow',          count: 150, tint: 0x88ddff },
-      { groupKey: 'shotgunPickups',      wType: 'shotgun',        texKey: 'shotgun',        count: 100, tint: 0xff8833 },
-      { groupKey: 'futurePickups',       wType: 'future',         texKey: 'future_weapon',  count:  50, tint: 0x00ffff },
+      { groupKey: 'swords',        wType: 'sword',   texKey: 'sword',         count: 150, tint: 0xffdd44 },
+      { groupKey: 'arrowPickups',  wType: 'arrow',   texKey: 'arrow',         count: 150, tint: 0x88ddff },
+      { groupKey: 'shotgunPickups',wType: 'shotgun', texKey: 'shotgun',       count: 100, tint: 0xff8833 },
+      { groupKey: 'futurePickups', wType: 'future',  texKey: 'future_weapon', count:  50, tint: 0x00ffff },
       ...(this.level >= 2 ? [
-        { groupKey: 'ametralladaPickups', wType: 'ametralladora', texKey: 'ametralladora',  count: 120, tint: 0xff4400 },
+        { groupKey: 'ametralladoraPickups', wType: 'ametralladora', texKey: 'ametralladora', count: 100, tint: 0xffcc00 },
+        { groupKey: 'llamasPickups',        wType: 'lanzallamas',   texKey: 'lanzallamas',   count:  60, tint: 0xff4400 },
       ] : []),
     ]
     for (const def of weaponDefs) {
@@ -296,9 +291,6 @@ export class GameScene extends Phaser.Scene {
       } else if (proj.projType === 'web') {
         player.immobilize(10000)
         this.showFloatingText(player.x, player.y - 24, 'ATRAPADO 10s', '#ddddff')
-      } else if (proj.projType === 'robot_bullet') {
-        player.takeDamage(proj.damage)
-        this.showFloatingText(player.x, player.y - 24, `-${proj.damage}`, '#ff4444')
       }
       proj.destroy()
     }, null, this)
@@ -348,16 +340,18 @@ export class GameScene extends Phaser.Scene {
       armor:          this.player.armor,
       armorMax:       this.player.armorMax,
       armorType:      this.player.armorType,
-      mutantCount:    this.mutantCount,
-      serpienteCount: this.serpienteCount,
-      araniaCount:    this.araniaCount,
+      mutantCount:       this.mutantCount,
+      serpienteCount:    this.serpienteCount,
+      araniaCount:       this.araniaCount,
+      t700Count:         this.t700Count,
+      killMachineCount:  this.killMachineCount,
+      exterminadorCount: this.exterminadorCount,
     })
 
-    // ── Música por nivel ─────────────────────────────────────────────────────
+    // ── Música nivel 1 ───────────────────────────────────────────────────────
     this._bgMusic = null
-    const musicKey = this.level === 2 ? 'musica_nivel_2' : 'musica_nivel_1'
-    if (this.cache.audio.exists(musicKey)) {
-      this._bgMusic = this.sound.add(musicKey, { loop: true, volume: 0.25 })
+    if (this.level === 1 && this.cache.audio.exists('musica_nivel_1')) {
+      this._bgMusic = this.sound.add('musica_nivel_1', { loop: true, volume: 0.25 })
       this._bgMusic.play()
     }
     this.events.once('shutdown', () => {
@@ -420,7 +414,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   _weaponColor(type) {
-    return { sword: '#ffdd44', arrow: '#88ddff', shotgun: '#ff8833', future: '#00ffff', ametralladora: '#ff6622' }[type] || '#ffffff'
+    return { sword: '#ffdd44', arrow: '#88ddff', shotgun: '#ff8833', future: '#00ffff' }[type] || '#ffffff'
   }
 
   addVignette() {
@@ -674,18 +668,19 @@ export class GameScene extends Phaser.Scene {
   }
 
   onMonsterKilled(m) {
-    const t = m.monsterType
-    if (t === 'mutant' || t === 'robot_asesino') {
-      this.mutantCount    = Math.max(0, this.mutantCount    - 1)
-    } else if (t === 'serpiente' || t === 'kill_machine') {
-      this.serpienteCount = Math.max(0, this.serpienteCount - 1)
-    } else if (t === 'arania' || t === 'exterminador') {
-      this.araniaCount    = Math.max(0, this.araniaCount    - 1)
-    }
+    if      (m.monsterType === 'mutant')       this.mutantCount       = Math.max(0, this.mutantCount       - 1)
+    else if (m.monsterType === 'serpiente')    this.serpienteCount    = Math.max(0, this.serpienteCount    - 1)
+    else if (m.monsterType === 'arania')       this.araniaCount       = Math.max(0, this.araniaCount       - 1)
+    else if (m.monsterType === 'robot')        this.t700Count         = Math.max(0, this.t700Count         - 1)
+    else if (m.monsterType === 'killmachine')  this.killMachineCount  = Math.max(0, this.killMachineCount  - 1)
+    else if (m.monsterType === 'exterminador') this.exterminadorCount = Math.max(0, this.exterminadorCount - 1)
     this.events.emit('monsterCountChanged', {
-      mutant:    this.mutantCount,
-      serpiente: this.serpienteCount,
-      arania:    this.araniaCount,
+      mutant:       this.mutantCount,
+      serpiente:    this.serpienteCount,
+      arania:       this.araniaCount,
+      t700:         this.t700Count,
+      killMachine:  this.killMachineCount,
+      exterminador: this.exterminadorCount,
     })
   }
 
@@ -893,55 +888,15 @@ export class GameScene extends Phaser.Scene {
     })
   }
 
-  // ── Nivel 2 bullet spawners ───────────────────────────────────────────────
-
-  spawnRobotShotgunBlast(fromX, fromY, toX, toY, damage) {
-    const speed = 300
-    const baseAngle = Math.atan2(toY - fromY, toX - fromX)
-    for (const offset of [-0.26, 0, 0.26]) {
-      if (this.enemyProjectiles.getLength() >= 50) break
-      const angle = baseAngle + offset
-      const proj = this.physics.add.image(fromX, fromY, 'bullet')
-      proj.setDisplaySize(10, 10).setDepth(12).setTint(0xff2200)
-      proj.projType = 'robot_bullet'
-      proj.damage   = damage
-      this.enemyProjectiles.add(proj)
-      proj.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed)
-      this.time.delayedCall(1500, () => { if (proj.active) proj.destroy() })
-    }
-  }
-
-  spawnKillMachineBurst(fromX, fromY, toX, toY, damage) {
-    const speed = 520
-    const angle = Math.atan2(toY - fromY, toX - fromX)
-    const vx = Math.cos(angle) * speed
-    const vy = Math.sin(angle) * speed
-    for (let i = 0; i < 3; i++) {
-      this.time.delayedCall(i * 80, () => {
-        if (this.enemyProjectiles.getLength() >= 50) return
-        const proj = this.physics.add.image(fromX, fromY, 'bullet')
-        proj.setDisplaySize(8, 8).setDepth(12).setTint(0xff8800)
-        proj.projType = 'robot_bullet'
-        proj.damage   = damage
-        this.enemyProjectiles.add(proj)
-        proj.body.setVelocity(vx, vy)
-        this.time.delayedCall(1800, () => { if (proj.active) proj.destroy() })
-      })
-    }
-  }
-
-  spawnExterminadorBlast(fromX, fromY, damage) {
-    const speed = 260
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      if (this.enemyProjectiles.getLength() >= 50) break
-      const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
-      proj.setDisplaySize(18, 18).setDepth(12).setTint(0x0088ff)
-      proj.projType = 'robot_bullet'
-      proj.damage   = damage
-      this.enemyProjectiles.add(proj)
-      proj.body.setVelocity(dx * speed, dy * speed)
-      this.time.delayedCall(2500, () => { if (proj.active) proj.destroy() })
-    }
+  spawnRobotBullet(fromX, fromY, vx, vy, damage) {
+    if (this.enemyProjectiles.getLength() >= 80) return
+    const proj = this.physics.add.image(fromX, fromY, 'bullet')
+    proj.setDisplaySize(10, 10).setDepth(12).setTint(0x4488ff)
+    proj.projType = 'normal'
+    proj.damage = damage
+    proj.body.setVelocity(vx, vy)
+    this.enemyProjectiles.add(proj)
+    this.time.delayedCall(1800, () => { if (proj.active) proj.destroy() })
   }
 
   spawnAcidSplash(x, y) {

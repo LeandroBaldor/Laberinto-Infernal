@@ -13,9 +13,12 @@ export class UIScene extends Phaser.Scene {
     this._armor         = data.armor    || 0
     this._armorMax      = data.armorMax || 0
     this._armorType     = data.armorType || null
-    this._mutantCount    = data.mutantCount    ?? 0
-    this._serpienteCount = data.serpienteCount ?? 0
-    this._araniaCount    = data.araniaCount    ?? 0
+    this._mutantCount      = data.mutantCount      ?? 0
+    this._serpienteCount   = data.serpienteCount   ?? 0
+    this._araniaCount      = data.araniaCount      ?? 0
+    this._t700Count        = data.t700Count        ?? 0
+    this._killMachineCount = data.killMachineCount ?? 0
+    this._exterminadorCount= data.exterminadorCount?? 0
   }
 
   create() {
@@ -78,22 +81,21 @@ export class UIScene extends Phaser.Scene {
       fontSize: '24px', fontFamily: 'Courier New', color,
       stroke: '#000000', strokeThickness: 3,
     })
-
-    // Labels differ per level
-    const isLv2 = this.level >= 2
-    this._c1Label = isLv2 ? 'Robot T-800'    : 'Mutantes'
-    this._c2Label = isLv2 ? 'Kill Machine'   : 'Mega Serpiente'
-    this._c3Label = isLv2 ? 'Exterminador'   : 'Araña Kaiju'
-    const c1Color = isLv2 ? '#ff6666' : '#ff8844'
-    const c2Color = isLv2 ? '#ffaa44' : '#44ff88'
-    const c3Color = isLv2 ? '#44aaff' : '#bb88ff'
-
-    this.mutantText = this.add.text(cx(1), midY,
-      `${this._c1Label}: ${this._mutantCount}`, counterStyle(c1Color)).setOrigin(0.5, 0.5)
-    this.serpText = this.add.text(cx(2), midY,
-      `${this._c2Label}: ${this._serpienteCount}`, counterStyle(c2Color)).setOrigin(0.5, 0.5)
-    this.araniaText = this.add.text(cx(3), midY,
-      `${this._c3Label}: ${this._araniaCount}`, counterStyle(c3Color)).setOrigin(0.5, 0.5)
+    if (this.level === 1) {
+      this.mutantText = this.add.text(cx(1), midY,
+        `Mutantes: ${this._mutantCount}`, counterStyle('#ff8844')).setOrigin(0.5, 0.5)
+      this.serpText = this.add.text(cx(2), midY,
+        `Mega Serpiente: ${this._serpienteCount}`, counterStyle('#44ff88')).setOrigin(0.5, 0.5)
+      this.araniaText = this.add.text(cx(3), midY,
+        `Araña Kaiju: ${this._araniaCount}`, counterStyle('#bb88ff')).setOrigin(0.5, 0.5)
+    } else {
+      this.mutantText = this.add.text(cx(1), midY,
+        `T-700: ${this._t700Count}`, counterStyle('#aabbcc')).setOrigin(0.5, 0.5)
+      this.serpText = this.add.text(cx(2), midY,
+        `Kill Machine: ${this._killMachineCount}`, counterStyle('#ff6633')).setOrigin(0.5, 0.5)
+      this.araniaText = this.add.text(cx(3), midY,
+        `Exterminador: ${this._exterminadorCount}`, counterStyle('#cc44ff')).setOrigin(0.5, 0.5)
+    }
 
     // ── SCORE + NIVEL ─────────────────────────────────────────────────────────
     this.scoreText = this.add.text(cx(4), midY, `SCORE: ${this.score}`, {
@@ -126,10 +128,16 @@ export class UIScene extends Phaser.Scene {
       this.timerText.setText(this._fmtTime(secs))
     })
 
-    game.events.on('monsterCountChanged', ({ mutant, serpiente, arania }) => {
-      this.mutantText.setText(`${this._c1Label}: ${mutant}`)
-      this.serpText.setText(`${this._c2Label}: ${serpiente}`)
-      this.araniaText.setText(`${this._c3Label}: ${arania}`)
+    game.events.on('monsterCountChanged', (counts) => {
+      if (this.level === 1) {
+        this.mutantText.setText(`Mutantes: ${counts.mutant}`)
+        this.serpText.setText(`Mega Serpiente: ${counts.serpiente}`)
+        this.araniaText.setText(`Araña Kaiju: ${counts.arania}`)
+      } else {
+        this.mutantText.setText(`T-700: ${counts.t700}`)
+        this.serpText.setText(`Kill Machine: ${counts.killMachine}`)
+        this.araniaText.setText(`Exterminador: ${counts.exterminador}`)
+      }
     })
 
     game.events.on('livesChanged', (lives) => {

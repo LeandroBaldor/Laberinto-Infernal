@@ -5,7 +5,7 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     const base = import.meta.env.BASE_URL
-    this.load.image('player', `${base}personaje_principal.png`)
+    this.load.image('player', `${base}personaje_principal.png?t=${Date.now()}`)
     this.load.image('hedge_sheet', `${base}hedge_tiles.png`)
     this.load.image('monster_raw',   `${base}monster.png`)
     this.load.image('serpiente_raw', `${base}serpiente.png`)
@@ -23,66 +23,75 @@ export class BootScene extends Phaser.Scene {
     this.load.image('pickup_shotgun_raw', `${base}escopeta.png`)
     this.load.image('pickup_future_raw',  `${base}arma_futuro.png`)
 
-    // Player sprites per weapon
-    this.load.image('player_sword_raw',    `${base}personaje_principal_espada.png`)
-    this.load.image('player_arrow_raw',    `${base}personaje_principal_flecha.png`)
-    this.load.image('player_shotgun_raw',  `${base}personaje_principal_escopeta.png`)
-    this.load.image('player_future_raw',   `${base}personaje_principal_armafuturo.png`)
+    // Player sprites per weapon (cache-bust so updated files always load)
+    const _tsp = Date.now()
+    this.load.image('player_sword_raw',    `${base}personaje_principal_espada.png?t=${_tsp}`)
+    this.load.image('player_arrow_raw',    `${base}personaje_principal_flecha.png?t=${_tsp}`)
+    this.load.image('player_shotgun_raw',  `${base}personaje_principal_escopeta.png?t=${_tsp}`)
+    this.load.image('player_future_raw',   `${base}personaje_principal_armafuturo.png?t=${_tsp}`)
 
     this.load.image('robot_raw', `${base}robot.png`)
 
-    // Nivel 2 assets
-    this.load.image('robot_asesino_raw',         `${base}Nivel_2/robot.png`)
-    this.load.image('kill_machine_raw',          `${base}Nivel_2/robot_calavera.png`)
-    this.load.image('exterminador_raw',          `${base}Nivel_2/robot_nave.png`)
-    this.load.image('pickup_ametralladora_raw',  `${base}Nivel_2/ametralladora.png`)
-    this.load.image('player_ametralladora_raw',  `${base}Nivel_2/personaje_principal_ametralladora.png`)
-    this.load.image('metalic_floor_raw',         `${base}Nivel_2/metalic_floor.png`)
-    this.load.image('metalic_wall_raw',          `${base}Nivel_2/metalic_tile.png`)
-    this.load.image('espada_2_raw',              `${base}Nivel_2/espada_2.png`)
-    this.load.image('player_gold_sword_n2_raw',  `${base}Nivel_2/personaje_principal_armadura_dorada_espada.png`)
+    // Nivel 2 tiles (cache-bust so updated images always load)
+    const _tst = Date.now()
+    this.load.image('metalic_floor_raw',   `${base}Nivel_2/metalic_floor.png?t=${_tst}`)
+    this.load.image('metalic_tile_raw',    `${base}Nivel_2/metalic_tile.png?t=${_tst}`)
+    this.load.image('metalic_tile_2_raw',  `${base}Nivel_2/metalic_tile_2.png?t=${_tst}`)
 
-    // Armor + ametralladora combos (in Nivel_2)
-    const _armorIds = ['silver', 'gold', 'future']
-    const _armorEsIds = ['plateada', 'dorada', 'futuro']
-    for (let ai = 0; ai < _armorIds.length; ai++) {
-      this.load.image(
-        `player_${_armorIds[ai]}_ametralladora_raw`,
-        `${base}Nivel_2/personaje_principal_armadura_${_armorEsIds[ai]}_ametralladora.png`
-      )
-    }
+    // Nivel 2 robots
+    this.load.image('robot_t700_raw',     `${base}Nivel_2/robot.png`)
+    this.load.image('robot_calavera_raw', `${base}Nivel_2/robot_calavera.png`)
+    this.load.image('robot_nave_raw',     `${base}Nivel_2/robot_nave.png`)
+
+    // Nivel 2 armas pickup (nuevos diseños)
+    this.load.image('pickup_sword_l2_raw',         `${base}Nivel_2/espada.png`)
+    this.load.image('pickup_arrow_l2_raw',         `${base}Nivel_2/flechas.png`)
+    this.load.image('pickup_shotgun_l2_raw',       `${base}Nivel_2/escopeta.png`)
+    this.load.image('pickup_future_l2_raw',        `${base}Nivel_2/arma_futuro.png`)
+    this.load.image('pickup_ametralladora_raw',    `${base}Nivel_2/ametralladora.png`)
+    this.load.image('pickup_lanzallamas_raw',      `${base}Nivel_2/lanzallamas.png`)
+
+    // Nivel 2 personaje con ametralladora
+    this.load.image('player_ametralladora_raw',        `${base}Nivel_2/personaje_principal_ametralladora.png`)
+    this.load.image('player_silver_ametralladora_raw', `${base}Nivel_2/personaje_principal_armadura_plateada_ametralladora.png`)
+    this.load.image('player_gold_ametralladora_raw',   `${base}Nivel_2/personaje_principal_armadura_dorada_ametralladora.png`)
+    this.load.image('player_future_ametralladora_raw', `${base}Nivel_2/personaje_principal_armadura_futuro_ametralladora.png`)
 
     // Armor pickup boxes
     this.load.image('armor_silver_raw', `${base}caja_plateada.png`)
     this.load.image('armor_gold_raw',   `${base}caja_oro.png`)
     this.load.image('armor_future_raw', `${base}caja_futuro.png`)
 
-    // Armor player sprites: 3 armors × 5 weapon states = 15 images
+    // Armor player sprites: 3 armors × weapon states
+    const _ts = Date.now()
     const _armorDefs = [
       { id: 'silver', es: 'plateada' },
       { id: 'gold',   es: 'dorada'   },
       { id: 'future', es: 'futuro'   },
     ]
     const _armorWeaponDefs = [
-      { id: 'sword',         es: 'espada'       },
-      { id: 'arrow',         es: 'flecha'       },
-      { id: 'shotgun',       es: 'escopeta'     },
-      { id: 'future',        es: 'arma_futuro'  },
-      // ametralladora combos are in Nivel_2 and loaded separately above
+      { id: 'sword',   es: 'espada'      },
+      { id: 'arrow',   es: 'flecha'      },
+      { id: 'shotgun', es: 'escopeta'    },
+      { id: 'future',  es: 'arma_futuro' },
     ]
     for (const a of _armorDefs) {
-      // No-weapon variant: file has no weapon suffix
-      this.load.image(`player_${a.id}_none_raw`, `${base}personaje_principal_armadura_${a.es}.png`)
+      this.load.image(`player_${a.id}_none_raw`, `${base}personaje_principal_armadura_${a.es}.png?t=${_ts}`)
       for (const w of _armorWeaponDefs) {
         this.load.image(
           `player_${a.id}_${w.id}_raw`,
-          `${base}personaje_principal_armadura_${a.es}_${w.es}.png`
+          `${base}personaje_principal_armadura_${a.es}_${w.es}.png?t=${_ts}`
         )
       }
     }
 
+    // Nivel 2: lanzallamas por armadura (fondo negro, en Nivel_2/)
+    this.load.image('player_lanzallamas_raw',        `${base}Nivel_2/personaje_principal_lanzallamas.png?t=${_ts}`)
+    this.load.image('player_silver_lanzallamas_raw', `${base}Nivel_2/personaje_principal_armadura_plateada_lanzallamas.png?t=${_ts}`)
+    this.load.image('player_gold_lanzallamas_raw',   `${base}Nivel_2/personaje_principal_armadura_dorada_lanzallamas.png?t=${_ts}`)
+    this.load.image('player_future_lanzallamas_raw', `${base}Nivel_2/personaje_principal_armadura_futuro_lanzallamas.png?t=${_ts}`)
+
     this.load.audio('musica_nivel_1',          `${base}musica_nivel_1.mp3`)
-    this.load.audio('musica_nivel_2',          `${base}Nivel_2/musica_nivel_2.mp3`)
     this.load.audio('musica_menu',             `${base}musica_menu.mp3`)
     this.load.audio('musica_boton_menu',       `${base}musica_boton_menu.mp3`)
     this.load.audio('sonidos_pies_protagonista',`${base}sonidos_pies_protagonista.mp3?t=${Date.now()}`)
@@ -122,49 +131,6 @@ export class BootScene extends Phaser.Scene {
       } else {
         this._makeRobotFallback()
       }
-      if (loaded.has('robot_asesino_raw')) {
-        this._stripBlackBackground('robot_asesino_raw', 'robot_asesino')
-      } else {
-        this._makeKillMachineFallback()  // reuse skull shape as fallback
-        // rename so robot_asesino key exists
-        if (this.textures.exists('kill_machine') && !this.textures.exists('robot_asesino')) {
-          // make a simple copy via canvas
-          const src = this.textures.get('kill_machine').getSourceImage()
-          const c = document.createElement('canvas'); c.width = src.width; c.height = src.height
-          c.getContext('2d').drawImage(src, 0, 0)
-          this.textures.addCanvas('robot_asesino', c)
-        }
-      }
-      if (loaded.has('kill_machine_raw')) {
-        this._stripBlackBackground('kill_machine_raw', 'kill_machine')
-      } else {
-        this._makeKillMachineFallback()
-      }
-      if (loaded.has('exterminador_raw')) {
-        this._stripBlackBackground('exterminador_raw', 'exterminador')
-      } else {
-        this._makeExterminadorFallback()
-      }
-      if (loaded.has('pickup_ametralladora_raw')) {
-        this._stripWhiteBackgroundAs('pickup_ametralladora_raw', 'ametralladora')
-      } else {
-        this._makeAmetralladaPickup()
-      }
-      if (loaded.has('player_ametralladora_raw')) {
-        this._stripWhiteBackgroundAs('player_ametralladora_raw', 'player_ametralladora')
-      }
-      // Armor + ametralladora combos
-      for (const armorId of ['silver', 'gold', 'future']) {
-        const rawKey  = `player_${armorId}_ametralladora_raw`
-        const destKey = `player_${armorId}_ametralladora`
-        if (loaded.has(rawKey)) this._stripWhiteBackgroundAs(rawKey, destKey)
-      }
-      if (loaded.has('metalic_floor_raw')) {
-        this._makeMetalFloorFromImage('metalic_floor_raw')
-      }
-      if (loaded.has('metalic_wall_raw')) {
-        this._makeMetalWallFromImage('metalic_wall_raw')
-      }
 
       if (serpienteLoaded) {
         this._stripBlackBackgroundFloodFill('serpiente_raw', 'serpiente', 25)
@@ -178,17 +144,6 @@ export class BootScene extends Phaser.Scene {
       }
 
       this.createTextures()
-      // Metallic tiles (procedural fallbacks — overridden above if real images loaded)
-      if (!loaded.has('metalic_floor_raw')) {
-        this._makeMetalFloor()
-        this._makeMetalFloor2()
-        this._makeMetalFloor3()
-      }
-      if (!loaded.has('metalic_wall_raw')) {
-        this._makeMetalWall()
-        this._makeMetalWall2()
-        this._makeMetalWall3()
-      }
 
       // Bush wall tiles
       if (loaded.has('bush_tile_raw'))      this._makeBushWallsFromImage('bush_tile_raw')
@@ -196,18 +151,55 @@ export class BootScene extends Phaser.Scene {
       // Floor tile: replace procedural floor textures if image loaded
       if (loaded.has('floor_tile_raw')) this._makeFloorTilesFromImage('floor_tile_raw')
 
-      // Override procedural weapon pickup textures with real images if available
-      const pickupPairs = [
+      // Nivel 2 tiles
+      if (loaded.has('metalic_floor_raw'))  this._makeMetalFloorTiles('metalic_floor_raw')
+      if (loaded.has('metalic_tile_raw'))   this._makeMetalWallTile('metalic_tile_raw',   'wall_l2')
+      if (loaded.has('metalic_tile_2_raw')) this._makeMetalWallTile('metalic_tile_2_raw', 'wall_l2_2')
+
+      // Nivel 2 robots (strip white background)
+      if (loaded.has('robot_t700_raw'))     this._stripWhiteBackgroundAs('robot_t700_raw',     'robot_t700')
+      if (loaded.has('robot_calavera_raw')) this._stripWhiteBackgroundAs('robot_calavera_raw', 'robot_calavera')
+      if (loaded.has('robot_nave_raw'))     this._stripWhiteBackgroundAs('robot_nave_raw',     'robot_nave')
+
+      // Weapon pickup sprites — root folder (white bg)
+      const pickupPairsWhite = [
         ['pickup_sword_raw',   'sword'],
         ['pickup_arrow_raw',   'arrow'],
         ['pickup_shotgun_raw', 'shotgun'],
         ['pickup_future_raw',  'future_weapon'],
       ]
-      for (const [src, dest] of pickupPairs) {
+      for (const [src, dest] of pickupPairsWhite) {
         if (loaded.has(src)) this._stripWhiteBackgroundAs(src, dest)
       }
+      // Nivel_2 versions override the above with updated designs (black bg)
+      const pickupPairsBlack = [
+        ['pickup_sword_l2_raw',       'sword'],
+        ['pickup_arrow_l2_raw',       'arrow'],
+        ['pickup_shotgun_l2_raw',     'shotgun'],
+        ['pickup_future_l2_raw',      'future_weapon'],
+        ['pickup_ametralladora_raw',  'ametralladora'],
+        ['pickup_lanzallamas_raw',    'lanzallamas'],
+      ]
+      for (const [src, dest] of pickupPairsBlack) {
+        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 25)
+      }
 
-      // Register player weapon sprites
+      // Nivel 2 personaje con ametralladora y lanzallamas (fondo negro)
+      const nivel2Sprites = [
+        ['player_ametralladora_raw',        'player_ametralladora'],
+        ['player_silver_ametralladora_raw', 'player_silver_ametralladora'],
+        ['player_gold_ametralladora_raw',   'player_gold_ametralladora'],
+        ['player_future_ametralladora_raw', 'player_future_ametralladora'],
+        ['player_lanzallamas_raw',          'player_lanzallamas'],
+        ['player_silver_lanzallamas_raw',   'player_silver_lanzallamas'],
+        ['player_gold_lanzallamas_raw',     'player_gold_lanzallamas'],
+        ['player_future_lanzallamas_raw',   'player_future_lanzallamas'],
+      ]
+      for (const [src, dest] of nivel2Sprites) {
+        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 8)
+      }
+
+      // Register player weapon sprites (black background — use flood fill)
       const playerPairs = [
         ['player_sword_raw',   'player_sword'],
         ['player_arrow_raw',   'player_arrow'],
@@ -215,7 +207,7 @@ export class BootScene extends Phaser.Scene {
         ['player_future_raw',  'player_future'],
       ]
       for (const [src, dest] of playerPairs) {
-        if (loaded.has(src)) this._stripWhiteBackgroundAs(src, dest)
+        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 8)
       }
 
       // Armor box pickups
@@ -239,13 +231,9 @@ export class BootScene extends Phaser.Scene {
         for (const w of weaponDefs) {
           const rawKey  = `player_${a.id}_${w.id}_raw`
           const destKey = `player_${a.id}_${w.id}`
-          if (loaded.has(rawKey)) this._stripWhiteBackgroundAs(rawKey, destKey)
+          if (loaded.has(rawKey)) this._stripBlackBackgroundFloodFill(rawKey, destKey, 8)
         }
       }
-
-      // Nivel 2 overrides: new sword + gold knight with new sword (black background)
-      if (loaded.has('espada_2_raw')) this._stripBlackBackgroundAs('espada_2_raw', 'sword')
-      if (loaded.has('player_gold_sword_n2_raw')) this._stripBlackBackgroundAs('player_gold_sword_n2_raw', 'player_gold_sword')
 
       this.scene.start('SplashScene')
     })
@@ -298,23 +286,6 @@ export class BootScene extends Phaser.Scene {
     }
     ctx.putImageData(img, 0, 0)
     this.textures.remove(srcKey)
-    this.textures.addCanvas(destKey, canvas)
-  }
-
-  _stripBlackBackgroundAs(srcKey, destKey) {
-    const src = this.textures.get(srcKey).getSourceImage()
-    const canvas = document.createElement('canvas')
-    canvas.width = src.width; canvas.height = src.height
-    const ctx = canvas.getContext('2d')
-    ctx.drawImage(src, 0, 0)
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    const d = img.data
-    for (let i = 0; i < d.length; i += 4) {
-      if (d[i] < 15 && d[i + 1] < 15 && d[i + 2] < 15) d[i + 3] = 0
-    }
-    ctx.putImageData(img, 0, 0)
-    this.textures.remove(srcKey)
-    if (this.textures.exists(destKey)) this.textures.remove(destKey)
     this.textures.addCanvas(destKey, canvas)
   }
 
@@ -1044,283 +1015,6 @@ export class BootScene extends Phaser.Scene {
     g.destroy()
   }
 
-  // ─── NIVEL 2 FALLBACK TEXTURES ───────────────────────────────────────────
-
-  _makeKillMachineFallback() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    g.fillStyle(0x330011); g.fillRect(0, 0, 32, 32)
-    // Skull shape
-    g.fillStyle(0xbbbbbb); g.fillCircle(16, 13, 10)
-    g.fillStyle(0x330011)
-    g.fillEllipse(11, 15, 5, 4); g.fillEllipse(21, 15, 5, 4)
-    // Teeth
-    g.fillStyle(0xdddddd)
-    for (let i = 0; i < 5; i++) g.fillRect(8 + i * 4, 21, 3, 5)
-    // Red eyes
-    g.fillStyle(0xff0000); g.fillCircle(11, 13, 2.5); g.fillCircle(21, 13, 2.5)
-    g.fillStyle(0xff6666); g.fillCircle(11, 13, 1); g.fillCircle(21, 13, 1)
-    // Bolts
-    g.fillStyle(0x888888); g.fillCircle(6, 8, 2); g.fillCircle(26, 8, 2)
-    g.generateTexture('kill_machine', 32, 32)
-    g.destroy()
-  }
-
-  _makeExterminadorFallback() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    g.fillStyle(0x000022); g.fillRect(0, 0, 32, 32)
-    // Main hull
-    g.fillStyle(0x334466); g.fillEllipse(16, 16, 28, 20)
-    g.fillStyle(0x4466aa); g.fillEllipse(16, 14, 22, 14)
-    // Cockpit
-    g.fillStyle(0x88ccff); g.fillCircle(16, 14, 5)
-    g.fillStyle(0xaaddff); g.fillCircle(15, 13, 3)
-    // Energy cannons (4 directions)
-    g.fillStyle(0x0044aa)
-    g.fillRect(0, 14, 8, 5)    // left
-    g.fillRect(24, 14, 8, 5)   // right
-    g.fillRect(14, 0, 5, 8)    // top
-    g.fillRect(14, 24, 5, 8)   // bottom
-    g.fillStyle(0x00aaff)
-    g.fillCircle(2, 16, 3); g.fillCircle(30, 16, 3)
-    g.fillCircle(16, 2, 3); g.fillCircle(16, 30, 3)
-    g.generateTexture('exterminador', 32, 32)
-    g.destroy()
-  }
-
-  _makeAmetralladaPickup() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    // Barrel (long)
-    g.fillStyle(0x444444); g.fillRect(0, 13, 26, 6)
-    g.fillStyle(0x666666); g.fillRect(1, 14, 24, 2)
-    // Receiver
-    g.fillStyle(0x333333); g.fillRect(18, 11, 10, 10)
-    g.fillStyle(0x555555); g.fillRect(19, 12, 8, 8)
-    // Magazine
-    g.fillStyle(0x222222); g.fillRect(22, 21, 5, 8)
-    g.fillStyle(0x444444); g.fillRect(23, 22, 3, 6)
-    // Stock
-    g.fillStyle(0x553322); g.fillRect(28, 12, 4, 8)
-    // Muzzle flash dot
-    g.fillStyle(0xffaa00); g.fillCircle(1, 16, 2)
-    g.generateTexture('ametralladora', 32, 32)
-    g.destroy()
-  }
-
-  _makeMetalWall3() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    g.fillStyle(0x040404); g.fillRect(0, 0, 32, 32)
-    g.fillStyle(0x2a2a2a); g.fillRect(1, 1, 30, 30)
-    g.fillStyle(0x333333); g.fillRect(2, 2, 28, 28)
-    g.fillStyle(0x2e2e2e)
-    for (let y = 4; y < 28; y += 3) g.fillRect(3, y, 26, 1)
-    g.fillStyle(0x080808); g.fillRect(7, 7, 18, 18)
-    g.fillStyle(0x0a0000); g.fillRect(8, 8, 16, 16)
-    g.fillStyle(0x550000); g.fillRect(9, 9, 14, 14)
-    g.fillStyle(0x660000); g.fillRect(9, 9, 14, 7)
-    g.fillStyle(0x880000)
-    for (let y = 10; y < 23; y += 2) g.fillRect(10, y, 12, 1)
-    const bolt3 = (bx, by) => {
-      g.fillStyle(0x555555); g.fillCircle(bx, by, 2.8)
-      g.fillStyle(0x777777); g.fillCircle(bx, by, 1.8)
-      g.fillStyle(0x999999); g.fillCircle(bx, by, 1.0)
-      g.lineStyle(0.8, 0x222222, 0.9)
-      g.lineBetween(bx - 1.5, by, bx + 1.5, by)
-      g.lineBetween(bx, by - 1.5, bx, by + 1.5)
-    }
-    bolt3(4, 4); bolt3(28, 4); bolt3(4, 28); bolt3(28, 28)
-    g.generateTexture('metal_wall3', 32, 32)
-    g.destroy()
-  }
-
-  _makeMetalFloor() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    g.fillStyle(0x2a2a2a); g.fillRect(0, 0, 32, 32)
-    g.fillStyle(0x333333); g.fillRect(0, 0, 16, 16); g.fillRect(16, 16, 16, 16)
-    g.lineStyle(1, 0x444444, 0.8)
-    g.lineBetween(0, 16, 32, 16); g.lineBetween(16, 0, 16, 32)
-    g.lineStyle(1, 0x555555, 0.5)
-    g.lineBetween(0, 0, 32, 0); g.lineBetween(0, 32, 32, 32)
-    g.lineBetween(0, 0, 0, 32); g.lineBetween(32, 0, 32, 32)
-    // Rivet dots
-    g.fillStyle(0x555555)
-    g.fillCircle(4, 4, 1.5); g.fillCircle(28, 4, 1.5)
-    g.fillCircle(4, 28, 1.5); g.fillCircle(28, 28, 1.5)
-    g.generateTexture('metal_floor', 32, 32)
-    g.destroy()
-  }
-
-  _makeMetalFloor2() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    g.fillStyle(0x252530); g.fillRect(0, 0, 32, 32)
-    g.lineStyle(1, 0x3a3a4a, 1)
-    for (let i = 0; i <= 32; i += 8) {
-      g.lineBetween(0, i, 32, i); g.lineBetween(i, 0, i, 32)
-    }
-    g.fillStyle(0x3a3a4a)
-    g.fillCircle(8, 8, 1); g.fillCircle(24, 8, 1); g.fillCircle(8, 24, 1); g.fillCircle(24, 24, 1)
-    g.generateTexture('metal_floor2', 32, 32)
-    g.destroy()
-  }
-
-  _makeMetalFloor3() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    g.fillStyle(0x202028); g.fillRect(0, 0, 32, 32)
-    g.fillStyle(0x2a2a34); g.fillRect(2, 2, 28, 28)
-    g.lineStyle(1, 0x404050, 0.7)
-    g.lineBetween(0, 16, 32, 16); g.lineBetween(16, 0, 16, 32)
-    g.lineStyle(1, 0x303040, 0.5)
-    g.lineBetween(8, 0, 8, 32); g.lineBetween(24, 0, 24, 32)
-    g.lineBetween(0, 8, 32, 8); g.lineBetween(0, 24, 32, 24)
-    g.generateTexture('metal_floor3', 32, 32)
-    g.destroy()
-  }
-
-  _makeMetalWall() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    // Borde negro exterior
-    g.fillStyle(0x080808); g.fillRect(0, 0, 32, 32)
-    // Marco gris metálico
-    g.fillStyle(0x6e6e6e); g.fillRect(1, 1, 30, 30)
-    g.fillStyle(0x888888); g.fillRect(2, 2, 28, 28)
-    g.fillStyle(0x949494); g.fillRect(3, 3, 26, 26)
-    // Líneas de brushed metal en el marco (horizontales sutiles)
-    g.fillStyle(0x7a7a7a)
-    for (let y = 4; y < 28; y += 3) g.fillRect(3, y, 26, 1)
-    // Bisel negro alrededor del panel interior
-    g.fillStyle(0x111111); g.fillRect(7, 7, 18, 18)
-    g.fillStyle(0x1a0000); g.fillRect(8, 8, 16, 16)
-    // Panel interior rojo
-    g.fillStyle(0xcc0000); g.fillRect(9, 9, 14, 14)
-    g.fillStyle(0xdd1111); g.fillRect(9, 9, 14, 10)
-    g.fillStyle(0xee2222); g.fillRect(9, 9, 14, 6)
-    // Brushed texture (líneas horizontales en el rojo)
-    g.fillStyle(0xff3333)
-    for (let y = 10; y < 23; y += 2) g.fillRect(10, y, 12, 1)
-    // Highlight central
-    g.fillStyle(0xff5555); g.fillRect(11, 10, 8, 3)
-    g.fillStyle(0xff7777); g.fillRect(13, 10, 4, 2)
-    // Tornillos en las 4 esquinas del marco
-    const bolt = (bx, by) => {
-      g.fillStyle(0xbbbbbb); g.fillCircle(bx, by, 2.8)
-      g.fillStyle(0xdddddd); g.fillCircle(bx, by, 1.8)
-      g.fillStyle(0xeeeeee); g.fillCircle(bx, by, 1.0)
-      g.lineStyle(0.8, 0x666666, 0.9)
-      g.lineBetween(bx - 1.5, by, bx + 1.5, by)
-      g.lineBetween(bx, by - 1.5, bx, by + 1.5)
-    }
-    bolt(4, 4); bolt(28, 4); bolt(4, 28); bolt(28, 28)
-    g.generateTexture('metal_wall', 32, 32)
-    g.destroy()
-  }
-
-  _makeMetalWall2() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    // Igual que metal_wall pero panel más oscuro
-    g.fillStyle(0x080808); g.fillRect(0, 0, 32, 32)
-    g.fillStyle(0x606060); g.fillRect(1, 1, 30, 30)
-    g.fillStyle(0x787878); g.fillRect(2, 2, 28, 28)
-    g.fillStyle(0x848484); g.fillRect(3, 3, 26, 26)
-    g.fillStyle(0x6a6a6a)
-    for (let y = 4; y < 28; y += 3) g.fillRect(3, y, 26, 1)
-    g.fillStyle(0x111111); g.fillRect(7, 7, 18, 18)
-    g.fillStyle(0x1a0000); g.fillRect(8, 8, 16, 16)
-    // Panel rojo más oscuro
-    g.fillStyle(0xaa0000); g.fillRect(9, 9, 14, 14)
-    g.fillStyle(0xbb1111); g.fillRect(9, 9, 14, 8)
-    g.fillStyle(0xff3333)
-    for (let y = 10; y < 23; y += 2) g.fillRect(10, y, 12, 1)
-    g.fillStyle(0xdd4444); g.fillRect(11, 10, 8, 2)
-    const bolt2 = (bx, by) => {
-      g.fillStyle(0xaaaaaa); g.fillCircle(bx, by, 2.8)
-      g.fillStyle(0xcccccc); g.fillCircle(bx, by, 1.8)
-      g.fillStyle(0xe0e0e0); g.fillCircle(bx, by, 1.0)
-      g.lineStyle(0.8, 0x555555, 0.9)
-      g.lineBetween(bx - 1.5, by, bx + 1.5, by)
-      g.lineBetween(bx, by - 1.5, bx, by + 1.5)
-    }
-    bolt2(4, 4); bolt2(28, 4); bolt2(4, 28); bolt2(28, 28)
-    g.generateTexture('metal_wall2', 32, 32)
-    g.destroy()
-  }
-
-  _makeMetalFloorFromImage(rawKey) {
-    const src = this.textures.get(rawKey).getSourceImage()
-    const sw = src.width, sh = src.height
-    const DEST = 32
-
-    // Remove border: use inner 88% of the image; offset 6% from each edge
-    const bord = Math.floor(sw * 0.06)
-    const inner = sw - bord * 2
-
-    // Three crop origins (as fraction of inner area) for tile variety
-    const crops      = [[0, 0], [0.5, 0], [0.25, 0.5]]
-    const brightness = [1.0, 0.88, 0.78]
-    const floorKeys  = ['metal_floor', 'metal_floor2', 'metal_floor3']
-
-    floorKeys.forEach((key, i) => {
-      const ox = Math.floor(bord + crops[i][0] * inner)
-      const oy = Math.floor(bord + crops[i][1] * inner)
-      // Crop half the inner width so each tile shows a few diamonds
-      const cw = Math.floor(inner * 0.5)
-      const ch = Math.floor(inner * 0.5)
-
-      const canvas = document.createElement('canvas')
-      canvas.width = DEST; canvas.height = DEST
-      const ctx = canvas.getContext('2d')
-      ctx.imageSmoothingEnabled = true
-      ctx.drawImage(src, ox, oy, cw, ch, 0, 0, DEST, DEST)
-
-      const b = brightness[i]
-      const id = ctx.getImageData(0, 0, DEST, DEST)
-      const d = id.data
-      for (let p = 0; p < d.length; p += 4) {
-        d[p] = d[p] * b; d[p + 1] = d[p + 1] * b; d[p + 2] = d[p + 2] * b
-      }
-      ctx.putImageData(id, 0, 0)
-
-      if (this.textures.exists(key)) this.textures.remove(key)
-      this.textures.addCanvas(key, canvas)
-    })
-    this.textures.remove(rawKey)
-  }
-
-  _makeMetalWallFromImage(rawKey) {
-    const src = this.textures.get(rawKey).getSourceImage()
-    const sw = src.width, sh = src.height
-    // 64x64 → GameScene usa setDisplaySize(32,32) en Nivel 2
-    const DEST = 64
-    const trim = Math.floor(sw * 0.03)
-
-    // Variant 1: imagen completa, brillo normal
-    // Variant 2: imagen completa, 70% brillo
-    // Variant 3: imagen completa, 45% brillo (muy oscuro)
-    const variants = [
-      { key: 'metal_wall',  sx: trim, sy: trim, cw: sw - trim * 2, ch: sh - trim * 2, b: 1.0  },
-      { key: 'metal_wall2', sx: trim, sy: trim, cw: sw - trim * 2, ch: sh - trim * 2, b: 0.70 },
-      { key: 'metal_wall3', sx: trim, sy: trim, cw: sw - trim * 2, ch: sh - trim * 2, b: 0.45 },
-    ]
-
-    variants.forEach(({ key, sx, sy, cw, ch, b }) => {
-      const canvas = document.createElement('canvas')
-      canvas.width = DEST; canvas.height = DEST
-      const ctx = canvas.getContext('2d')
-      ctx.imageSmoothingEnabled = true
-      ctx.imageSmoothingQuality = 'high'
-      ctx.drawImage(src, sx, sy, cw, ch, 0, 0, DEST, DEST)
-      if (b !== 1.0) {
-        const id = ctx.getImageData(0, 0, DEST, DEST)
-        const d = id.data
-        for (let p = 0; p < d.length; p += 4) {
-          d[p] = d[p] * b; d[p + 1] = d[p + 1] * b; d[p + 2] = d[p + 2] * b
-        }
-        ctx.putImageData(id, 0, 0)
-      }
-      if (this.textures.exists(key)) this.textures.remove(key)
-      this.textures.addCanvas(key, canvas)
-    })
-    this.textures.remove(rawKey)
-  }
-
   _makeWeaponTile() {
     const g = this.make.graphics({ x: 0, y: 0, add: false })
     // Outer glow ring
@@ -1344,5 +1038,45 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(26, 28, 3, 1); g.fillRect(27, 27, 1, 3)
     g.generateTexture('weapon_tile', 32, 32)
     g.destroy()
+  }
+
+  // ─── NIVEL 2: piso metálico (diamond plate) — imagen a resolución nativa ──
+  _makeMetalFloorTiles(rawKey) {
+    const src = this.textures.get(rawKey).getSourceImage()
+    const sw = src.width, sh = src.height
+    // Four crops from different quadrants for visual variety
+    const cw = Math.floor(sw * 0.6), ch = Math.floor(sh * 0.6)
+    const crops = [
+      [0,       0      ],
+      [sw - cw, 0      ],
+      [0,       sh - ch],
+      [sw - cw, sh - ch],
+    ]
+    const floorKeys = ['floor_l2', 'floor_l2b', 'floor_l2c', 'floor_l2d']
+
+    floorKeys.forEach((key, i) => {
+      const [sx, sy] = crops[i]
+      const canvas = document.createElement('canvas')
+      canvas.width = cw; canvas.height = ch
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(src, sx, sy, cw, ch, 0, 0, cw, ch)
+      if (this.textures.exists(key)) this.textures.remove(key)
+      this.textures.addCanvas(key, canvas)
+    })
+    this.textures.remove(rawKey)
+  }
+
+  // ─── NIVEL 2: muro metálico sci-fi — imagen a su resolución nativa ────────
+  _makeMetalWallTile(rawKey, destKey) {
+    const src = this.textures.get(rawKey).getSourceImage()
+    // Keep the texture at native resolution; GameScene uses setDisplaySize to fit TILE×TILE.
+    // Phaser's bilinear filter (pixelArt disabled) handles the smooth downscale on GPU.
+    const canvas = document.createElement('canvas')
+    canvas.width = src.width; canvas.height = src.height
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(src, 0, 0)
+    if (this.textures.exists(destKey)) this.textures.remove(destKey)
+    this.textures.addCanvas(destKey, canvas)
+    this.textures.remove(rawKey)
   }
 }
