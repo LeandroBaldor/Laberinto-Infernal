@@ -939,6 +939,13 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(2000, () => { if (proj.active) proj.destroy() })
   }
 
+  _flashRed() {
+    const w = this.scale.width, h = this.scale.height
+    const flash = this.add.rectangle(w / 2, h / 2, w, h, 0xff2200, 0.22)
+      .setScrollFactor(0).setDepth(150)
+    this.tweens.add({ targets: flash, alpha: 0, duration: 350, onComplete: () => flash.destroy() })
+  }
+
   _flashGreen() {
     const w = this.scale.width, h = this.scale.height
     const flash = this.add.rectangle(w / 2, h / 2, w, h, 0x00ff44, 0.22)
