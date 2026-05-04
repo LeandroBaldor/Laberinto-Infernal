@@ -48,14 +48,12 @@ export class KillMachine extends Monster {
   }
 
   _fireBullet() {
-    this.scene.spawnCyanBullet(
+    this.scene.spawnAraniaBullet(
       this.x, this.y,
       this.x + Math.cos(this._burstRad) * 1000,
       this.y + Math.sin(this._burstRad) * 1000,
       this.attackDamage
     )
-    this.setTint(0xff8844)
-    this.scene.time.delayedCall(80, () => { if (this.active) this.clearTint() })
   }
 
   update(time, player) {

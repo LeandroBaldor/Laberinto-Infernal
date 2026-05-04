@@ -42,16 +42,13 @@ export class Robot extends Monster {
   }
 
   _shoot(player) {
-    // Igual que la Araña: ángulo hacia el jugador, target 1000px en esa dirección
     const rad = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
-    this.scene.spawnCyanBullet(
+    this.scene.spawnAraniaBullet(
       this.x, this.y,
       this.x + Math.cos(rad) * 1000,
       this.y + Math.sin(rad) * 1000,
       this.attackDamage
     )
-    this.setTint(0x00eeff)
-    this.scene.time.delayedCall(120, () => { if (this.active) this.clearTint() })
   }
 
   update(time, player) {
