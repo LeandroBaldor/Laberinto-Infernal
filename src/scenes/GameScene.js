@@ -291,6 +291,10 @@ export class GameScene extends Phaser.Scene {
       } else if (proj.projType === 'web') {
         player.immobilize(10000)
         this.showFloatingText(player.x, player.y - 24, 'ATRAPADO 10s', '#ddddff')
+      } else if (proj.projType === 'normal') {
+        player.takeDamage(proj.damage)
+        this.showFloatingText(player.x, player.y - 24, `-${proj.damage}`, '#ff4444')
+        this._flashRed()
       }
       proj.destroy()
     }, null, this)
@@ -899,6 +903,17 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(1800, () => { if (proj.active) proj.destroy() })
   }
 
+  spawnEnergyBall(fromX, fromY, vx, vy, damage) {
+    if (this.enemyProjectiles.getLength() >= 80) return
+    const proj = this.physics.add.image(fromX, fromY, 'bullet')
+    proj.setDisplaySize(30, 30).setDepth(12).setTint(0xdd00ff)
+    proj.projType = 'normal'
+    proj.damage = damage
+    proj.body.setVelocity(vx, vy)
+    this.enemyProjectiles.add(proj)
+    this.time.delayedCall(2200, () => { if (proj.active) proj.destroy() })
+  }
+
   spawnAcidSplash(x, y) {
     const p = this.add.particles(x, y, 'poison_bullet', {
       speed: { min: 40, max: 130 },
@@ -929,6 +944,13 @@ export class GameScene extends Phaser.Scene {
     const flash = this.add.rectangle(w / 2, h / 2, w, h, 0x00ff44, 0.22)
       .setScrollFactor(0).setDepth(150)
     this.tweens.add({ targets: flash, alpha: 0, duration: 350, onComplete: () => flash.destroy() })
+  }
+
+  _flashRed() {
+    const w = this.scale.width, h = this.scale.height
+    const flash = this.add.rectangle(w / 2, h / 2, w, h, 0xff2200, 0.28)
+      .setScrollFactor(0).setDepth(150)
+    this.tweens.add({ targets: flash, alpha: 0, duration: 300, onComplete: () => flash.destroy() })
   }
 
   spawnHitParticle(x, y) {

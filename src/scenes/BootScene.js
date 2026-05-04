@@ -196,7 +196,7 @@ export class BootScene extends Phaser.Scene {
         ['player_future_lanzallamas_raw',   'player_future_lanzallamas'],
       ]
       for (const [src, dest] of nivel2Sprites) {
-        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 8)
+        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 3)
       }
 
       // Register player weapon sprites (black background — use flood fill)
@@ -207,7 +207,7 @@ export class BootScene extends Phaser.Scene {
         ['player_future_raw',  'player_future'],
       ]
       for (const [src, dest] of playerPairs) {
-        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 8)
+        if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 3)
       }
 
       // Armor box pickups
@@ -231,7 +231,7 @@ export class BootScene extends Phaser.Scene {
         for (const w of weaponDefs) {
           const rawKey  = `player_${a.id}_${w.id}_raw`
           const destKey = `player_${a.id}_${w.id}`
-          if (loaded.has(rawKey)) this._stripBlackBackgroundFloodFill(rawKey, destKey, 8)
+          if (loaded.has(rawKey)) this._stripBlackBackgroundFloodFill(rawKey, destKey, 3)
         }
       }
 

@@ -6,7 +6,7 @@ export const WEAPON_STATS = {
   shotgun:       { label: 'ESCOPETA',       dmg: 10,  ranged: true,  ammoPerPickup: 5,  speed: 350, tint: 0xff6600, cooldown: 500 },
   future:        { label: 'ARG.FUTURO',     dmg: 15,  ranged: true,  ammoPerPickup: 4,  speed: 620, tint: 0x00ddff, cooldown: 350 },
   ametralladora: { label: 'AMETRALLADORA',  dmg: 8,   ranged: true,  ammoPerPickup: 30, speed: 500, tint: 0xffcc00, cooldown: 150 },
-  lanzallamas:   { label: 'LANZALLAMAS',    dmg: 22,  ranged: true,  ammoPerPickup: 12, speed: 220, tint: 0xff4400, cooldown: 280 },
+  lanzallamas:   { label: 'LANZALLAMAS',    dmg: 40,  ranged: true,  ammoPerPickup: 10, speed: 220, tint: 0xff4400, cooldown: 2000 },
 }
 
 export const ARMOR_STATS = {
@@ -66,6 +66,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this._nextMoveTime   = Infinity
     this._heldDc = 0
     this._heldDr = 0
+
+    this._lanzallamasFiring = false
+    this._lanzallamasFiringTimer = null
   }
 
   // ── compat getters so GameScene / UIScene still work ──────────────────────
@@ -136,9 +139,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   _updateSprite() {
+    const lanzaKey = this._lanzallamasFiring && this.scene.textures.exists('player_lanzallamas_disparo')
+      ? 'player_lanzallamas_disparo' : 'player_lanzallamas'
     const weaponMap = {
       sword: 'player_sword', arrow: 'player_arrow', shotgun: 'player_shotgun',
-      future: 'player_future', ametralladora: 'player_ametralladora', lanzallamas: 'player_lanzallamas',
+      future: 'player_future', ametralladora: 'player_ametralladora', lanzallamas: lanzaKey,
     }
     let key = 'player'
     if (this.armorType) {
@@ -155,7 +160,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (variant && this.scene.textures.exists(variant)) key = variant
     }
     if (this.texture.key !== key) this.setTexture(key)
-    this.setDisplaySize(TILE * 2.8125, TILE * 2.8125)
+    const targetH = TILE * 2.1
+    const src = this.scene.textures.get(key).getSourceImage()
+    const s = src.height > 0 ? targetH / src.height : targetH / 256
+    this.setScale(s)
+    this._baseScaleX = this.scaleX
+    this._baseScaleY = this.scaleY
   }
 
   // ── movement ──────────────────────────────────────────────────────────────
@@ -178,24 +188,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Alternating lean: odd steps tilt right, even steps tilt left
     this._stepCount++
-    const lean = (this._stepCount % 2 === 0) ? -14 : 14
-    const bsx = this._baseScaleX
-    const bsy = this._baseScaleY
+    const lean = (this._stepCount % 2 === 0) ? -8 : 8
+    const baseAngle = this.angle
 
-    // Squash on contact, then spring back upright
     this.scene.tweens.add({
       targets: this,
-      scaleX: bsx * 1.22,
-      scaleY: bsy * 0.78,
-      angle: lean,
+      angle: baseAngle + lean,
       duration: 55,
       ease: 'Sine.easeOut',
       yoyo: true,
       onComplete: () => {
         this.scene.tweens.add({
           targets: this,
-          scaleX: bsx, scaleY: bsy, angle: 0,
-          duration: 60, ease: 'Sine.easeOut',
+          angle: baseAngle,
+          duration: 60,
+          ease: 'Sine.easeOut',
         })
       },
     })
@@ -370,6 +377,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.activeWeapon === 'shotgun')       { b.setScale(1.6); b.lifespan = 1500 }
     else if (this.activeWeapon === 'lanzallamas') { b.setScale(3.0); b.lifespan = 380 }
     else b.lifespan = 1500
+
+    if (this.activeWeapon === 'lanzallamas') {
+      this._lanzallamasFiring = true
+      this._updateSprite()
+      if (this._lanzallamasFiringTimer) this._lanzallamasFiringTimer.remove()
+      this._lanzallamasFiringTimer = this.scene.time.delayedCall(2000, () => {
+        this._lanzallamasFiring = false
+        this._lanzallamasFiringTimer = null
+        if (this.active) this._updateSprite()
+      })
+    }
 
     const _weaponSounds = { arrow: 'sonidos_arma_flecha', shotgun: 'sonidos_arma_escopeta', future: 'sonidos_arma_futuro' }
     const _sndKey = _weaponSounds[this.activeWeapon]

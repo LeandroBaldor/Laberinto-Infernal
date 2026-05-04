@@ -2,7 +2,7 @@ import { Monster } from './Monster.js'
 
 const TILE = 32
 const SPEED = 380
-const SPREAD = 0.38  // sin(~22°)
+const SPREAD = 0.38
 
 export class Robot extends Monster {
   constructor(scene, x, y) {
@@ -13,17 +13,15 @@ export class Robot extends Monster {
     this.health = 25
     this.maxHealth = 25
     this.attackDamage = 5
-    this.detectionRange = 10
+    this.detectionRange = 12
     this.attackCooldown = 1000
     this.stepInterval = 380 + Math.random() * 160
     this.scoreValue = 50
     this.monsterType = 'robot'
+    this.territoryRadius = 999
 
-    this._dc = 1
-    this._dr = 0
-    this._lastShot = 0
     this._shotCooldown = 1800
-    this._shotRange = 10
+    this._shotRange = 12
   }
 
   getInfoLines() {
@@ -34,35 +32,65 @@ export class Robot extends Monster {
     ]
   }
 
-  stepTo(col, row) {
-    const dCol = col - this.gridCol
-    const dRow = row - this.gridRow
-    if (dCol !== 0 || dRow !== 0) {
-      this._dc = dCol !== 0 ? Math.sign(dCol) : 0
-      this._dr = dRow !== 0 ? Math.sign(dRow) : 0
-      if (dCol > 0) { this.setFlipX(false); this.setAngle(0) }
-      else if (dCol < 0) { this.setFlipX(true);  this.setAngle(0) }
-      else if (dRow < 0) { this.setFlipX(false); this.setAngle(-90) }
-      else if (dRow > 0) { this.setFlipX(false); this.setAngle(90) }
+  _aimAt(player) {
+    const dCol = player.gridCol - this.gridCol
+    const dRow = player.gridRow - this.gridRow
+    let dc, dr
+    if (Math.abs(dCol) >= Math.abs(dRow)) {
+      dc = Math.sign(dCol); dr = 0
+    } else {
+      dc = 0; dr = Math.sign(dRow)
     }
-    return super.stepTo(col, row)
+    if (dc > 0)      { this.setFlipX(false); this.setAngle(0) }
+    else if (dc < 0) { this.setFlipX(true);  this.setAngle(0) }
+    else if (dr < 0) { this.setFlipX(false); this.setAngle(-90) }
+    else if (dr > 0) { this.setFlipX(false); this.setAngle(90) }
+    return { dc, dr }
   }
 
   _fireShotgun(player, time) {
     this.lastAttack = time
-    const fx = this.x + this._dc * TILE
-    const fy = this.y + this._dr * TILE
-    const perp = { x: -this._dr, y: this._dc }
-
+    const { dc, dr } = this._aimAt(player)
+    const fx = this.x + dc * TILE
+    const fy = this.y + dr * TILE
+    const perp = { x: -dr, y: dc }
     const shots = [
-      { vx: this._dc,                         vy: this._dr },
-      { vx: this._dc - perp.x * SPREAD,       vy: this._dr - perp.y * SPREAD },
-      { vx: this._dc + perp.x * SPREAD,       vy: this._dr + perp.y * SPREAD },
+      { vx: dc,                      vy: dr },
+      { vx: dc - perp.x * SPREAD,   vy: dr - perp.y * SPREAD },
+      { vx: dc + perp.x * SPREAD,   vy: dr + perp.y * SPREAD },
     ]
     shots.forEach(({ vx, vy }) => {
       const len = Math.sqrt(vx * vx + vy * vy)
       this.scene.spawnRobotBullet(fx, fy, (vx / len) * SPEED, (vy / len) * SPEED, this.attackDamage)
     })
+    this.setTint(0x88ccff)
+    this.scene.time.delayedCall(120, () => { if (this.active) this.clearTint() })
+  }
+
+  stepTo(col, row) {
+    const dCol = col - this.gridCol
+    const dRow = row - this.gridRow
+    if (dCol > 0)      { this.setFlipX(false); this.setAngle(0) }
+    else if (dCol < 0) { this.setFlipX(true);  this.setAngle(0) }
+    else if (dRow < 0) { this.setFlipX(false); this.setAngle(-90) }
+    else if (dRow > 0) { this.setFlipX(false); this.setAngle(90) }
+    return super.stepTo(col, row)
+  }
+
+  _backAway(player) {
+    const dCol = this.gridCol - player.gridCol
+    const dRow = this.gridRow - player.gridRow
+    const moves = []
+    if (Math.abs(dCol) >= Math.abs(dRow)) {
+      if (dCol !== 0) moves.push([this.gridCol + Math.sign(dCol), this.gridRow])
+      if (dRow !== 0) moves.push([this.gridCol, this.gridRow + Math.sign(dRow)])
+    } else {
+      if (dRow !== 0) moves.push([this.gridCol, this.gridRow + Math.sign(dRow)])
+      if (dCol !== 0) moves.push([this.gridCol + Math.sign(dCol), this.gridRow])
+    }
+    for (const [col, row] of moves) {
+      if (this.stepTo(col, row)) return
+    }
   }
 
   update(time, player) {
@@ -74,22 +102,23 @@ export class Robot extends Monster {
 
     this._updateAiState(player, tileDist)
 
-    if (this.aiState === 'CHASE' && tileDist <= this._shotRange && tileDist > 1 && time > this.lastAttack + this._shotCooldown) {
-      this._fireShotgun(player, time)
+    if (this.aiState === 'CHASE') {
+      if (tileDist <= this._shotRange && time > this.lastAttack + this._shotCooldown) {
+        this._fireShotgun(player, time)
+        return
+      }
+      if (this.moving) return
+      if (time < this._lastStep + this.stepInterval) return
+      this._lastStep = time
+      if (tileDist <= 3) this._backAway(player)
+      else this._chasePlayer(player)
       return
     }
 
     if (this.moving) return
-    if (tileDist <= 1 && time > this.lastAttack + this.attackCooldown) {
-      player.takeDamage(this.attackDamage)
-      this.lastAttack = time
-      return
-    }
     if (time < this._lastStep + this.stepInterval) return
     this._lastStep = time
-
-    if (this.aiState === 'CHASE') this._chasePlayer(player)
-    else if (this.aiState === 'RETURN') this._returnHome()
+    if (this.aiState === 'RETURN') this._returnHome()
     else this._patrol()
   }
 
