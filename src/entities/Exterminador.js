@@ -24,6 +24,7 @@ export class Exterminador extends Monster {
     this._dc = 1
     this._dr = 0
     this._lastShot = 0
+    this.territoryRadius = 999
   }
 
   stepTo(col, row) {
@@ -62,7 +63,7 @@ export class Exterminador extends Monster {
 
     this._updateAiState(player, tileDist)
 
-    if (this.aiState === 'CHASE' && tileDist <= SHOT_RANGE && tileDist > 1 && time > this._lastShot + SHOT_COOLDOWN) {
+    if (this.aiState === 'CHASE' && tileDist <= SHOT_RANGE && time > this._lastShot + SHOT_COOLDOWN) {
       this._lastShot = time
       this._fireBurst()
       return

@@ -24,6 +24,7 @@ export class Robot extends Monster {
     this._lastShot = 0
     this._shotCooldown = 1800
     this._shotRange = 10
+    this.territoryRadius = 999
   }
 
   getInfoLines() {

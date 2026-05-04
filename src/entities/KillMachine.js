@@ -28,6 +28,7 @@ export class KillMachine extends Monster {
     this._burstCount = 0
     this._nextShot = 0
     this._firing = false
+    this.territoryRadius = 999
   }
 
   getInfoLines() {
@@ -70,7 +71,7 @@ export class KillMachine extends Monster {
     this._updateAiState(player, tileDist)
 
     // Ráfaga de ametralladora
-    if (this.aiState === 'CHASE' && tileDist <= this._shotRange && tileDist > 1) {
+    if (this.aiState === 'CHASE' && tileDist <= this._shotRange) {
       if (!this._firing && time > this._lastBurst + BURST_PAUSE) {
         this._firing = true
         this._burstCount = 0
