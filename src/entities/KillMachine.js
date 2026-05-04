@@ -26,8 +26,7 @@ export class KillMachine extends Monster {
     this._burstCount = 0
     this._nextShot = 0
     this._firing = false
-    this._burstTargetX = 0
-    this._burstTargetY = 0
+    this._burstRad = 0
   }
 
   getInfoLines() {
@@ -49,7 +48,12 @@ export class KillMachine extends Monster {
   }
 
   _fireBullet() {
-    this.scene.spawnCyanBullet(this.x, this.y, this._burstTargetX, this._burstTargetY, this.attackDamage)
+    this.scene.spawnCyanBullet(
+      this.x, this.y,
+      this.x + Math.cos(this._burstRad) * 1000,
+      this.y + Math.sin(this._burstRad) * 1000,
+      this.attackDamage
+    )
     this.setTint(0xff8844)
     this.scene.time.delayedCall(80, () => { if (this.active) this.clearTint() })
   }
@@ -65,16 +69,8 @@ export class KillMachine extends Monster {
 
     if (this.aiState === 'CHASE' && tileDist <= this.shotRange && tileDist > 1) {
       if (!this._firing && time > this._lastBurst + BURST_PAUSE) {
-        // Apunta al jugador en coordenadas pixel al inicio de la rafaga
-        this._burstTargetX = player.x
-        this._burstTargetY = player.y
-        const pdx = player.x - this.x
-        const pdy = player.y - this.y
-        if (Math.abs(pdx) >= Math.abs(pdy)) {
-          this.setFlipX(pdx < 0); this.setAngle(0)
-        } else {
-          this.setFlipX(false); this.setAngle(pdy > 0 ? 90 : -90)
-        }
+        // Igual que la Araña: ángulo hacia el jugador al inicio de la ráfaga
+        this._burstRad = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
         this._firing = true
         this._burstCount = 0
         this._nextShot = time

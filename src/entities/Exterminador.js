@@ -35,26 +35,20 @@ export class Exterminador extends Monster {
   }
 
   _fireBurst(player) {
-    const pdx = player.x - this.x
-    const pdy = player.y - this.y
-    const horizontal = Math.abs(pdx) >= Math.abs(pdy)
-    if (horizontal) {
-      this.setFlipX(pdx < 0); this.setAngle(0)
-    } else {
-      this.setFlipX(false); this.setAngle(pdy > 0 ? 90 : -90)
-    }
+    // Igual que la Araña: ángulo hacia el jugador, target a 1000px
+    const rad = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
+    const cos = Math.cos(rad)
+    const sin = Math.sin(rad)
 
-    // 4 balas en filas paralelas al disparo
-    const perpX = horizontal ? 0 : 1
-    const perpY = horizontal ? 1 : 0
-    const dirX  = horizontal ? Math.sign(pdx) : 0
-    const dirY  = horizontal ? 0 : Math.sign(pdy)
+    // Perpendicular al disparo (para las 4 filas en paralelo)
+    const perpX = -sin
+    const perpY =  cos
 
     const offsets = [-1.5, -0.5, 0.5, 1.5]
     offsets.forEach(t => {
       const fx = this.x + perpX * TILE * t
       const fy = this.y + perpY * TILE * t
-      this.scene.spawnCyanBullet(fx, fy, fx + dirX * 1000, fy + dirY * 1000, this.attackDamage, 360)
+      this.scene.spawnCyanBullet(fx, fy, fx + cos * 1000, fy + sin * 1000, this.attackDamage, 360)
     })
     this.setTint(0x00eeff)
     this.scene.time.delayedCall(200, () => { if (this.active) this.clearTint() })

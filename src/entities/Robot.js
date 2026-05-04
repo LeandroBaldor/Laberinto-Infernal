@@ -42,16 +42,14 @@ export class Robot extends Monster {
   }
 
   _shoot(player) {
-    const pdx = player.x - this.x
-    const pdy = player.y - this.y
-    if (Math.abs(pdx) >= Math.abs(pdy)) {
-      this.setFlipX(pdx < 0); this.setAngle(0)
-    } else {
-      this.setFlipX(false); this.setAngle(pdy > 0 ? 90 : -90)
-    }
-    const mouthX = this.x + (Math.abs(pdx) >= Math.abs(pdy) ? Math.sign(pdx) : 0) * TILE
-    const mouthY = this.y + (Math.abs(pdx) < Math.abs(pdy) ? Math.sign(pdy) : 0) * TILE
-    this.scene.spawnCyanBullet(mouthX, mouthY, player.x, player.y, this.attackDamage)
+    // Igual que la Araña: ángulo hacia el jugador, target 1000px en esa dirección
+    const rad = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
+    this.scene.spawnCyanBullet(
+      this.x, this.y,
+      this.x + Math.cos(rad) * 1000,
+      this.y + Math.sin(rad) * 1000,
+      this.attackDamage
+    )
     this.setTint(0x00eeff)
     this.scene.time.delayedCall(120, () => { if (this.active) this.clearTint() })
   }
