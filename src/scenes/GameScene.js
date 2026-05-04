@@ -914,6 +914,45 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(1800, () => { if (proj.active) proj.destroy() })
   }
 
+  spawnCyanBullet(fromX, fromY, toX, toY, damage, speed = 420) {
+    if (this.enemyProjectiles.getLength() >= 40) return
+    const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
+    proj.setDisplaySize(22, 22).setDepth(12).setTint(0x00eeff)
+    proj.projType = 'normal'
+    proj.damage   = damage
+    const dx = toX - fromX, dy = toY - fromY
+    const horizontal = Math.abs(dx) >= Math.abs(dy)
+    const vx = horizontal ? Math.sign(dx) * speed : 0
+    const vy = horizontal ? 0 : Math.sign(dy) * speed
+    proj.setRotation(horizontal ? (dx >= 0 ? 0 : Math.PI) : (dy >= 0 ? Math.PI / 2 : -Math.PI / 2))
+    this.enemyProjectiles.add(proj)
+    proj.body.setVelocity(vx, vy)
+    const trail = this.add.particles(0, 0, 'poison_bullet', {
+      follow: proj,
+      scale: { start: 0.5, end: 0 },
+      alpha: { start: 0.8, end: 0 },
+      tint: [0x00eeff, 0x44ddff, 0x88ffff],
+      lifespan: 250,
+      frequency: 40,
+    })
+    trail.setDepth(11)
+    this.time.delayedCall(2200, () => {
+      if (proj.active) proj.destroy()
+      if (trail.active) trail.destroy()
+    })
+  }
+
+  spawnEnergyBall(fromX, fromY, vx, vy, damage) {
+    if (this.enemyProjectiles.getLength() >= 80) return
+    const proj = this.physics.add.image(fromX, fromY, 'bullet')
+    proj.setDisplaySize(30, 30).setDepth(12).setTint(0xdd00ff)
+    proj.projType = 'normal'
+    proj.damage = damage
+    proj.body.setVelocity(vx, vy)
+    this.enemyProjectiles.add(proj)
+    this.time.delayedCall(2200, () => { if (proj.active) proj.destroy() })
+  }
+
   spawnAcidSplash(x, y) {
     const p = this.add.particles(x, y, 'poison_bullet', {
       speed: { min: 40, max: 130 },
@@ -951,6 +990,13 @@ export class GameScene extends Phaser.Scene {
     const flash = this.add.rectangle(w / 2, h / 2, w, h, 0x00ff44, 0.22)
       .setScrollFactor(0).setDepth(150)
     this.tweens.add({ targets: flash, alpha: 0, duration: 350, onComplete: () => flash.destroy() })
+  }
+
+  _flashRed() {
+    const w = this.scale.width, h = this.scale.height
+    const flash = this.add.rectangle(w / 2, h / 2, w, h, 0xff2200, 0.28)
+      .setScrollFactor(0).setDepth(150)
+    this.tweens.add({ targets: flash, alpha: 0, duration: 300, onComplete: () => flash.destroy() })
   }
 
   spawnHitParticle(x, y) {

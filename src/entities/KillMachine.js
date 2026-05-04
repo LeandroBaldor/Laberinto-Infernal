@@ -1,10 +1,9 @@
 import { Monster } from './Monster.js'
 
 const TILE = 32
-const SPEED = 450
-const BURST_SIZE   = 10
-const BURST_DELAY  = 100   // ms entre balas de la ráfaga
-const BURST_PAUSE  = 1800  // ms entre ráfagas
+const BURST_SIZE  = 8
+const BURST_DELAY = 100
+const BURST_PAUSE = 1800
 
 export class KillMachine extends Monster {
   constructor(scene, x, y) {
@@ -15,20 +14,19 @@ export class KillMachine extends Monster {
     this.health = 50
     this.maxHealth = 50
     this.attackDamage = 10
-    this.detectionRange = 10
+    this.detectionRange = 12
     this.attackCooldown = 1200
     this.stepInterval = 450 + Math.random() * 150
     this.scoreValue = 100
     this.monsterType = 'killmachine'
+    this.territoryRadius = 999
 
-    this._dc = 1
-    this._dr = 0
-    this._shotRange = 12
+    this.shotRange = 12
     this._lastBurst = 0
     this._burstCount = 0
     this._nextShot = 0
     this._firing = false
-    this.territoryRadius = 999
+    this._burstRad = 0
   }
 
   getInfoLines() {
@@ -42,37 +40,20 @@ export class KillMachine extends Monster {
   stepTo(col, row) {
     const dCol = col - this.gridCol
     const dRow = row - this.gridRow
-    if (dCol !== 0 || dRow !== 0) {
-      this._dc = dCol !== 0 ? Math.sign(dCol) : 0
-      this._dr = dRow !== 0 ? Math.sign(dRow) : 0
-      if (dCol > 0) { this.setFlipX(false); this.setAngle(0) }
-      else if (dCol < 0) { this.setFlipX(true);  this.setAngle(0) }
-      else if (dRow < 0) { this.setFlipX(false); this.setAngle(-90) }
-      else if (dRow > 0) { this.setFlipX(false); this.setAngle(90) }
-    }
+    if (dCol > 0)      { this.setFlipX(false); this.setAngle(0) }
+    else if (dCol < 0) { this.setFlipX(true);  this.setAngle(0) }
+    else if (dRow < 0) { this.setFlipX(false); this.setAngle(-90) }
+    else if (dRow > 0) { this.setFlipX(false); this.setAngle(90) }
     return super.stepTo(col, row)
   }
 
-  _aimAt(player) {
-    const dCol = player.gridCol - this.gridCol
-    const dRow = player.gridRow - this.gridRow
-    if (Math.abs(dCol) >= Math.abs(dRow)) {
-      this._dc = Math.sign(dCol); this._dr = 0
-    } else {
-      this._dc = 0; this._dr = Math.sign(dRow)
-    }
-    if (this._dc > 0)      { this.setFlipX(false); this.setAngle(0) }
-    else if (this._dc < 0) { this.setFlipX(true);  this.setAngle(0) }
-    else if (this._dr < 0) { this.setFlipX(false); this.setAngle(-90) }
-    else if (this._dr > 0) { this.setFlipX(false); this.setAngle(90) }
-  }
-
   _fireBullet() {
-    const fx = this.x + this._dc * TILE
-    const fy = this.y + this._dr * TILE
-    this.scene.spawnRobotBullet(fx, fy, this._dc * SPEED, this._dr * SPEED, this.attackDamage)
-    this.setTint(0xff8844)
-    this.scene.time.delayedCall(80, () => { if (this.active) this.clearTint() })
+    this.scene.spawnCyanBullet(
+      this.x, this.y,
+      this.x + Math.cos(this._burstRad) * 1000,
+      this.y + Math.sin(this._burstRad) * 1000,
+      this.attackDamage
+    )
   }
 
   update(time, player) {
@@ -84,10 +65,9 @@ export class KillMachine extends Monster {
 
     this._updateAiState(player, tileDist)
 
-    // Ráfaga de ametralladora
-    if (this.aiState === 'CHASE' && tileDist <= this._shotRange) {
+    if (this.aiState === 'CHASE' && tileDist <= this.shotRange && tileDist > 1) {
       if (!this._firing && time > this._lastBurst + BURST_PAUSE) {
-        this._aimAt(player)
+        this._burstRad = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
         this._firing = true
         this._burstCount = 0
         this._nextShot = time
@@ -125,7 +105,7 @@ export class KillMachine extends Monster {
       speed: { min: 80, max: 200 },
       angle: { min: 0, max: 360 },
       scale: { start: 1.5, end: 0 },
-      tint: 0xff4400,
+      tint: 0x00eeff,
       lifespan: 600,
       quantity: 16,
       emitting: false,
