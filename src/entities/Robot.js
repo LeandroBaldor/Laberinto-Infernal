@@ -43,7 +43,7 @@ export class Robot extends Monster {
 
   _shoot(player) {
     const rad = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
-    this.scene.spawnAraniaBullet(
+    this.scene.spawnCyanBullet(
       this.x, this.y,
       this.x + Math.cos(rad) * 1000,
       this.y + Math.sin(rad) * 1000,

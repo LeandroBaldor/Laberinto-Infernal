@@ -48,7 +48,7 @@ export class Exterminador extends Monster {
     offsets.forEach(t => {
       const fx = this.x + perpX * TILE * t
       const fy = this.y + perpY * TILE * t
-      this.scene.spawnAraniaBullet(fx, fy, fx + cos * 1000, fy + sin * 1000, this.attackDamage)
+      this.scene.spawnCyanBullet(fx, fy, fx + cos * 1000, fy + sin * 1000, this.attackDamage)
     })
     this.setTint(0x00eeff)
     this.scene.time.delayedCall(200, () => { if (this.active) this.clearTint() })

@@ -48,7 +48,7 @@ export class KillMachine extends Monster {
   }
 
   _fireBullet() {
-    this.scene.spawnAraniaBullet(
+    this.scene.spawnCyanBullet(
       this.x, this.y,
       this.x + Math.cos(this._burstRad) * 1000,
       this.y + Math.sin(this._burstRad) * 1000,
