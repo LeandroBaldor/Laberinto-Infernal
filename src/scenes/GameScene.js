@@ -913,8 +913,8 @@ export class GameScene extends Phaser.Scene {
     const horizontal = Math.abs(dx) >= Math.abs(dy)
     const vx = horizontal ? Math.sign(dx) * speed : 0
     const vy = horizontal ? 0 : Math.sign(dy) * speed
-    proj.body.setVelocity(vx, vy)
     this.enemyProjectiles.add(proj)
+    proj.body.setVelocity(vx, vy)
     const trail = this.add.particles(0, 0, 'bullet', {
       follow: proj,
       scale: { start: 0.6, end: 0 },
