@@ -892,6 +892,17 @@ export class GameScene extends Phaser.Scene {
     })
   }
 
+  spawnEnergyBall(fromX, fromY, vx, vy, damage) {
+    if (this.enemyProjectiles.getLength() >= 80) return
+    const proj = this.physics.add.image(fromX, fromY, 'bullet')
+    proj.setDisplaySize(30, 30).setDepth(12).setTint(0xdd00ff)
+    proj.projType = 'normal'
+    proj.damage = damage
+    proj.body.setVelocity(vx, vy)
+    this.enemyProjectiles.add(proj)
+    this.time.delayedCall(2200, () => { if (proj.active) proj.destroy() })
+  }
+
   spawnRobotBullet(fromX, fromY, vx, vy, damage) {
     if (this.enemyProjectiles.getLength() >= 80) return
     const proj = this.physics.add.image(fromX, fromY, 'bullet')

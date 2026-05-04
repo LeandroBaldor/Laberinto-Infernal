@@ -2,9 +2,9 @@ import { Monster } from './Monster.js'
 
 const TILE = 32
 const SPEED = 450
-const BURST_SIZE   = 5
-const BURST_DELAY  = 120   // ms entre balas de la ráfaga
-const BURST_PAUSE  = 2000  // ms entre ráfagas
+const BURST_SIZE   = 10
+const BURST_DELAY  = 100   // ms entre balas de la ráfaga
+const BURST_PAUSE  = 1800  // ms entre ráfagas
 
 export class KillMachine extends Monster {
   constructor(scene, x, y) {

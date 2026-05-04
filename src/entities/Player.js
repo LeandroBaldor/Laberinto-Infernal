@@ -161,7 +161,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (variant && this.scene.textures.exists(variant)) key = variant
     }
     if (this.texture.key !== key) this.setTexture(key)
-    this.setDisplaySize(TILE * 2.8125, TILE * 2.8125)
+    const isLarger = this.armorType === 'silver' || this.armorType === 'gold'
+    const targetH = isLarger ? TILE * 3.515 : TILE * 2.8125
+    const src = this.scene.textures.get(key).getSourceImage()
+    const s = src.height > 0 ? targetH / src.height : targetH / 256
+    this.setScale(s)
+    this._baseScaleX = this.scaleX
+    this._baseScaleY = this.scaleY
   }
 
   // ── movement ──────────────────────────────────────────────────────────────
@@ -184,24 +190,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Alternating lean: odd steps tilt right, even steps tilt left
     this._stepCount++
-    const lean = (this._stepCount % 2 === 0) ? -14 : 14
-    const bsx = this._baseScaleX
-    const bsy = this._baseScaleY
+    const lean = (this._stepCount % 2 === 0) ? -8 : 8
+    const baseAngle = this.angle
 
-    // Squash on contact, then spring back upright
     this.scene.tweens.add({
       targets: this,
-      scaleX: bsx * 1.22,
-      scaleY: bsy * 0.78,
-      angle: lean,
+      angle: baseAngle + lean,
       duration: 55,
       ease: 'Sine.easeOut',
       yoyo: true,
       onComplete: () => {
         this.scene.tweens.add({
           targets: this,
-          scaleX: bsx, scaleY: bsy, angle: 0,
-          duration: 60, ease: 'Sine.easeOut',
+          angle: baseAngle,
+          duration: 60,
+          ease: 'Sine.easeOut',
         })
       },
     })

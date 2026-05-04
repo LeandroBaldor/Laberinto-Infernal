@@ -4,7 +4,6 @@ const TILE = 32
 const SPEED = 360
 const SHOT_COOLDOWN = 2800
 const SHOT_RANGE   = 12
-const BURST_DELAY  = 160  // ms entre las dos ráfagas de cada fila
 
 export class Exterminador extends Monster {
   constructor(scene, x, y) {
@@ -42,24 +41,16 @@ export class Exterminador extends Monster {
   }
 
   _fireBurst() {
-    // 4 cañones perpendiculares, 2 tiros por cañón = 8 balas
+    // 4 cañones: una bola de energía grande por cañón
     const perp = { x: -this._dr, y: this._dc }
-    const offsets = [-1.5, -0.5, 0.5, 1.5]  // en tiles, perpendicular al disparo
-
-    const fireVolley = () => {
-      if (!this.active) return
-      offsets.forEach(t => {
-        const fx = this.x + perp.x * TILE * t
-        const fy = this.y + perp.y * TILE * t
-        this.scene.spawnRobotBullet(fx, fy, this._dc * SPEED, this._dr * SPEED, this.attackDamage)
-      })
-    }
-
-    fireVolley()
-    this.scene.time.delayedCall(BURST_DELAY, fireVolley)
-
-    this.setTint(0xff00ff)
-    this.scene.time.delayedCall(BURST_DELAY + 100, () => { if (this.active) this.clearTint() })
+    const offsets = [-1.5, -0.5, 0.5, 1.5]
+    offsets.forEach(t => {
+      const fx = this.x + perp.x * TILE * t
+      const fy = this.y + perp.y * TILE * t
+      this.scene.spawnEnergyBall(fx, fy, this._dc * SPEED, this._dr * SPEED, this.attackDamage)
+    })
+    this.setTint(0xdd00ff)
+    this.scene.time.delayedCall(200, () => { if (this.active) this.clearTint() })
   }
 
   update(time, player) {

@@ -52,9 +52,18 @@ export class Robot extends Monster {
     this.lastAttack = time
     const fx = this.x + this._dc * TILE
     const fy = this.y + this._dr * TILE
-    this.scene.spawnRobotBullet(fx, fy, this._dc * SPEED, this._dr * SPEED, this.attackDamage)
+    const perp = { x: -this._dr, y: this._dc }
+    const shots = [
+      { vx: this._dc,                      vy: this._dr },
+      { vx: this._dc - perp.x * SPREAD,    vy: this._dr - perp.y * SPREAD },
+      { vx: this._dc + perp.x * SPREAD,    vy: this._dr + perp.y * SPREAD },
+    ]
+    shots.forEach(({ vx, vy }) => {
+      const len = Math.sqrt(vx * vx + vy * vy)
+      this.scene.spawnRobotBullet(fx, fy, (vx / len) * SPEED, (vy / len) * SPEED, this.attackDamage)
+    })
     this.setTint(0x88ccff)
-    this.scene.time.delayedCall(100, () => { if (this.active) this.clearTint() })
+    this.scene.time.delayedCall(120, () => { if (this.active) this.clearTint() })
   }
 
   update(time, player) {
