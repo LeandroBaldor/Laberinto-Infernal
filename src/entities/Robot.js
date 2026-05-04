@@ -66,6 +66,22 @@ export class Robot extends Monster {
     this.scene.time.delayedCall(120, () => { if (this.active) this.clearTint() })
   }
 
+  _backAway(player) {
+    const dCol = this.gridCol - player.gridCol
+    const dRow = this.gridRow - player.gridRow
+    const moves = []
+    if (Math.abs(dCol) >= Math.abs(dRow)) {
+      if (dCol !== 0) moves.push([this.gridCol + Math.sign(dCol), this.gridRow])
+      if (dRow !== 0) moves.push([this.gridCol, this.gridRow + Math.sign(dRow)])
+    } else {
+      if (dRow !== 0) moves.push([this.gridCol, this.gridRow + Math.sign(dRow)])
+      if (dCol !== 0) moves.push([this.gridCol + Math.sign(dCol), this.gridRow])
+    }
+    for (const [col, row] of moves) {
+      if (this.stepTo(col, row)) return
+    }
+  }
+
   update(time, player) {
     if (!this.active) return
 
@@ -75,22 +91,25 @@ export class Robot extends Monster {
 
     this._updateAiState(player, tileDist)
 
-    if (this.aiState === 'CHASE' && tileDist <= this._shotRange && tileDist > 1 && time > this.lastAttack + this._shotCooldown) {
-      this._fireShotgun(player, time)
+    if (this.aiState === 'CHASE') {
+      // Siempre dispara si está en rango y el cooldown pasó
+      if (tileDist <= this._shotRange && time > this.lastAttack + this._shotCooldown) {
+        this._fireShotgun(player, time)
+        return
+      }
+      if (this.moving) return
+      if (time < this._lastStep + this.stepInterval) return
+      this._lastStep = time
+      // Si está demasiado cerca, retrocede; si no, persigue
+      if (tileDist <= 3) this._backAway(player)
+      else this._chasePlayer(player)
       return
     }
 
     if (this.moving) return
-    if (tileDist <= 1 && time > this.lastAttack + this.attackCooldown) {
-      player.takeDamage(this.attackDamage)
-      this.lastAttack = time
-      return
-    }
     if (time < this._lastStep + this.stepInterval) return
     this._lastStep = time
-
-    if (this.aiState === 'CHASE') this._chasePlayer(player)
-    else if (this.aiState === 'RETURN') this._returnHome()
+    if (this.aiState === 'RETURN') this._returnHome()
     else this._patrol()
   }
 
