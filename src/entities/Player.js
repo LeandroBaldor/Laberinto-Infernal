@@ -161,8 +161,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (variant && this.scene.textures.exists(variant)) key = variant
     }
     if (this.texture.key !== key) this.setTexture(key)
-    const isLarger = this.armorType === 'silver' || this.armorType === 'gold'
-    const targetH = isLarger ? TILE * 3.515 : TILE * 2.8125
+    const targetH = TILE * 2.1
     const src = this.scene.textures.get(key).getSourceImage()
     const s = src.height > 0 ? targetH / src.height : targetH / 256
     this.setScale(s)

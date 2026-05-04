@@ -9,7 +9,7 @@ export class Exterminador extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y)
     this.setTexture('robot_nave')
-    const targetH = TILE * 2.8
+    const targetH = TILE * 4.2
     this.setDisplaySize(Math.round(this.width * targetH / this.height), Math.round(targetH))
 
     this.health = 300
@@ -41,8 +41,22 @@ export class Exterminador extends Monster {
     return super.stepTo(col, row)
   }
 
-  _fireBurst() {
-    // 4 cañones: una bola de energía grande por cañón
+  _aimAt(player) {
+    const dCol = player.gridCol - this.gridCol
+    const dRow = player.gridRow - this.gridRow
+    if (Math.abs(dCol) >= Math.abs(dRow)) {
+      this._dc = Math.sign(dCol); this._dr = 0
+    } else {
+      this._dc = 0; this._dr = Math.sign(dRow)
+    }
+    if (this._dc > 0)      { this.setFlipX(false); this.setAngle(0) }
+    else if (this._dc < 0) { this.setFlipX(true);  this.setAngle(0) }
+    else if (this._dr < 0) { this.setFlipX(false); this.setAngle(-90) }
+    else if (this._dr > 0) { this.setFlipX(false); this.setAngle(90) }
+  }
+
+  _fireBurst(player) {
+    this._aimAt(player)
     const perp = { x: -this._dr, y: this._dc }
     const offsets = [-1.5, -0.5, 0.5, 1.5]
     offsets.forEach(t => {
@@ -65,7 +79,7 @@ export class Exterminador extends Monster {
 
     if (this.aiState === 'CHASE' && tileDist <= SHOT_RANGE && time > this._lastShot + SHOT_COOLDOWN) {
       this._lastShot = time
-      this._fireBurst()
+      this._fireBurst(player)
       return
     }
 

@@ -53,9 +53,23 @@ export class KillMachine extends Monster {
     return super.stepTo(col, row)
   }
 
+  _aimAt(player) {
+    const dCol = player.gridCol - this.gridCol
+    const dRow = player.gridRow - this.gridRow
+    if (Math.abs(dCol) >= Math.abs(dRow)) {
+      this._dc = Math.sign(dCol); this._dr = 0
+    } else {
+      this._dc = 0; this._dr = Math.sign(dRow)
+    }
+    if (this._dc > 0)      { this.setFlipX(false); this.setAngle(0) }
+    else if (this._dc < 0) { this.setFlipX(true);  this.setAngle(0) }
+    else if (this._dr < 0) { this.setFlipX(false); this.setAngle(-90) }
+    else if (this._dr > 0) { this.setFlipX(false); this.setAngle(90) }
+  }
+
   _fireBullet() {
-    const fx = this.x + this._dc * TILE * 1.5
-    const fy = this.y + this._dr * TILE * 1.5
+    const fx = this.x + this._dc * TILE
+    const fy = this.y + this._dr * TILE
     this.scene.spawnRobotBullet(fx, fy, this._dc * SPEED, this._dr * SPEED, this.attackDamage)
     this.setTint(0xff8844)
     this.scene.time.delayedCall(80, () => { if (this.active) this.clearTint() })
@@ -73,6 +87,7 @@ export class KillMachine extends Monster {
     // Ráfaga de ametralladora
     if (this.aiState === 'CHASE' && tileDist <= this._shotRange) {
       if (!this._firing && time > this._lastBurst + BURST_PAUSE) {
+        this._aimAt(player)
         this._firing = true
         this._burstCount = 0
         this._nextShot = time
