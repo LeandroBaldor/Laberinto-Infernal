@@ -22,6 +22,15 @@ export class Exterminador extends Monster {
     this.territoryRadius = 999
 
     this._lastShot = 0
+
+    this._ambientTimer = scene.time.addEvent({
+      delay: 60000,
+      loop: true,
+      callback: () => {
+        if (this.active && scene.cache.audio.exists('sonido_exterminador'))
+          scene.sound.play('sonido_exterminador', { volume: 0.8 })
+      },
+    })
   }
 
   stepTo(col, row) {
@@ -89,6 +98,7 @@ export class Exterminador extends Monster {
   }
 
   die() {
+    if (this._ambientTimer) { this._ambientTimer.remove(); this._ambientTimer = null }
     const particles = this.scene.add.particles(this.x, this.y, 'bullet', {
       speed: { min: 100, max: 260 },
       angle: { min: 0, max: 360 },

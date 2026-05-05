@@ -1,5 +1,5 @@
-/**
- * Generates a maze using Recursive Backtracking algorithm.
+﻿/**
+ * Generates a maze using Iterative Backtracking algorithm.
  * Returns a 2D grid where:
  *   1 = wall
  *   0 = floor
@@ -23,23 +23,30 @@ export function generateMaze(cols, rows) {
     return arr
   }
 
-  function carve(r, c) {
-    visited[r][c] = true
-    grid[r][c] = 0
+  // Iterative backtracking with explicit stack â€” avoids call-stack overflow
+  // on large mazes where recursion depth can exceed 2000+ frames.
+  const stack = [[1, 1]]
+  visited[1][1] = true
+  grid[1][1] = 0
 
-    const directions = shuffle([[0, 2], [0, -2], [2, 0], [-2, 0]])
-
-    for (const [dr, dc] of directions) {
+  while (stack.length > 0) {
+    const [r, c] = stack[stack.length - 1]
+    const dirs = shuffle([[0, 2], [0, -2], [2, 0], [-2, 0]])
+    let moved = false
+    for (const [dr, dc] of dirs) {
       const nr = r + dr
       const nc = c + dc
       if (inBounds(nr, nc) && !visited[nr][nc]) {
+        visited[nr][nc] = true
         grid[r + dr / 2][c + dc / 2] = 0
-        carve(nr, nc)
+        grid[nr][nc] = 0
+        stack.push([nr, nc])
+        moved = true
+        break
       }
     }
+    if (!moved) stack.pop()
   }
-
-  carve(1, 1)
 
   // Remove ~15% of eligible interior walls to create loops / multiple paths
   for (let r = 2; r < gridRows - 2; r++) {
@@ -82,3 +89,4 @@ export function getRightmostCell(floorCells) {
   candidates.sort((a, b) => a.row - b.row)
   return candidates[Math.floor(candidates.length / 2)]
 }
+

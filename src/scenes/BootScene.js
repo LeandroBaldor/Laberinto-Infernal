@@ -20,6 +20,7 @@ export class BootScene extends Phaser.Scene {
     // Weapon pickup sprites (floor items)
     this.load.image('pickup_sword_raw',   `${base}espada.png`)
     this.load.image('pickup_arrow_raw',   `${base}flechas.png`)
+    this.load.image('flecha_proyectil_raw', `${base}flecha.png`)
     this.load.image('pickup_shotgun_raw', `${base}escopeta.png`)
     this.load.image('pickup_future_raw',  `${base}arma_futuro.png`)
 
@@ -42,6 +43,10 @@ export class BootScene extends Phaser.Scene {
     this.load.image('robot_t700_raw',     `${base}Nivel_2/robot.png`)
     this.load.image('robot_calavera_raw', `${base}Nivel_2/robot_calavera.png`)
     this.load.image('robot_nave_raw',     `${base}Nivel_2/robot_nave.png`)
+
+    // Nivel 2 balas de robots (fondo blanco)
+    this.load.image('bala_t700_raw',        `${base}Nivel_2/Balas_T-700.png`)
+    this.load.image('bala_killmachine_raw', `${base}Nivel_2/Balas_Kill_Machine.png`)
 
     // Nivel 2 armas pickup (nuevos diseños)
     this.load.image('pickup_sword_l2_raw',         `${base}Nivel_2/espada.png`)
@@ -104,6 +109,14 @@ export class BootScene extends Phaser.Scene {
     this.load.audio('sonidos_arma_flecha',        `${base}sonidos_arma_flecha.mp3`)
     this.load.audio('sonidos_arma_escopeta',      `${base}sonidos_arma_escopeta.mp3`)
     this.load.audio('sonidos_arma_futuro',        `${base}sonidos_arma_futuro.mp3`)
+    this.load.audio('sonidos_arma_ametralladora',   `${base}sonidos_arma_ametralladora.mp3`)
+    this.load.audio('sonido_killmachine_disparo',   `${base}Nivel_2/ametralladora_KillMachine.mp3`)
+    this.load.audio('sonido_t700_disparo',          `${base}Nivel_2/weapon_t-700.mp3`)
+    this.load.audio('sonido_exterminador',          `${base}Nivel_2/sound_Exterminador.mp3`)
+
+    // Nivel 7 — lanzallamas infernal
+    this.load.image('lanzallamas_infernal_raw', `${base}Nivel_7/lanzallamas.png`)
+    this.load.image('lanzallamas_fuego_l7_raw', `${base}Nivel_7/fuego.png`)
     this.load.audio('sonidos_monster',            `${base}sonidos_monster.mp3`)
     this.load.audio('sonido_pickup',              `${base}sonido_pickup.wav`)
 
@@ -162,6 +175,14 @@ export class BootScene extends Phaser.Scene {
       if (loaded.has('robot_calavera_raw')) this._stripWhiteBackgroundAs('robot_calavera_raw', 'robot_calavera')
       if (loaded.has('robot_nave_raw'))     this._stripWhiteBackgroundAs('robot_nave_raw',     'robot_nave')
 
+      // Nivel 2 balas de robots (strip white background)
+      if (loaded.has('bala_t700_raw'))        this._stripWhiteBackgroundAs('bala_t700_raw',        'bala_t700')
+      if (loaded.has('bala_killmachine_raw')) this._stripWhiteBackgroundAs('bala_killmachine_raw', 'bala_killmachine')
+
+      // Nivel 7 — lanzallamas infernal
+      if (loaded.has('lanzallamas_infernal_raw')) this._stripWhiteBackgroundAs('lanzallamas_infernal_raw', 'lanzallamas_infernal')
+      if (loaded.has('lanzallamas_fuego_l7_raw')) this._stripBlackBackground('lanzallamas_fuego_l7_raw', 'lanzallamas_fuego_l7')
+
       // Weapon pickup sprites — root folder (white bg)
       const pickupPairsWhite = [
         ['pickup_sword_raw',   'sword'],
@@ -172,6 +193,7 @@ export class BootScene extends Phaser.Scene {
       for (const [src, dest] of pickupPairsWhite) {
         if (loaded.has(src)) this._stripWhiteBackgroundAs(src, dest)
       }
+      if (loaded.has('flecha_proyectil_raw')) this._stripWhiteBackgroundAs('flecha_proyectil_raw', 'flecha_proyectil')
       // Nivel_2 versions override the above with updated designs (black bg)
       const pickupPairsBlack = [
         ['pickup_sword_l2_raw',       'sword'],

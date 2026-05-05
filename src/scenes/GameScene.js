@@ -198,8 +198,11 @@ export class GameScene extends Phaser.Scene {
       { groupKey: 'shotgunPickups',wType: 'shotgun', texKey: 'shotgun',       count: 100, tint: 0xff8833 },
       { groupKey: 'futurePickups', wType: 'future',  texKey: 'future_weapon', count:  50, tint: 0x00ffff },
       ...(this.level >= 2 ? [
-        { groupKey: 'ametralladoraPickups', wType: 'ametralladora', texKey: 'ametralladora', count: 100, tint: 0xffcc00 },
-        { groupKey: 'llamasPickups',        wType: 'lanzallamas',   texKey: 'lanzallamas',   count:  60, tint: 0xff4400 },
+        { groupKey: 'ametralladoraPickups', wType: 'ametralladora', texKey: 'ametralladora',      count: 100, tint: 0xffcc00 },
+        { groupKey: 'llamasPickups',        wType: 'lanzallamas',   texKey: 'lanzallamas',         count:  60, tint: 0xff4400 },
+      ] : []),
+      ...(this.level >= 7 ? [
+        { groupKey: 'infernusPickups', wType: 'lanzallamas_infernal', texKey: 'lanzallamas_infernal', count: 30, tint: 0xff2200 },
       ] : []),
     ]
     for (const def of weaponDefs) {
@@ -914,8 +917,64 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(1800, () => { if (proj.active) proj.destroy() })
   }
 
+  spawnEnemyImageBullet(texKey, fromX, fromY, toX, toY, damage, speed = 420) {
+    if (this.enemyProjectiles.getLength() >= 80) return
+    const tex = this.textures.exists(texKey) ? texKey : 'poison_bullet'
+    const proj = this.physics.add.image(fromX, fromY, tex)
+    proj.setDisplaySize(60, 38).setDepth(12)
+    proj.projType = 'normal'
+    proj.damage   = damage
+    const dx = toX - fromX, dy = toY - fromY
+    const horizontal = Math.abs(dx) >= Math.abs(dy)
+    const vx = horizontal ? Math.sign(dx) * speed : 0
+    const vy = horizontal ? 0 : Math.sign(dy) * speed
+    proj.setRotation(horizontal ? (dx >= 0 ? Math.PI : 0) : (dy >= 0 ? -Math.PI / 2 : Math.PI / 2))
+    this.enemyProjectiles.add(proj)
+    proj.body.setVelocity(vx, vy)
+    this.time.delayedCall(2000, () => { if (proj.active) proj.destroy() })
+  }
+
+  spawnFlamethrowerBeam(fromX, fromY, dir, damage) {
+    const RANGE = 5 * TILE
+
+    // ── Visual ────────────────────────────────────────────────────────────────
+    if (this.textures.exists('lanzallamas_fuego_l7')) {
+      const src = this.textures.get('lanzallamas_fuego_l7').getSourceImage()
+      const dispW = RANGE
+      const dispH = Math.round(src.height * RANGE / src.width)
+
+      const beamProps = {
+        right: { ox:  RANGE / 2, oy: 0,          rot: 0              },
+        left:  { ox: -RANGE / 2, oy: 0,          rot: Math.PI        },
+        up:    { ox: 0,          oy: -RANGE / 2,  rot:  Math.PI / 2  },
+        down:  { ox: 0,          oy:  RANGE / 2,  rot: -Math.PI / 2  },
+      }
+      const { ox, oy, rot } = beamProps[dir] || beamProps.right
+      const flame = this.add.image(fromX + ox, fromY + oy, 'lanzallamas_fuego_l7')
+      flame.setDisplaySize(dispW, dispH).setRotation(rot).setDepth(15)
+      this.tweens.add({
+        targets: flame, alpha: 0,
+        duration: 350, delay: 150,
+        onComplete: () => flame.destroy(),
+      })
+    }
+
+    // ── Hit detection ─────────────────────────────────────────────────────────
+    const dirVec = { right: [1, 0], left: [-1, 0], up: [0, -1], down: [0, 1] }[dir] || [1, 0]
+    this.monsters.getChildren().forEach(m => {
+      if (!m.active) return
+      const dx = m.x - fromX
+      const dy = m.y - fromY
+      const dot   = dx * dirVec[0] + dy * dirVec[1]
+      const cross = Math.abs(dx * dirVec[1] - dy * dirVec[0])
+      if (dot > 0 && dot <= RANGE + TILE && cross <= TILE * 1.5) {
+        m.hit(damage)
+      }
+    })
+  }
+
   spawnCyanBullet(fromX, fromY, toX, toY, damage, speed = 420) {
-    if (this.enemyProjectiles.getLength() >= 40) return
+    if (this.enemyProjectiles.getLength() >= 80) return
     const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
     proj.setDisplaySize(22, 22).setDepth(12).setTint(0x00eeff)
     proj.projType = 'normal'

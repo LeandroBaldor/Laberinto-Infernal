@@ -34,8 +34,8 @@ export class Robot extends Monster {
   stepTo(col, row) {
     const dCol = col - this.gridCol
     const dRow = row - this.gridRow
-    if (dCol > 0)      { this.setFlipX(false); this.setAngle(0) }
-    else if (dCol < 0) { this.setFlipX(true);  this.setAngle(0) }
+    if (dCol > 0)      { this.setFlipX(true);  this.setAngle(0) }
+    else if (dCol < 0) { this.setFlipX(false); this.setAngle(0) }
     else if (dRow < 0) { this.setFlipX(false); this.setAngle(-90) }
     else if (dRow > 0) { this.setFlipX(false); this.setAngle(90) }
     return super.stepTo(col, row)
@@ -43,12 +43,15 @@ export class Robot extends Monster {
 
   _shoot(player) {
     const rad = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
-    this.scene.spawnCyanBullet(
+    this.scene.spawnEnemyImageBullet(
+      'bala_t700',
       this.x, this.y,
       this.x + Math.cos(rad) * 1000,
       this.y + Math.sin(rad) * 1000,
       this.attackDamage
     )
+    if (this.scene.cache.audio.exists('sonido_t700_disparo'))
+      this.scene.sound.play('sonido_t700_disparo', { volume: 0.7 })
   }
 
   update(time, player) {

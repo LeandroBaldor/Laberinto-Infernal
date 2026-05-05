@@ -27,6 +27,7 @@ export class KillMachine extends Monster {
     this._nextShot = 0
     this._firing = false
     this._burstRad = 0
+    this._burstSnd = null
   }
 
   getInfoLines() {
@@ -48,12 +49,32 @@ export class KillMachine extends Monster {
   }
 
   _fireBullet() {
-    this.scene.spawnCyanBullet(
+    this.scene.spawnEnemyImageBullet(
+      'bala_killmachine',
       this.x, this.y,
       this.x + Math.cos(this._burstRad) * 1000,
       this.y + Math.sin(this._burstRad) * 1000,
       this.attackDamage
     )
+  }
+
+  _startBurstSound() {
+    if (!this.scene.cache.audio.exists('sonido_killmachine_disparo')) return
+    this._stopBurstSound()
+    this._burstSnd = this.scene.sound.add('sonido_killmachine_disparo', { volume: 0.6, loop: true })
+    this._burstSnd.play()
+  }
+
+  _stopBurstSound() {
+    if (!this._burstSnd) return
+    const snd = this._burstSnd
+    this._burstSnd = null
+    this.scene.tweens.add({
+      targets: snd,
+      volume: 0,
+      duration: 350,
+      onComplete: () => { if (snd.isPlaying) snd.stop(); snd.destroy() },
+    })
   }
 
   update(time, player) {
@@ -71,6 +92,7 @@ export class KillMachine extends Monster {
         this._firing = true
         this._burstCount = 0
         this._nextShot = time
+        this._startBurstSound()
       }
       if (this._firing && time >= this._nextShot && this._burstCount < BURST_SIZE) {
         this._fireBullet()
@@ -79,10 +101,12 @@ export class KillMachine extends Monster {
         if (this._burstCount >= BURST_SIZE) {
           this._firing = false
           this._lastBurst = time
+          this._stopBurstSound()
         }
         return
       }
     } else {
+      if (this._firing) this._stopBurstSound()
       this._firing = false
     }
 
@@ -101,6 +125,7 @@ export class KillMachine extends Monster {
   }
 
   die() {
+    this._stopBurstSound()
     const particles = this.scene.add.particles(this.x, this.y, 'bullet', {
       speed: { min: 80, max: 200 },
       angle: { min: 0, max: 360 },

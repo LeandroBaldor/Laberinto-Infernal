@@ -6,7 +6,8 @@ export const WEAPON_STATS = {
   shotgun:       { label: 'ESCOPETA',       dmg: 10,  ranged: true,  ammoPerPickup: 5,  speed: 350, tint: 0xff6600, cooldown: 500 },
   future:        { label: 'ARG.FUTURO',     dmg: 15,  ranged: true,  ammoPerPickup: 4,  speed: 620, tint: 0x00ddff, cooldown: 350 },
   ametralladora: { label: 'AMETRALLADORA',  dmg: 8,   ranged: true,  ammoPerPickup: 30, speed: 500, tint: 0xffcc00, cooldown: 150 },
-  lanzallamas:   { label: 'LANZALLAMAS',    dmg: 40,  ranged: true,  ammoPerPickup: 10, speed: 220, tint: 0xff4400, cooldown: 2000 },
+  lanzallamas:          { label: 'LANZALLAMAS',         dmg: 40,  ranged: true,  ammoPerPickup: 10, speed: 220, tint: 0xff4400, cooldown: 2000 },
+  lanzallamas_infernal: { label: 'LANZALLAMAS INFERNAL', dmg: 60,  ranged: true,  ammoPerPickup: 8,  speed: 0,   tint: null,     cooldown: 1800 },
 }
 
 export const ARMOR_STATS = {
@@ -160,10 +161,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (variant && this.scene.textures.exists(variant)) key = variant
     }
     if (this.texture.key !== key) this.setTexture(key)
-    const targetH = TILE * 2.1
-    const src = this.scene.textures.get(key).getSourceImage()
-    const s = src.height > 0 ? targetH / src.height : targetH / 256
-    this.setScale(s)
+    // Compute scale once from the base sprite so every weapon/armor variant
+    // renders the character at the same height (1.5 tiles = feet to head).
+    if (!this._charScale) {
+      const baseSrc = this.scene.textures.get('player').getSourceImage()
+      this._charScale = baseSrc.height > 0 ? (TILE * 1.5) / baseSrc.height : 1
+    }
+    this.setScale(this._charScale)
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY
   }
@@ -179,6 +183,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.moving) return
     if (!this.canMoveTo(col, row)) return
     this.moving = true
+
+    const dCol = col - this.gridCol
+    const dRow = row - this.gridRow
     this.gridCol = col
     this.gridRow = row
     const tx = col * TILE + TILE / 2
@@ -186,11 +193,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this._footstepSound?.play()
 
-    // Alternating lean: odd steps tilt right, even steps tilt left
     this._stepCount++
-    const lean = (this._stepCount % 2 === 0) ? -8 : 8
+    const lean      = (this._stepCount % 2 === 0) ? -7 : 7
     const baseAngle = this.angle
 
+    // Lean side to side with each step
     this.scene.tweens.add({
       targets: this,
       angle: baseAngle + lean,
@@ -201,7 +208,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.tweens.add({
           targets: this,
           angle: baseAngle,
-          duration: 60,
+          duration: 55,
           ease: 'Sine.easeOut',
         })
       },
@@ -228,7 +235,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const dirChanged = dc !== this._heldDc || dr !== this._heldDr
     this._heldDc = dc; this._heldDr = dr
 
-    if (dc !== 0 || dr !== 0 || dirChanged) {
+    if ((dc !== 0 || dr !== 0 || dirChanged) && !this.moving) {
       if      (this.facingDir === 'up')   this.setAngle(-90)
       else if (this.facingDir === 'down') this.setAngle(90)
       else                                this.setAngle(0)
@@ -360,6 +367,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   shoot(bullets) {
     const stats = WEAPON_STATS[this.activeWeapon]
+
+    const _tipOffset = TILE * 1.4
+    const _tipX = this.x + ({ right: _tipOffset, left: -_tipOffset, up: 0,           down: 0           }[this.facingDir] || 0)
+    const _tipY = this.y + ({ right: 0,          left: 0,           up: -_tipOffset, down: _tipOffset  }[this.facingDir] || 0)
+
+    if (this.activeWeapon === 'lanzallamas_infernal') {
+      this.scene.spawnFlamethrowerBeam(_tipX, _tipY, this.facingDir, stats.dmg * this.damageMultiplier)
+      const currentAmmo = this.inventory.get(this.activeWeapon)
+      const newAmmo = currentAmmo - 1
+      this.inventory.set(this.activeWeapon, newAmmo)
+      this.scene.events.emit('ammoChanged', newAmmo)
+      if (newAmmo <= 0) {
+        this.inventory.delete(this.activeWeapon)
+        const remaining = [...this.inventory.keys()]
+        this.activeWeapon = remaining.length > 0 ? remaining[0] : null
+        this._emitWeaponState()
+      }
+      return
+    }
+
     const speed = stats.speed
     const dirMap = {
       right: { vx:  speed, vy: 0 },
@@ -368,12 +395,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       down:  { vx: 0, vy:  speed },
     }
     const { vx, vy } = dirMap[this.facingDir] || dirMap.right
-    const b = bullets.create(this.x, this.y, 'bullet')
+    const b = bullets.create(_tipX, _tipY, 'bullet')
     if (!b) return
     b.setDepth(9)
     b.setVelocity(vx, vy)
     b.damage = stats.dmg * this.damageMultiplier
     if (stats.tint) b.setTint(stats.tint)
+    if (this.activeWeapon === 'arrow' && this.scene.textures.exists('flecha_proyectil')) {
+      const src = this.scene.textures.get('flecha_proyectil').getSourceImage()
+      const dispH = Math.round(TILE * 0.45)
+      const dispW = Math.round(src.width * dispH / src.height)
+      const rot = { right: 0, left: Math.PI, up: -Math.PI / 2, down: Math.PI / 2 }[this.facingDir] || 0
+      b.setTexture('flecha_proyectil').setDisplaySize(dispW, dispH).setRotation(rot)
+    }
     if (this.activeWeapon === 'shotgun')       { b.setScale(1.6); b.lifespan = 1500 }
     else if (this.activeWeapon === 'lanzallamas') { b.setScale(3.0); b.lifespan = 380 }
     else b.lifespan = 1500
@@ -389,7 +423,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       })
     }
 
-    const _weaponSounds = { arrow: 'sonidos_arma_flecha', shotgun: 'sonidos_arma_escopeta', future: 'sonidos_arma_futuro' }
+    const _weaponSounds = { arrow: 'sonidos_arma_flecha', shotgun: 'sonidos_arma_escopeta', future: 'sonidos_arma_futuro', ametralladora: 'sonidos_arma_ametralladora' }
     const _sndKey = _weaponSounds[this.activeWeapon]
     if (_sndKey && this.scene.cache.audio.exists(_sndKey))
       this.scene.sound.play(_sndKey, { volume: 0.7 })
