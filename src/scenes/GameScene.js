@@ -199,7 +199,7 @@ export class GameScene extends Phaser.Scene {
       { groupKey: 'futurePickups', wType: 'future',  texKey: 'future_weapon', count:  50, tint: 0x00ffff },
       ...(this.level >= 2 ? [
         { groupKey: 'ametralladoraPickups', wType: 'ametralladora', texKey: 'ametralladora',      count: 100, tint: 0xffcc00 },
-        { groupKey: 'llamasPickups',        wType: 'lanzallamas',   texKey: 'lanzallamas',         count:  60, tint: 0xff4400 },
+        { groupKey: 'llamasPickups',        wType: 'lanzallamas',   texKey: 'lanzallamas',         count:  50, tint: 0xff4400 },
       ] : []),
       ...(this.level >= 7 ? [
         { groupKey: 'infernusPickups', wType: 'lanzallamas_infernal', texKey: 'lanzallamas_infernal', count: 30, tint: 0xff2200 },
@@ -238,7 +238,7 @@ export class GameScene extends Phaser.Scene {
 
     // ── Health packs ─────────────────────────────────────────────────────────
     this.healthPacks = this.physics.add.staticGroup()
-    for (let i = 0; i < 1 + this.level; i++) {
+    for (let i = 0; i < 5 + this.level * 2; i++) {
       let cell, attempts = 0
       do {
         cell = floorCells[Math.floor(Math.random() * floorCells.length)]
@@ -319,12 +319,16 @@ export class GameScene extends Phaser.Scene {
         if (sprite.icon) { this.tweens.killTweensOf(sprite.icon); sprite.icon.destroy() }
         this.tweens.killTweensOf(sprite)
         sprite.destroy()
+        const isNew = !player.inventory.has(def.wType)
         player.pickupWeapon(def.wType)
         this.score += 2
         this.events.emit('scoreChanged', this.score)
         const s = WEAPON_STATS[def.wType]
-        this.showFloatingText(player.x, player.y - 20,
-          `${s.label}! +2`, this._weaponColor(def.wType))
+        if (isNew) {
+          this.showWeaponBanner(player.x, player.y - 24, s.label, this._weaponColor(def.wType))
+        } else {
+          this.showFloatingText(player.x, player.y - 20, `${s.label} +munición`, this._weaponColor(def.wType))
+        }
       }, null, this)
     }
 
@@ -355,10 +359,13 @@ export class GameScene extends Phaser.Scene {
       exterminadorCount: this.exterminadorCount,
     })
 
-    // ── Música nivel 1 ───────────────────────────────────────────────────────
+    // ── Música por nivel ─────────────────────────────────────────────────────
     this._bgMusic = null
     if (this.level === 1 && this.cache.audio.exists('musica_nivel_1')) {
       this._bgMusic = this.sound.add('musica_nivel_1', { loop: true, volume: 0.25 })
+      this._bgMusic.play()
+    } else if (this.level === 2 && this.cache.audio.exists('musica_nivel_2')) {
+      this._bgMusic = this.sound.add('musica_nivel_2', { loop: true, volume: 0.25 })
       this._bgMusic.play()
     }
     this.events.once('shutdown', () => {
@@ -1051,6 +1058,13 @@ export class GameScene extends Phaser.Scene {
     this.tweens.add({ targets: flash, alpha: 0, duration: 300, onComplete: () => flash.destroy() })
   }
 
+  _flameFire() {
+    const w = this.scale.width, h = this.scale.height
+    const flash = this.add.rectangle(w / 2, h / 2, w, h, 0xff6600, 0.18)
+      .setScrollFactor(0).setDepth(150)
+    this.tweens.add({ targets: flash, alpha: 0, duration: 250, onComplete: () => flash.destroy() })
+  }
+
   spawnHitParticle(x, y) {
     const p = this.add.particles(x, y, 'bullet', {
       speed: { min: 30, max: 80 }, angle: { min: 0, max: 360 },
@@ -1067,5 +1081,23 @@ export class GameScene extends Phaser.Scene {
       color, stroke: '#000000', strokeThickness: 3,
     }).setDepth(200).setOrigin(0.5)
     this.tweens.add({ targets: txt, y: y - 40, alpha: 0, duration: 800, onComplete: () => txt.destroy() })
+  }
+
+  showWeaponBanner(x, y, label, color) {
+    const txt = this.add.text(x, y, `★ ${label} ★`, {
+      fontSize: '20px', fontFamily: 'Courier New', fontStyle: 'bold',
+      color, stroke: '#000000', strokeThickness: 5,
+    }).setDepth(201).setOrigin(0.5).setAlpha(0).setScale(0.5)
+    this.tweens.add({
+      targets: txt, alpha: 1, scaleX: 1, scaleY: 1,
+      duration: 180, ease: 'Back.easeOut',
+      onComplete: () => {
+        this.tweens.add({
+          targets: txt, y: y - 60, alpha: 0,
+          duration: 900, delay: 2000, ease: 'Sine.easeIn',
+          onComplete: () => txt.destroy(),
+        })
+      },
+    })
   }
 }

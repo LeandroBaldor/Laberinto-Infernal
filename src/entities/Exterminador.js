@@ -8,12 +8,13 @@ export class Exterminador extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y)
     this.setTexture('robot_nave')
-    const targetH = TILE * 4.2
+    const targetH = TILE * 5.5
     this.setDisplaySize(Math.round(this.width * targetH / this.height), Math.round(targetH))
+    this.body.setSize(TILE * 4, TILE * 4)
 
     this.health = 300
     this.maxHealth = 300
-    this.attackDamage = 12
+    this.attackDamage = 5
     this.detectionRange = 10
     this.attackCooldown = 1500
     this.stepInterval = 500 + Math.random() * 200

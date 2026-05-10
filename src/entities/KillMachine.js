@@ -10,18 +10,19 @@ export class KillMachine extends Monster {
     super(scene, x, y)
     this.setTexture('robot_calavera')
     this.setDisplaySize(TILE * 3.125, TILE * 3.125)
+    this.body.setSize(TILE * 2.5, TILE * 2.5)
 
     this.health = 50
     this.maxHealth = 50
-    this.attackDamage = 10
-    this.detectionRange = 12
+    this.attackDamage = 2.5
+    this.detectionRange = 10
     this.attackCooldown = 1200
     this.stepInterval = 450 + Math.random() * 150
     this.scoreValue = 100
     this.monsterType = 'killmachine'
     this.territoryRadius = 999
 
-    this.shotRange = 12
+    this.shotRange = 10
     this._lastBurst = 0
     this._burstCount = 0
     this._nextShot = 0

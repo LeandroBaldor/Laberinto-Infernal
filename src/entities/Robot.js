@@ -6,12 +6,12 @@ export class Robot extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y)
     this.setTexture('robot_t700')
-    this.setDisplaySize(TILE * 2, TILE * 2)
+    this.setDisplaySize(TILE * 2.25, TILE * 2.25)
 
     this.health = 25
     this.maxHealth = 25
-    this.attackDamage = 5
-    this.detectionRange = 12
+    this.attackDamage = 2.5
+    this.detectionRange = 10
     this.attackCooldown = 1000
     this.stepInterval = 380 + Math.random() * 160
     this.scoreValue = 50
@@ -20,7 +20,7 @@ export class Robot extends Monster {
 
     this.shotCooldown = 1800
     this.lastShot = 0
-    this.shotRange = 12
+    this.shotRange = 10
   }
 
   getInfoLines() {
