@@ -8,12 +8,13 @@ export class Exterminador extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y)
     this.setTexture('robot_nave')
-    const targetH = TILE * 4.2
+    const targetH = TILE * 5.5
     this.setDisplaySize(Math.round(this.width * targetH / this.height), Math.round(targetH))
+    this.body.setSize(TILE * 4, TILE * 4)
 
     this.health = 300
     this.maxHealth = 300
-    this.attackDamage = 12
+    this.attackDamage = 5
     this.detectionRange = 10
     this.attackCooldown = 1500
     this.stepInterval = 500 + Math.random() * 200
@@ -22,6 +23,15 @@ export class Exterminador extends Monster {
     this.territoryRadius = 999
 
     this._lastShot = 0
+
+    this._ambientTimer = scene.time.addEvent({
+      delay: 60000,
+      loop: true,
+      callback: () => {
+        if (this.active && scene.cache.audio.exists('sonido_exterminador'))
+          scene.sound.play('sonido_exterminador', { volume: 0.8 })
+      },
+    })
   }
 
   stepTo(col, row) {
@@ -89,6 +99,7 @@ export class Exterminador extends Monster {
   }
 
   die() {
+    if (this._ambientTimer) { this._ambientTimer.remove(); this._ambientTimer = null }
     const particles = this.scene.add.particles(this.x, this.y, 'bullet', {
       speed: { min: 100, max: 260 },
       angle: { min: 0, max: 360 },

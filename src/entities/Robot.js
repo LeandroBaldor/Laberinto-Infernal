@@ -6,12 +6,12 @@ export class Robot extends Monster {
   constructor(scene, x, y) {
     super(scene, x, y)
     this.setTexture('robot_t700')
-    this.setDisplaySize(TILE * 2, TILE * 2)
+    this.setDisplaySize(TILE * 2.25, TILE * 2.25)
 
     this.health = 25
     this.maxHealth = 25
-    this.attackDamage = 5
-    this.detectionRange = 12
+    this.attackDamage = 2.5
+    this.detectionRange = 10
     this.attackCooldown = 1000
     this.stepInterval = 380 + Math.random() * 160
     this.scoreValue = 50
@@ -20,7 +20,7 @@ export class Robot extends Monster {
 
     this.shotCooldown = 1800
     this.lastShot = 0
-    this.shotRange = 12
+    this.shotRange = 10
   }
 
   getInfoLines() {
@@ -34,8 +34,8 @@ export class Robot extends Monster {
   stepTo(col, row) {
     const dCol = col - this.gridCol
     const dRow = row - this.gridRow
-    if (dCol > 0)      { this.setFlipX(false); this.setAngle(0) }
-    else if (dCol < 0) { this.setFlipX(true);  this.setAngle(0) }
+    if (dCol > 0)      { this.setFlipX(true);  this.setAngle(0) }
+    else if (dCol < 0) { this.setFlipX(false); this.setAngle(0) }
     else if (dRow < 0) { this.setFlipX(false); this.setAngle(-90) }
     else if (dRow > 0) { this.setFlipX(false); this.setAngle(90) }
     return super.stepTo(col, row)
@@ -43,12 +43,15 @@ export class Robot extends Monster {
 
   _shoot(player) {
     const rad = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
-    this.scene.spawnCyanBullet(
+    this.scene.spawnEnemyImageBullet(
+      'bala_t700',
       this.x, this.y,
       this.x + Math.cos(rad) * 1000,
       this.y + Math.sin(rad) * 1000,
       this.attackDamage
     )
+    if (this.scene.cache.audio.exists('sonido_t700_disparo'))
+      this.scene.sound.play('sonido_t700_disparo', { volume: 0.7 })
   }
 
   update(time, player) {

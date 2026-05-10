@@ -20,6 +20,7 @@ export class BootScene extends Phaser.Scene {
     // Weapon pickup sprites (floor items)
     this.load.image('pickup_sword_raw',   `${base}espada.png`)
     this.load.image('pickup_arrow_raw',   `${base}flechas.png`)
+    this.load.image('flecha_proyectil_raw', `${base}flecha.png`)
     this.load.image('pickup_shotgun_raw', `${base}escopeta.png`)
     this.load.image('pickup_future_raw',  `${base}arma_futuro.png`)
 
@@ -42,6 +43,10 @@ export class BootScene extends Phaser.Scene {
     this.load.image('robot_t700_raw',     `${base}Nivel_2/robot.png`)
     this.load.image('robot_calavera_raw', `${base}Nivel_2/robot_calavera.png`)
     this.load.image('robot_nave_raw',     `${base}Nivel_2/robot_nave.png`)
+
+    // Nivel 2 balas de robots (fondo blanco)
+    this.load.image('bala_t700_raw',        `${base}Nivel_2/Balas_T-700.png`)
+    this.load.image('bala_killmachine_raw', `${base}Nivel_2/Balas_Kill_Machine.png`)
 
     // Nivel 2 armas pickup (nuevos diseños)
     this.load.image('pickup_sword_l2_raw',         `${base}Nivel_2/espada.png`)
@@ -86,13 +91,17 @@ export class BootScene extends Phaser.Scene {
       }
     }
 
-    // Nivel 2: lanzallamas por armadura (fondo negro, en Nivel_2/)
-    this.load.image('player_lanzallamas_raw',        `${base}Nivel_2/personaje_principal_lanzallamas.png?t=${_ts}`)
-    this.load.image('player_silver_lanzallamas_raw', `${base}Nivel_2/personaje_principal_armadura_plateada_lanzallamas.png?t=${_ts}`)
-    this.load.image('player_gold_lanzallamas_raw',   `${base}Nivel_2/personaje_principal_armadura_dorada_lanzallamas.png?t=${_ts}`)
-    this.load.image('player_future_lanzallamas_raw', `${base}Nivel_2/personaje_principal_armadura_futuro_lanzallamas.png?t=${_ts}`)
+    // Nivel 2: lanzallamas por armadura — ya tienen transparencia, se cargan directo
+    this.load.image('player_lanzallamas',        `${base}personaje_principal_lanzallamas.png?t=${_ts}`)
+    this.load.image('player_silver_lanzallamas', `${base}personaje_principal_armadura_plateada_lanzallamas.png?t=${_ts}`)
+    this.load.image('player_gold_lanzallamas',   `${base}personaje_principal_armadura_dorada_lanzallamas.png?t=${_ts}`)
+    this.load.image('player_future_lanzallamas', `${base}personaje_principal_armadura_futuro_lanzallamas.png?t=${_ts}`)
+    this.load.image('lanzallamas_fuego',         `${base}Nivel_2/lanzallamas_fuego.png`)
 
+    this.load.image('exit',                    `${base}puerta.png`)
+    this.load.image('key',                     `${base}llave.png`)
     this.load.audio('musica_nivel_1',          `${base}musica_nivel_1.mp3`)
+    this.load.audio('musica_nivel_2',          `${base}musica_nivel_2.mp3`)
     this.load.audio('musica_menu',             `${base}musica_menu.mp3`)
     this.load.audio('musica_boton_menu',       `${base}musica_boton_menu.mp3`)
     this.load.audio('sonidos_pies_protagonista',`${base}sonidos_pies_protagonista.mp3?t=${Date.now()}`)
@@ -104,6 +113,14 @@ export class BootScene extends Phaser.Scene {
     this.load.audio('sonidos_arma_flecha',        `${base}sonidos_arma_flecha.mp3`)
     this.load.audio('sonidos_arma_escopeta',      `${base}sonidos_arma_escopeta.mp3`)
     this.load.audio('sonidos_arma_futuro',        `${base}sonidos_arma_futuro.mp3`)
+    this.load.audio('sonidos_arma_ametralladora',   `${base}sonidos_arma_ametralladora.mp3`)
+    this.load.audio('sonido_killmachine_disparo',   `${base}Nivel_2/ametralladora_KillMachine.mp3`)
+    this.load.audio('sonido_t700_disparo',          `${base}Nivel_2/weapon_t-700.mp3`)
+    this.load.audio('sonido_exterminador',          `${base}Nivel_2/sound_Exterminador.mp3`)
+
+    // Nivel 7 — lanzallamas infernal
+    this.load.image('lanzallamas_infernal_raw', `${base}Nivel_7/lanzallamas.png`)
+    this.load.image('lanzallamas_fuego_l7_raw', `${base}Nivel_7/fuego.png`)
     this.load.audio('sonidos_monster',            `${base}sonidos_monster.mp3`)
     this.load.audio('sonido_pickup',              `${base}sonido_pickup.wav`)
 
@@ -162,6 +179,14 @@ export class BootScene extends Phaser.Scene {
       if (loaded.has('robot_calavera_raw')) this._stripWhiteBackgroundAs('robot_calavera_raw', 'robot_calavera')
       if (loaded.has('robot_nave_raw'))     this._stripWhiteBackgroundAs('robot_nave_raw',     'robot_nave')
 
+      // Nivel 2 balas de robots (strip white background)
+      if (loaded.has('bala_t700_raw'))        this._stripWhiteBackgroundAs('bala_t700_raw',        'bala_t700')
+      if (loaded.has('bala_killmachine_raw')) this._stripWhiteBackgroundAs('bala_killmachine_raw', 'bala_killmachine')
+
+      // Nivel 7 — lanzallamas infernal
+      if (loaded.has('lanzallamas_infernal_raw')) this._stripWhiteBackgroundAs('lanzallamas_infernal_raw', 'lanzallamas_infernal')
+      if (loaded.has('lanzallamas_fuego_l7_raw')) this._stripBlackBackground('lanzallamas_fuego_l7_raw', 'lanzallamas_fuego_l7')
+
       // Weapon pickup sprites — root folder (white bg)
       const pickupPairsWhite = [
         ['pickup_sword_raw',   'sword'],
@@ -172,6 +197,7 @@ export class BootScene extends Phaser.Scene {
       for (const [src, dest] of pickupPairsWhite) {
         if (loaded.has(src)) this._stripWhiteBackgroundAs(src, dest)
       }
+      if (loaded.has('flecha_proyectil_raw')) this._stripWhiteBackgroundAs('flecha_proyectil_raw', 'flecha_proyectil')
       // Nivel_2 versions override the above with updated designs (black bg)
       const pickupPairsBlack = [
         ['pickup_sword_l2_raw',       'sword'],
@@ -185,16 +211,12 @@ export class BootScene extends Phaser.Scene {
         if (loaded.has(src)) this._stripBlackBackgroundFloodFill(src, dest, 25)
       }
 
-      // Nivel 2 personaje con ametralladora y lanzallamas (fondo negro)
+      // Nivel 2 personaje con ametralladora (fondo negro — necesitan flood fill)
       const nivel2Sprites = [
         ['player_ametralladora_raw',        'player_ametralladora'],
         ['player_silver_ametralladora_raw', 'player_silver_ametralladora'],
         ['player_gold_ametralladora_raw',   'player_gold_ametralladora'],
         ['player_future_ametralladora_raw', 'player_future_ametralladora'],
-        ['player_lanzallamas_raw',            'player_lanzallamas'],
-        ['player_silver_lanzallamas_raw',   'player_silver_lanzallamas'],
-        ['player_gold_lanzallamas_raw',     'player_gold_lanzallamas'],
-        ['player_future_lanzallamas_raw',   'player_future_lanzallamas'],
         ['player_lanzallamas_disparo_raw',  'player_lanzallamas_disparo'],
       ]
       for (const [src, dest] of nivel2Sprites) {
@@ -363,8 +385,6 @@ export class BootScene extends Phaser.Scene {
     this._makeFloor3()
     // Wall tiles — extracted from real hedge pixel art sheet (CC0)
     this._makeHedgeWalls()
-    // Exit
-    this._makeExit()
     // Weapons
     this._makeSword()
     this._makeArrow()
@@ -377,7 +397,7 @@ export class BootScene extends Phaser.Scene {
     this._makeWebBullet()
     this._makeHealth()
     this._makeWeaponTile()
-    this._makeKeyTexture()
+    if (!this.textures.exists('key')) this._makeKeyTexture()
     // Armor box fallbacks (overridden by real images later if available)
     this._makeArmorBox('armor_silver', 0x778899, 0xaabbcc, 0xddeeff)
     this._makeArmorBox('armor_gold',   0xaa8800, 0xddbb00, 0xffee55)
@@ -755,29 +775,6 @@ export class BootScene extends Phaser.Scene {
     this._flower(g, 22, 26, 0xffffff)
     this._flower(g, 16, 12, 0xdddddd, 1.8)
     g.generateTexture('wall_bank', 32, 32)
-    g.destroy()
-  }
-
-  // ─── EXIT ────────────────────────────────────────────────────────────────
-
-  _makeExit() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false })
-    g.fillStyle(0x2a1a08); g.fillRect(0, 0, 32, 32)
-    g.fillStyle(0x1a3c1a); g.fillRect(4, 5, 24, 22)
-    g.fillStyle(0x245224); g.fillRect(5, 6, 22, 20)
-    g.fillStyle(0x2e6630); g.fillRect(6, 7, 20, 8); g.fillRect(6, 18, 20, 7)
-    g.fillStyle(0x3a7c3c); g.fillRect(7, 8, 18, 6); g.fillRect(7, 19, 18, 5)
-    g.fillStyle(0xaa1e00); g.fillRect(6, 15, 20, 3)
-    g.fillStyle(0xee2a00); g.fillRect(7, 16, 18, 1)
-    g.fillStyle(0xa0a0a0); g.fillRect(4, 8, 2, 4); g.fillRect(4, 19, 2, 4)
-    g.fillStyle(0x00ee44)
-    g.fillRect(0, 0, 32, 3); g.fillRect(0, 29, 32, 3)
-    g.fillRect(0, 0, 3, 32); g.fillRect(29, 0, 3, 32)
-    g.fillStyle(0x00ff66)
-    g.fillRect(9, 15, 12, 2)
-    g.fillRect(17, 13, 2, 2); g.fillRect(19, 14, 2, 1)
-    g.fillRect(17, 17, 2, 2); g.fillRect(19, 17, 2, 1)
-    g.generateTexture('exit', 32, 32)
     g.destroy()
   }
 
