@@ -7,7 +7,7 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this)
 
     this.setDisplaySize(TILE * 2, TILE * 2)
-    this.body.setSize(TILE, TILE)
+    this.body.setSize(TILE * 2, TILE * 2)
     this.setDepth(9)
 
     this.gridCol = Math.round((x - TILE / 2) / TILE)

@@ -138,6 +138,7 @@ export class MenuScene extends Phaser.Scene {
     const levels = [
       { label: 'Nivel 1: Amenaza Radioactiva',        num: 1, color: 0x00ff88 },
       { label: 'Nivel 2: La Rebelión de las Máquinas', num: 2, color: 0x00ff88 },
+      { label: 'Nivel 3: Bienvenidos al Inframundo',   num: 3, color: 0x00ff88 },
     ]
 
     // ── Fondo del dropdown (crece cuando está abierto)
@@ -221,8 +222,9 @@ export class MenuScene extends Phaser.Scene {
         this.state = 'levelDetail'
         this._dropdownOpen = false
         this.setGroupVisible(this.levelGroup, false)
-        if (num === 1) this.setGroupVisible(this.levelDetailGroup, true)
-        else           this.setGroupVisible(this.levelDetail2Group, true)
+        if (num === 1)      this.setGroupVisible(this.levelDetailGroup, true)
+        else if (num === 2) this.setGroupVisible(this.levelDetail2Group, true)
+        else                this.setGroupVisible(this.levelDetail3Group, true)
       })
 
       const objs = [itemHover, bullet, itemLabel, itemZone]
@@ -279,7 +281,7 @@ export class MenuScene extends Phaser.Scene {
 
       monsters.forEach(({ key }, i) => {
         const img = this.add.image(cols[i], height * 0.35, key).setAlpha(0.95)
-        const scale = Math.min(240 / img.width, 180 / img.height)
+        const scale = Math.min(360 / img.width, 270 / img.height)
         img.setScale(scale)
         grp.add(img)
       })
@@ -347,9 +349,9 @@ export class MenuScene extends Phaser.Scene {
     this.levelDetailGroup = buildDetailScreen(
       'Capítulo 1: Amenaza Radioactiva',
       [
-        { key: 'monster',   name: 'Mutantes',       vida: 25,  dano: 2.5, cantidad: 50 },
+        { key: 'monster',   name: 'Mutantes',       vida: 25,  dano: 2.5, cantidad: 25 },
         { key: 'serpiente', name: 'Mega Serpientes', vida: 50,  dano: 5,   cantidad: 25 },
-        { key: 'arania',    name: 'Arañas Kaiju',    vida: 100, dano: 10,  cantidad: 5  },
+        { key: 'arania',    name: 'Arañas Kaiju',    vida: 300, dano: 10,  cantidad: 3  },
       ],
       0x00ff88, 0x00ff88, 1
     )
@@ -358,11 +360,22 @@ export class MenuScene extends Phaser.Scene {
     this.levelDetail2Group = buildDetailScreen(
       'Capítulo 2: La Rebelión de las Máquinas',
       [
-        { key: 'robot_t700',     name: 'T-700',         vida: 25,  dano: 5,  cantidad: 50 },
-        { key: 'robot_calavera', name: 'Kill Machine',  vida: 50,  dano: 10, cantidad: 25 },
-        { key: 'robot_nave',     name: 'Exterminador',  vida: 300, dano: 10, cantidad: 5  },
+        { key: 'robot_t700',     name: 'T-700',         vida: 25,  dano: 2.5, cantidad: 25 },
+        { key: 'robot_calavera', name: 'Kill Machine',  vida: 50,  dano: 5,   cantidad: 25 },
+        { key: 'robot_nave',     name: 'Exterminador',  vida: 300, dano: 10,  cantidad: 3  },
       ],
       0x00ff88, 0x00ff88, 2
+    )
+
+    // ── LEVEL DETAIL — Nivel 3 ─────────────────────────────
+    this.levelDetail3Group = buildDetailScreen(
+      'Capítulo 3: Bienvenidos al Inframundo',
+      [
+        { key: 'esqueletor',   name: 'Esqueletor',   vida: 25,  dano: 2.5, cantidad: 25 },
+        { key: 'evil_soldier', name: 'Evil Soldier',  vida: 50,  dano: 5,   cantidad: 25 },
+        { key: 'belcebu',      name: 'Belcebú',       vida: 300, dano: 10,  cantidad: 3  },
+      ],
+      0x00ff88, 0x00ff88, 3
     )
 
     // ── INPUT ───────────────────────────────────────────────
@@ -415,6 +428,7 @@ export class MenuScene extends Phaser.Scene {
       this.state = 'levels'
       this.setGroupVisible(this.levelDetailGroup, false)
       this.setGroupVisible(this.levelDetail2Group, false)
+      this.setGroupVisible(this.levelDetail3Group, false)
       this.setGroupVisible(this.levelGroup, true)
       this._closeDropdown()
     } else if (this.state === 'levels') {

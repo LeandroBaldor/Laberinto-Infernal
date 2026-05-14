@@ -3,10 +3,10 @@ const TILE = 32
 export const WEAPON_STATS = {
   sword:         { label: 'ESPADA',         dmg: 5,   ranged: false, ammoPerPickup: 20, speed: 0,   tint: null,     cooldown: 600 },
   arrow:         { label: 'FLECHAS',        dmg: 2.5, ranged: true,  ammoPerPickup: 8,  speed: 400, tint: null,     cooldown: 400 },
-  shotgun:       { label: 'ESCOPETA',       dmg: 10,  ranged: true,  ammoPerPickup: 5,  speed: 350, tint: 0xff6600, cooldown: 500 },
+  shotgun:       { label: 'ESCOPETA',       dmg: 10,  ranged: true,  ammoPerPickup: 5,  speed: 350, tint: null,     cooldown: 500 },
   future:        { label: 'ARG.FUTURO',     dmg: 15,  ranged: true,  ammoPerPickup: 4,  speed: 620, tint: 0x00ddff, cooldown: 350 },
-  ametralladora: { label: 'AMETRALLADORA',  dmg: 8,   ranged: true,  ammoPerPickup: 30, speed: 500, tint: 0xffcc00, cooldown: 150 },
-  lanzallamas:          { label: 'LANZALLAMAS',         dmg: 40,  ranged: true,  ammoPerPickup: 10, speed: 220, tint: 0xff4400, cooldown: 3000 },
+  ametralladora: { label: 'AMETRALLADORA',  dmg: 8,   ranged: true,  ammoPerPickup: 30, speed: 500, tint: null,     cooldown: 150 },
+  lanzallamas:          { label: 'LANZALLAMAS',         dmg: 40,  ranged: true,  ammoPerPickup: 10, speed: 300, tint: 0xff4400, cooldown: 300 },
   lanzallamas_infernal: { label: 'LANZALLAMAS INFERNAL', dmg: 60,  ranged: true,  ammoPerPickup: 8,  speed: 0,   tint: null,     cooldown: 1800 },
 }
 
@@ -36,8 +36,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.gridRow = Math.round((y - TILE / 2) / TILE)
     this.moving = false
 
-    this.health = 100
-    this.maxHealth = 100
+    this.health = 1000
+    this.maxHealth = 1000
     this.inventory = new Map()   // weaponType → ammo (-1 = unlimited)
     this.activeWeapon = null
     this.invincible = false
@@ -70,8 +70,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this._heldDc = 0
     this._heldDr = 0
 
-    this._lanzallamasFiring = false
-    this._lanzallamasFiringTimer = null
   }
 
   // ── compat getters so GameScene / UIScene still work ──────────────────────
@@ -142,11 +140,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   _updateSprite() {
-    const lanzaKey = this._lanzallamasFiring && this.scene.textures.exists('player_lanzallamas_disparo')
-      ? 'player_lanzallamas_disparo' : 'player_lanzallamas'
     const weaponMap = {
       sword: 'player_sword', arrow: 'player_arrow', shotgun: 'player_shotgun',
-      future: 'player_future', ametralladora: 'player_ametralladora', lanzallamas: lanzaKey,
+      future: 'player_future', ametralladora: 'player_ametralladora', lanzallamas: 'player_lanzallamas',
     }
     let key = 'player'
     if (this.armorType) {
@@ -164,8 +160,32 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     if (this.texture.key !== key) this.setTexture(key)
     const _src = this.scene.textures.get(key).getSourceImage()
-    const _targetH = TILE * 2
-    this.setDisplaySize(Math.round(_src.width * _targetH / _src.height), Math.round(_targetH))
+    const _targetH = this.activeWeapon === 'arrow' ? TILE * 2.5 : TILE * 2
+
+    let finalW, finalH
+    if (this.armorType) {
+      // When armored, scale up if the armored sprite is narrower than its unarmored equivalent
+      const baseKeyMap = {
+        sword: 'player_sword', arrow: 'player_arrow', shotgun: 'player_shotgun',
+        future: 'player_future', ametralladora: 'player_ametralladora', lanzallamas: 'player_lanzallamas',
+      }
+      const baseKey = (this.activeWeapon && baseKeyMap[this.activeWeapon]) || 'player'
+      if (this.scene.textures.exists(baseKey)) {
+        const baseSrc = this.scene.textures.get(baseKey).getSourceImage()
+        const refW = Math.round(baseSrc.width * _targetH / baseSrc.height)
+        const byWidthH = _src.height * refW / _src.width
+        const effectiveH = Math.max(_targetH, byWidthH)
+        finalW = Math.round(_src.width * effectiveH / _src.height)
+        finalH = Math.round(effectiveH)
+      } else {
+        finalW = Math.round(_src.width * _targetH / _src.height)
+        finalH = Math.round(_targetH)
+      }
+    } else {
+      finalW = Math.round(_src.width * _targetH / _src.height)
+      finalH = Math.round(_targetH)
+    }
+    this.setDisplaySize(finalW, finalH)
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY
   }
@@ -214,6 +234,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.scene.tweens.add({
       targets: this, x: tx, y: ty, duration: 110, ease: 'Linear',
+      onUpdate: () => { if (this.body && this.active) this.body.reset(this.x, this.y) },
       onComplete: () => { this.moving = false; this.body.reset(tx, ty) },
     })
   }
@@ -258,7 +279,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     const cd = (this.activeWeapon && WEAPON_STATS[this.activeWeapon]?.cooldown) || this.shootCooldown
-    const shootFired = this.activeWeapon === 'ametralladora'
+    const shootFired = (this.activeWeapon === 'ametralladora' || this.activeWeapon === 'lanzallamas')
       ? this.shootKey.isDown
       : Phaser.Input.Keyboard.JustDown(this.shootKey)
     if (shootFired && time > this.lastShot + cd) {
@@ -311,7 +332,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
           this.scene.showFloatingText(m.x, m.y - 20, `+${pts}`, '#ffff00')
           this.scene.events.emit('scoreChanged', this.scene.score)
         } else {
-          this.scene.showFloatingText(m.x, m.y - 16, `-${dmg}`, '#ffaa00')
+          this.scene.showDamageText(m.x, m.y - 20, dmg)
         }
       }
     }
@@ -366,7 +387,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   shoot(bullets) {
     const stats = WEAPON_STATS[this.activeWeapon]
 
-    const _tipOffset = TILE * 1.4
+    const _tipOffset = (this.activeWeapon === 'arrow' || this.activeWeapon === 'shotgun' || this.activeWeapon === 'lanzallamas')
+      ? this.displayWidth * 0.55
+      : TILE * 1.4
     const _tipX = this.x + ({ right: _tipOffset, left: -_tipOffset, up: 0,           down: 0           }[this.facingDir] || 0)
     const _tipY = this.y + ({ right: 0,          left: 0,           up: -_tipOffset, down: _tipOffset  }[this.facingDir] || 0)
 
@@ -401,42 +424,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (stats.tint) b.setTint(stats.tint)
     if (this.activeWeapon === 'arrow' && this.scene.textures.exists('flecha_proyectil')) {
       const src = this.scene.textures.get('flecha_proyectil').getSourceImage()
-      const dispH = Math.round(TILE * 0.45)
+      const dispH = Math.round(TILE * 1.5)
       const dispW = Math.round(src.width * dispH / src.height)
       const rot = { right: 0, left: Math.PI, up: -Math.PI / 2, down: Math.PI / 2 }[this.facingDir] || 0
       b.setTexture('flecha_proyectil').setDisplaySize(dispW, dispH).setRotation(rot)
+      b.body.setSize(TILE, TILE, true)
     }
-    if (this.activeWeapon === 'shotgun') { b.setScale(1.6); b.lifespan = 1500 }
+    if ((this.activeWeapon === 'shotgun' || this.activeWeapon === 'ametralladora') && this.scene.textures.exists('bala')) {
+      const bSrc = this.scene.textures.get('bala').getSourceImage()
+      const bH = this.activeWeapon === 'shotgun' ? Math.round(TILE * 0.7) : Math.round(TILE * 0.5)
+      const bW = Math.round(bSrc.width * bH / bSrc.height)
+      const rot = { right: Math.PI, left: 0, up: Math.PI / 2, down: -Math.PI / 2 }[this.facingDir] ?? Math.PI
+      b.setTexture('bala').setDisplaySize(bW, bH).setRotation(rot).clearTint()
+      b.body.setSize(TILE, TILE, true)
+    }
+    if (this.activeWeapon === 'shotgun') { b.lifespan = 1500 }
     else if (this.activeWeapon === 'lanzallamas') {
       if (this.scene.textures.exists('lanzallamas_fuego')) {
-        b.setTexture('lanzallamas_fuego')
-        b.clearTint()
-        // La imagen apunta a la DERECHA → rotar según dirección de disparo
+        const fSrc = this.scene.textures.get('lanzallamas_fuego').getSourceImage()
+        const fH = TILE * 1.2
+        const fW = Math.round(fSrc.width * fH / fSrc.height)
         const rot = { right: 0, left: Math.PI, up: -Math.PI / 2, down: Math.PI / 2 }[this.facingDir] ?? 0
-        b.setRotation(rot)
-        b.setDisplaySize(TILE * 4, TILE * 2)
-        b.body.setSize(TILE * 4, TILE * 2)
-      } else {
-        b.setScale(3.0)
+        b.setTexture('lanzallamas_fuego').clearTint().setDisplaySize(fW, fH).setRotation(rot)
+        b.body.setSize(fW, fH)
       }
-      b.lifespan = 3000
-      this.scene.cameras.main.shake(250, 0.007)
-      if (typeof this.scene._flameFire === 'function') this.scene._flameFire()
+      b.lifespan = 600
     }
     else b.lifespan = 1500
 
-    if (this.activeWeapon === 'lanzallamas') {
-      this._lanzallamasFiring = true
-      this._updateSprite()
-      if (this._lanzallamasFiringTimer) this._lanzallamasFiringTimer.remove()
-      this._lanzallamasFiringTimer = this.scene.time.delayedCall(1000, () => {
-        this._lanzallamasFiring = false
-        this._lanzallamasFiringTimer = null
-        if (this.active) this._updateSprite()
-      })
-    }
-
-    const _weaponSounds = { arrow: 'sonidos_arma_flecha', shotgun: 'sonidos_arma_escopeta', future: 'sonidos_arma_futuro', ametralladora: 'sonidos_arma_ametralladora' }
+    const _weaponSounds = { arrow: 'sonidos_arma_flecha', shotgun: 'sonidos_arma_escopeta', future: 'sonidos_arma_futuro', ametralladora: 'sonidos_arma_ametralladora', lanzallamas: 'sonidos_arma_lanzallamas' }
     const _sndKey = _weaponSounds[this.activeWeapon]
     if (_sndKey && this.scene.cache.audio.exists(_sndKey))
       this.scene.sound.play(_sndKey, { volume: 0.7 })

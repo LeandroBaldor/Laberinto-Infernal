@@ -17,7 +17,7 @@ export class Mutante extends Monster {
     this.stepInterval    = 480 + Math.random() * 320
 
     this.setDisplaySize(TILE * 4, TILE * 4)
-    this.body.setSize(TILE * 2, TILE * 2)
+    this.body.setSize(TILE * 4, TILE * 4)
 
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY
