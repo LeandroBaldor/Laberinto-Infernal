@@ -21,6 +21,8 @@ export class BootScene extends Phaser.Scene {
     this.load.image('pickup_sword_raw',   `${base}espada.png`)
     this.load.image('pickup_arrow_raw',   `${base}flechas.png`)
     this.load.image('flecha_proyectil_raw', `${base}flecha.png`)
+    this.load.image('bala_raw', `${base}balas.png`)
+    this.load.image('serpiente_acido_raw', `${base}serpiente_acido.png`)
     this.load.image('pickup_shotgun_raw', `${base}escopeta.png`)
     this.load.image('pickup_future_raw',  `${base}arma_futuro.png`)
 
@@ -39,14 +41,27 @@ export class BootScene extends Phaser.Scene {
     this.load.image('metalic_tile_raw',    `${base}Nivel_2/metalic_tile.png?t=${_tst}`)
     this.load.image('metalic_tile_2_raw',  `${base}Nivel_2/metalic_tile_2.png?t=${_tst}`)
 
+    // Nivel 3 tiles
+    this.load.image('muro_l3_raw',  `${base}Nivel_3/muro.png?t=${_tst}`)
+    this.load.image('piso_l3_raw',  `${base}Nivel_3/piso.png?t=${_tst}`)
+
+    // Nivel 3 enemies
+    const _ts3 = Date.now()
+    this.load.image('esqueletor_raw',   `${base}Nivel_3/esqueletor.png?t=${_ts3}`)
+    this.load.image('evil_soldier_raw', `${base}Nivel_3/evil _soldier.png?t=${_ts3}`)
+    this.load.image('belcebu_raw',      `${base}Nivel_3/belcebú.png?t=${_ts3}`)
+    this.load.image('bola_fuego_l3_raw',   `${base}Nivel_3/bola_fuego.png?t=${_ts3}`)
+    this.load.image('bola_energia_l3_raw', `${base}Nivel_3/bola_energia.png?t=${_ts3}`)
+
     // Nivel 2 robots
     this.load.image('robot_t700_raw',     `${base}Nivel_2/robot.png`)
     this.load.image('robot_calavera_raw', `${base}Nivel_2/robot_calavera.png`)
     this.load.image('robot_nave_raw',     `${base}Nivel_2/robot_nave.png`)
 
     // Nivel 2 balas de robots (fondo blanco)
-    this.load.image('bala_t700_raw',        `${base}Nivel_2/Balas_T-700.png`)
-    this.load.image('bala_killmachine_raw', `${base}Nivel_2/Balas_Kill_Machine.png`)
+    this.load.image('bala_t700_raw',           `${base}Nivel_2/Balas_T-700.png`)
+    this.load.image('bala_killmachine_raw',    `${base}Nivel_2/Balas_Kill_Machine.png`)
+    this.load.image('bala_exterminador_raw',   `${base}Nivel_2/Balas_exterminador.png`)
 
     // Nivel 2 armas pickup (nuevos diseños)
     this.load.image('pickup_sword_l2_raw',         `${base}Nivel_2/espada.png`)
@@ -96,12 +111,15 @@ export class BootScene extends Phaser.Scene {
     this.load.image('player_silver_lanzallamas', `${base}personaje_principal_armadura_plateada_lanzallamas.png?t=${_ts}`)
     this.load.image('player_gold_lanzallamas',   `${base}personaje_principal_armadura_dorada_lanzallamas.png?t=${_ts}`)
     this.load.image('player_future_lanzallamas', `${base}personaje_principal_armadura_futuro_lanzallamas.png?t=${_ts}`)
-    this.load.image('lanzallamas_fuego',         `${base}Nivel_2/lanzallamas_fuego.png`)
+    this.load.image('lanzallamas_fuego',         `${base}lanzallamas_fuego.png`)
 
     this.load.image('exit',                    `${base}puerta.png`)
     this.load.image('key',                     `${base}llave.png`)
     this.load.audio('musica_nivel_1',          `${base}musica_nivel_1.mp3`)
     this.load.audio('musica_nivel_2',          `${base}musica_nivel_2.mp3`)
+    this.load.audio('musica_nivel_3_1',        `${base}Nivel_3/Musica/1.mp3`)
+    this.load.audio('musica_nivel_3_2',        `${base}Nivel_3/Musica/2.mp3`)
+    this.load.audio('musica_nivel_3_3',        `${base}Nivel_3/Musica/3.mp3`)
     this.load.audio('musica_menu',             `${base}musica_menu.mp3`)
     this.load.audio('musica_boton_menu',       `${base}musica_boton_menu.mp3`)
     this.load.audio('sonidos_pies_protagonista',`${base}sonidos_pies_protagonista.mp3?t=${Date.now()}`)
@@ -114,9 +132,13 @@ export class BootScene extends Phaser.Scene {
     this.load.audio('sonidos_arma_escopeta',      `${base}sonidos_arma_escopeta.mp3`)
     this.load.audio('sonidos_arma_futuro',        `${base}sonidos_arma_futuro.mp3`)
     this.load.audio('sonidos_arma_ametralladora',   `${base}sonidos_arma_ametralladora.mp3`)
+    this.load.audio('sonidos_arma_lanzallamas',     `${base}sonidos_arma_lanzallamas.mp3`)
     this.load.audio('sonido_killmachine_disparo',   `${base}Nivel_2/ametralladora_KillMachine.mp3`)
     this.load.audio('sonido_t700_disparo',          `${base}Nivel_2/weapon_t-700.mp3`)
     this.load.audio('sonido_exterminador',          `${base}Nivel_2/sound_Exterminador.mp3`)
+    this.load.audio('sonido_esqueletor',            `${base}Nivel_3/esqueletor.mp3`)
+    this.load.audio('sonido_evil_soldier',          `${base}Nivel_3/evil_soldier.mp3`)
+    this.load.audio('sonido_belcebu',               `${base}Nivel_3/belcebú.mp3`)
 
     // Nivel 7 — lanzallamas infernal
     this.load.image('lanzallamas_infernal_raw', `${base}Nivel_7/lanzallamas.png`)
@@ -174,14 +196,26 @@ export class BootScene extends Phaser.Scene {
       if (loaded.has('metalic_tile_raw'))   this._makeMetalWallTile('metalic_tile_raw',   'wall_l2')
       if (loaded.has('metalic_tile_2_raw')) this._makeMetalWallTile('metalic_tile_2_raw', 'wall_l2_2')
 
+      // Nivel 3 tiles
+      if (loaded.has('muro_l3_raw')) this._makeMetalWallTile('muro_l3_raw', 'wall_l3')
+      if (loaded.has('piso_l3_raw')) this._makeMetalWallTile('piso_l3_raw', 'floor_l3')
+
+      // Nivel 3 enemies & projectiles
+      if (loaded.has('esqueletor_raw'))     this._stripWhiteBackgroundAs('esqueletor_raw',     'esqueletor')
+      if (loaded.has('evil_soldier_raw'))   this._stripWhiteBackgroundAs('evil_soldier_raw',   'evil_soldier')
+      if (loaded.has('belcebu_raw'))        this._stripWhiteBackgroundAs('belcebu_raw',        'belcebu')
+      if (loaded.has('bola_fuego_l3_raw'))  this._stripWhiteBackgroundAs('bola_fuego_l3_raw',  'bola_fuego_l3')
+      if (loaded.has('bola_energia_l3_raw')) this._stripWhiteBackgroundAs('bola_energia_l3_raw', 'bola_energia_l3')
+
       // Nivel 2 robots (strip white background)
       if (loaded.has('robot_t700_raw'))     this._stripWhiteBackgroundAs('robot_t700_raw',     'robot_t700')
       if (loaded.has('robot_calavera_raw')) this._stripWhiteBackgroundAs('robot_calavera_raw', 'robot_calavera')
       if (loaded.has('robot_nave_raw'))     this._stripWhiteBackgroundAs('robot_nave_raw',     'robot_nave')
 
       // Nivel 2 balas de robots (strip white background)
-      if (loaded.has('bala_t700_raw'))        this._stripWhiteBackgroundAs('bala_t700_raw',        'bala_t700')
-      if (loaded.has('bala_killmachine_raw')) this._stripWhiteBackgroundAs('bala_killmachine_raw', 'bala_killmachine')
+      if (loaded.has('bala_t700_raw'))           this._stripWhiteBackgroundAs('bala_t700_raw',           'bala_t700')
+      if (loaded.has('bala_killmachine_raw'))    this._stripWhiteBackgroundAs('bala_killmachine_raw',    'bala_killmachine')
+      if (loaded.has('bala_exterminador_raw'))   this._stripWhiteBackgroundAs('bala_exterminador_raw',   'bala_exterminador')
 
       // Nivel 7 — lanzallamas infernal
       if (loaded.has('lanzallamas_infernal_raw')) this._stripWhiteBackgroundAs('lanzallamas_infernal_raw', 'lanzallamas_infernal')
@@ -198,6 +232,8 @@ export class BootScene extends Phaser.Scene {
         if (loaded.has(src)) this._stripWhiteBackgroundAs(src, dest)
       }
       if (loaded.has('flecha_proyectil_raw')) this._stripWhiteBackgroundAs('flecha_proyectil_raw', 'flecha_proyectil')
+      if (loaded.has('bala_raw')) this._stripBlackBackground('bala_raw', 'bala')
+      if (loaded.has('serpiente_acido_raw')) this._stripWhiteBackgroundAs('serpiente_acido_raw', 'serpiente_acido')
       // Nivel_2 versions override the above with updated designs (black bg)
       const pickupPairsBlack = [
         ['pickup_sword_l2_raw',       'sword'],

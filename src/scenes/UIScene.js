@@ -19,12 +19,15 @@ export class UIScene extends Phaser.Scene {
     this._t700Count        = data.t700Count        ?? 0
     this._killMachineCount = data.killMachineCount ?? 0
     this._exterminadorCount= data.exterminadorCount?? 0
+    this._esqueletorCount  = data.esqueletorCount  ?? 0
+    this._evilSoldierCount = data.evilSoldierCount ?? 0
+    this._belcebuCount     = data.belcebuCount     ?? 0
   }
 
   create() {
     const { width } = this.scale
 
-    this.add.rectangle(0, 0, width, 70, 0x000000, 0.88).setOrigin(0, 0)
+    this.add.rectangle(0, 0, width, 70, 0x000000, 1).setOrigin(0, 0)
 
     // ── CORAZONES (vidas) + BARRA + NÚMERO DE VIDA ───────────────────────────
     const barX = 150
@@ -88,13 +91,20 @@ export class UIScene extends Phaser.Scene {
         `Mega Serpiente: ${this._serpienteCount}`, counterStyle('#44ff88')).setOrigin(0.5, 0.5)
       this.araniaText = this.add.text(cx(3), midY,
         `Araña Kaiju: ${this._araniaCount}`, counterStyle('#bb88ff')).setOrigin(0.5, 0.5)
-    } else {
+    } else if (this.level === 2) {
       this.mutantText = this.add.text(cx(1), midY,
         `T-700: ${this._t700Count}`, counterStyle('#aabbcc')).setOrigin(0.5, 0.5)
       this.serpText = this.add.text(cx(2), midY,
         `Kill Machine: ${this._killMachineCount}`, counterStyle('#ff6633')).setOrigin(0.5, 0.5)
       this.araniaText = this.add.text(cx(3), midY,
         `Exterminador: ${this._exterminadorCount}`, counterStyle('#cc44ff')).setOrigin(0.5, 0.5)
+    } else {
+      this.mutantText = this.add.text(cx(1), midY,
+        `Esqueletor: ${this._esqueletorCount}`, counterStyle('#ddccaa')).setOrigin(0.5, 0.5)
+      this.serpText = this.add.text(cx(2), midY,
+        `Evil Soldier: ${this._evilSoldierCount}`, counterStyle('#ff4422')).setOrigin(0.5, 0.5)
+      this.araniaText = this.add.text(cx(3), midY,
+        `Belcebú: ${this._belcebuCount}`, counterStyle('#cc00ff')).setOrigin(0.5, 0.5)
     }
 
     // ── SCORE + NIVEL ─────────────────────────────────────────────────────────
@@ -133,10 +143,14 @@ export class UIScene extends Phaser.Scene {
         this.mutantText.setText(`Mutantes: ${counts.mutant}`)
         this.serpText.setText(`Mega Serpiente: ${counts.serpiente}`)
         this.araniaText.setText(`Araña Kaiju: ${counts.arania}`)
-      } else {
+      } else if (this.level === 2) {
         this.mutantText.setText(`T-700: ${counts.t700}`)
         this.serpText.setText(`Kill Machine: ${counts.killMachine}`)
         this.araniaText.setText(`Exterminador: ${counts.exterminador}`)
+      } else {
+        this.mutantText.setText(`Esqueletor: ${counts.esqueletor}`)
+        this.serpText.setText(`Evil Soldier: ${counts.evilSoldier}`)
+        this.araniaText.setText(`Belcebú: ${counts.belcebu}`)
       }
     })
 
@@ -152,6 +166,64 @@ export class UIScene extends Phaser.Scene {
       this.armorBar.setVisible(true)
       this.armorNum.setVisible(true)
     })
+
+    this._createMinimap()
+  }
+
+  _createMinimap() {
+    const game = this.scene.get('GameScene')
+    const { mazeGrid, mazeCols, mazeRows } = game
+    if (!mazeGrid) return
+
+    const { width, height } = this.scale
+    const MM_W  = 200
+    const MM_H  = Math.round(MM_W * mazeRows / mazeCols)
+    const cellW = MM_W / mazeCols
+    const cellH = MM_H / mazeRows
+    const PAD   = 8
+    const labelH = 22
+    const MM_X  = width  - MM_W - PAD
+    const MM_Y  = 70 + PAD + labelH + 4   // label sits above this, fully below the 70px bar
+
+    // Label "LABERINTO" sobre el minimapa
+    this.add.rectangle(MM_X - 2, MM_Y - labelH - 4, MM_W + 4, labelH, 0x00ff55).setOrigin(0, 0).setDepth(200)
+    this.add.text(MM_X + MM_W / 2, MM_Y - labelH / 2 - 4, 'LABERINTO', {
+      fontSize: '26px', fontFamily: 'Courier New', color: '#000000',
+      stroke: '#000000', strokeThickness: 0,
+    }).setOrigin(0.5, 0.5).setDepth(201)
+
+    // Border + background
+    this.add.rectangle(MM_X - 2, MM_Y - 2, MM_W + 4, MM_H + 4, 0x00aa44).setOrigin(0, 0).setDepth(200)
+    this.add.rectangle(MM_X,     MM_Y,     MM_W,     MM_H,     0x111122).setOrigin(0, 0).setDepth(201)
+
+    // Draw floor cells once into a RenderTexture (walls stay as dark background)
+    const gfx = this.add.graphics()
+    gfx.fillStyle(0x7799aa, 1)
+    for (let r = 0; r < mazeRows; r++) {
+      for (let c = 0; c < mazeCols; c++) {
+        if (mazeGrid[r][c] === 0) {
+          gfx.fillRect(c * cellW, r * cellH, Math.max(cellW, 1), Math.max(cellH, 1))
+        }
+      }
+    }
+    const rt = this.add.renderTexture(MM_X, MM_Y, MM_W, MM_H).setOrigin(0, 0).setDepth(202)
+    rt.draw(gfx, 0, 0)
+    gfx.destroy()
+
+    // Player dot
+    this._minimapDot  = this.add.circle(0, 0, 3, 0x00ff55).setDepth(203)
+    this._minimapMeta = { x: MM_X, y: MM_Y, w: MM_W, h: MM_H, cols: mazeCols, rows: mazeRows }
+    this._gameScene   = game
+  }
+
+  update() {
+    if (!this._minimapDot || !this._gameScene?.player?.active) return
+    const p = this._gameScene.player
+    const m = this._minimapMeta
+    this._minimapDot.setPosition(
+      m.x + (p.x / (m.cols * 32)) * m.w,
+      m.y + (p.y / (m.rows * 32)) * m.h
+    )
   }
 
   _armorColor(type) {

@@ -18,7 +18,7 @@ export class RobotAsesino extends Monster {
     this.stepInterval    = 380 + Math.random() * 150
 
     this.setDisplaySize(TILE, TILE)
-    this.body.setSize(TILE * 0.75, TILE * 0.75)
+    this.body.setSize(TILE, TILE)
 
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY

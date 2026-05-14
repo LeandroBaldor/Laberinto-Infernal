@@ -1,7 +1,7 @@
 import { Monster } from './Monster.js'
 
 const TILE = 32
-const SHOT_COOLDOWN = 2800
+const SHOT_COOLDOWN = 3000
 const SHOT_RANGE    = 12
 
 export class Exterminador extends Monster {
@@ -10,11 +10,11 @@ export class Exterminador extends Monster {
     this.setTexture('robot_nave')
     const targetH = TILE * 5.5
     this.setDisplaySize(Math.round(this.width * targetH / this.height), Math.round(targetH))
-    this.body.setSize(TILE * 4, TILE * 4)
+    this.body.setSize(TILE * 5.5, TILE * 5.5)
 
     this.health = 300
     this.maxHealth = 300
-    this.attackDamage = 5
+    this.attackDamage = 10
     this.detectionRange = 10
     this.attackCooldown = 1500
     this.stepInterval = 500 + Math.random() * 200
@@ -45,18 +45,15 @@ export class Exterminador extends Monster {
   }
 
   _fireBurst(player) {
-    const rad = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
-    const cos = Math.cos(rad)
-    const sin = Math.sin(rad)
-    const perpX = -sin
-    const perpY =  cos
-
-    const offsets = [-1.5, -0.5, 0.5, 1.5]
-    offsets.forEach(t => {
-      const fx = this.x + perpX * TILE * t
-      const fy = this.y + perpY * TILE * t
-      this.scene.spawnCyanBullet(fx, fy, fx + cos * 1000, fy + sin * 1000, this.attackDamage)
-    })
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
+    const speed = 320
+    const vx = Math.cos(angle) * speed
+    const vy = Math.sin(angle) * speed
+    for (let k = 0; k < 8; k++) {
+      this.scene.time.delayedCall(k * 120, () => {
+        if (this.active) this.scene.spawnExterminadorBullet(this.x, this.y, vx, vy, this.attackDamage)
+      })
+    }
     this.setTint(0x00eeff)
     this.scene.time.delayedCall(200, () => { if (this.active) this.clearTint() })
   }

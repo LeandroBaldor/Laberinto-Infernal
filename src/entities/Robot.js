@@ -7,6 +7,7 @@ export class Robot extends Monster {
     super(scene, x, y)
     this.setTexture('robot_t700')
     this.setDisplaySize(TILE * 2.25, TILE * 2.25)
+    this.body.setSize(TILE * 2.25, TILE * 2.25)
 
     this.health = 25
     this.maxHealth = 25

@@ -7,6 +7,9 @@ import { Arania } from '../entities/Arania.js'
 import { Robot } from '../entities/Robot.js'
 import { KillMachine } from '../entities/KillMachine.js'
 import { Exterminador } from '../entities/Exterminador.js'
+import { Esqueletor } from '../entities/Esqueletor.js'
+import { EvilSoldier } from '../entities/EvilSoldier.js'
+import { Belcebu } from '../entities/Belcebu.js'
 
 const TILE = 32
 
@@ -23,6 +26,7 @@ export class GameScene extends Phaser.Scene {
     this._savedInv    = data.inventory  || null   // [[type, ammo], ...]
     this._savedWeapon = data.activeWeapon || null
     this._savedArmor  = data.savedArmor || null   // { type, armor, armorMax }
+    this._dying       = false
   }
 
   create() {
@@ -40,7 +44,9 @@ export class GameScene extends Phaser.Scene {
     this.walls = this.physics.add.staticGroup()
 
     const _hasWall2 = this.textures.exists('wall_l2_2')
-    const WALL_KEYS = this.level >= 2
+    const WALL_KEYS = this.level >= 3
+      ? (this.textures.exists('wall_l3') ? ['wall_l3'] : ['wall_l2'])
+      : this.level >= 2
       ? (_hasWall2
           ? ['wall_l2', 'wall_l2', 'wall_l2', 'wall_l2', 'wall_l2', 'wall_l2_2']
           : ['wall_l2'])
@@ -55,9 +61,7 @@ export class GameScene extends Phaser.Scene {
           'wall_school',
           'wall_bomb',
         ]
-    const FLOOR_KEYS = this.level >= 2
-      ? ['floor_l2', 'floor_l2b', 'floor_l2c', 'floor_l2d']
-      : ['floor', 'floor', 'floor', 'floor2', 'floor3']
+    const FLOOR_KEYS = ['floor', 'floor', 'floor', 'floor2', 'floor3']
 
     for (let r = 0; r < this.mazeRows; r++) {
       for (let c = 0; c < this.mazeCols; c++) {
@@ -69,9 +73,10 @@ export class GameScene extends Phaser.Scene {
           const w = this.walls.create(x, y, wKey).setDepth(1).setAngle(angle)
           if (this.level >= 2) w.setDisplaySize(TILE, TILE)
         } else {
-          const fKey = FLOOR_KEYS[Math.floor(Math.random() * FLOOR_KEYS.length)]
-          const angle = this.level >= 2 ? [0, 90, 180, 270][Math.floor(Math.random() * 4)] : 0
-          const f = this.add.image(x, y, fKey).setDepth(0).setAngle(angle)
+          const fKey = this.level >= 3 ? 'floor_l3'
+                     : this.level >= 2 ? 'floor_l2'
+                     : FLOOR_KEYS[Math.floor(Math.random() * FLOOR_KEYS.length)]
+          const f = this.add.image(x, y, fKey).setDepth(0)
           if (this.level >= 2) f.setDisplaySize(TILE, TILE)
         }
       }
@@ -113,8 +118,8 @@ export class GameScene extends Phaser.Scene {
     // Exit starts LOCKED — red tint until player picks up the key
     this.exit.setTint(0xff3333)
     this.tweens.add({
-      targets: this.exit, alpha: 0.4, scaleX: 1.1, scaleY: 1.1,
-      duration: 700, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
+      targets: this.exit, alpha: 0.5,
+      duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
     })
     this.exitRing = this.add.graphics().setDepth(2)
     this.exitRing.fillStyle(0xff2200, 0.2)
@@ -160,9 +165,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     if (this.level === 1) {
-      this.mutantCount    = 50
+      this.mutantCount    = 25
       this.serpienteCount = 25
-      this.araniaCount    = 5
+      this.araniaCount    = 3
       this.t700Count      = 0
       this.killMachineCount = 0
       this.exterminadorCount = 0
@@ -176,23 +181,37 @@ export class GameScene extends Phaser.Scene {
       }
       for (let i = 0; i < this.serpienteCount; i++) spawnEnemy(Serpiente, null)
       for (let i = 0; i < this.araniaCount; i++) spawnEnemy(Arania, null)
-    } else {
+    } else if (this.level === 2) {
       this.mutantCount       = 0
       this.serpienteCount    = 0
       this.araniaCount       = 0
-      this.t700Count         = 50
+      this.t700Count         = 25
       this.killMachineCount  = 25
-      this.exterminadorCount = 5
+      this.exterminadorCount = 3
 
       for (let i = 0; i < this.t700Count; i++) spawnEnemy(Robot, null)
       for (let i = 0; i < this.killMachineCount; i++) spawnEnemy(KillMachine, null)
       for (let i = 0; i < this.exterminadorCount; i++) spawnEnemy(Exterminador, null)
+    } else {
+      this.mutantCount       = 0
+      this.serpienteCount    = 0
+      this.araniaCount       = 0
+      this.t700Count         = 0
+      this.killMachineCount  = 0
+      this.exterminadorCount = 0
+      this.esqueletorCount   = 25
+      this.evilSoldierCount  = 25
+      this.belcebuCount      = 3
+
+      for (let i = 0; i < this.esqueletorCount; i++) spawnEnemy(Esqueletor, null)
+      for (let i = 0; i < this.evilSoldierCount; i++) spawnEnemy(EvilSoldier, null)
+      for (let i = 0; i < this.belcebuCount; i++) spawnEnemy(Belcebu, null)
     }
 
     this.enemyProjectiles = this.physics.add.group()
 
     // ── Weapon pickups ───────────────────────────────────────────────────────
-    const weaponDefs = [
+    this._weaponDefs = [
       { groupKey: 'swords',        wType: 'sword',   texKey: 'sword',         count: 150, tint: 0xffdd44 },
       { groupKey: 'arrowPickups',  wType: 'arrow',   texKey: 'arrow',         count: 150, tint: 0x88ddff },
       { groupKey: 'shotgunPickups',wType: 'shotgun', texKey: 'shotgun',       count: 100, tint: 0xff8833 },
@@ -205,7 +224,7 @@ export class GameScene extends Phaser.Scene {
         { groupKey: 'infernusPickups', wType: 'lanzallamas_infernal', texKey: 'lanzallamas_infernal', count: 30, tint: 0xff2200 },
       ] : []),
     ]
-    for (const def of weaponDefs) {
+    for (const def of this._weaponDefs) {
       this[def.groupKey] = this.physics.add.staticGroup()
       for (let n = 0; n < def.count; n++) {
         let cell, attempts = 0
@@ -219,6 +238,8 @@ export class GameScene extends Phaser.Scene {
 
         // White glowing tile (no tint — stays white)
         const tile = this[def.groupKey].create(wx, wy, 'weapon_tile').setDepth(2)
+        tile.body.setSize(TILE * 2, TILE * 2)
+        tile.refreshBody()
         this.tweens.add({
           targets: tile, alpha: 0.55,
           duration: 700 + n * 120, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
@@ -245,16 +266,18 @@ export class GameScene extends Phaser.Scene {
         attempts++
       } while (usedCells.has(`${cell.row},${cell.col}`) && attempts < 50)
       usedCells.add(`${cell.row},${cell.col}`)
-      this.healthPacks.create(cell.col * TILE + TILE / 2, cell.row * TILE + TILE / 2, 'health').setDepth(2)
+      const hp = this.healthPacks.create(cell.col * TILE + TILE / 2, cell.row * TILE + TILE / 2, 'health').setDepth(2)
+      hp.body.setSize(TILE * 2, TILE * 2)
+      hp.refreshBody()
     }
 
     // ── Armor pickups ─────────────────────────────────────────────────────────
-    const armorPickupDefs = [
+    this._armorDefs = [
       { groupKey: 'armorSilver', aType: 'silver', texKey: 'armor_silver', count: 25, hpBonus: 10 },
       { groupKey: 'armorGold',   aType: 'gold',   texKey: 'armor_gold',   count: 15, hpBonus: 20 },
       { groupKey: 'armorFuture', aType: 'future', texKey: 'armor_future', count: 10, hpBonus: 40 },
     ]
-    for (const def of armorPickupDefs) {
+    for (const def of this._armorDefs) {
       this[def.groupKey] = this.physics.add.staticGroup()
       for (let n = 0; n < def.count; n++) {
         let cell, attempts = 0
@@ -266,6 +289,7 @@ export class GameScene extends Phaser.Scene {
         const ax = cell.col * TILE + TILE / 2
         const ay = cell.row * TILE + TILE / 2
         const box = this[def.groupKey].create(ax, ay, def.texKey).setDepth(2).setDisplaySize(TILE * 1.25, TILE * 1.25)
+        box.body.setSize(TILE * 2, TILE * 2)
         box.refreshBody()
         this.tweens.add({
           targets: box, alpha: 0.7,
@@ -303,40 +327,20 @@ export class GameScene extends Phaser.Scene {
     }, null, this)
 
 
-    for (const def of armorPickupDefs) {
-      this.physics.add.overlap(this.player, this[def.groupKey], (player, box) => {
-        this.tweens.killTweensOf(box)
-        box.destroy()
-        player.pickupArmor(def.aType)
-        player.heal(def.hpBonus)
-        const s = ARMOR_STATS[def.aType]
-        this.showFloatingText(player.x, player.y - 20, `${s.label} +${def.hpBonus}HP`, s.color)
-      }, null, this)
-    }
-
-    for (const def of weaponDefs) {
-      this.physics.add.overlap(this.player, this[def.groupKey], (player, sprite) => {
-        if (sprite.icon) { this.tweens.killTweensOf(sprite.icon); sprite.icon.destroy() }
-        this.tweens.killTweensOf(sprite)
-        sprite.destroy()
-        const isNew = !player.inventory.has(def.wType)
-        player.pickupWeapon(def.wType)
-        this.score += 2
-        this.events.emit('scoreChanged', this.score)
-        const s = WEAPON_STATS[def.wType]
-        if (isNew) {
-          this.showWeaponBanner(player.x, player.y - 24, s.label, this._weaponColor(def.wType))
-        } else {
-          this.showFloatingText(player.x, player.y - 20, `${s.label} +munición`, this._weaponColor(def.wType))
-        }
-      }, null, this)
-    }
+    // Weapon & armor pickups handled by _checkPickups() in update()
 
     // ── Camera ───────────────────────────────────────────────────────────────
+    const UI_H = 70
+    const _applyViewport = () => {
+      this.cameras.main.setViewport(0, UI_H, this.scale.width, this.scale.height - UI_H)
+    }
+    _applyViewport()
+    this.scale.on('resize', _applyViewport, this)
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight)
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
     this.cameras.main.setZoom(2)
     this.cameras.main.fadeIn(500)
+    this._showLevelBanner()
 
     this.events.on('playerDied', this.onPlayerDied, this)
     this.events.on('monsterKilled', this.onMonsterKilled, this)
@@ -357,6 +361,9 @@ export class GameScene extends Phaser.Scene {
       t700Count:         this.t700Count,
       killMachineCount:  this.killMachineCount,
       exterminadorCount: this.exterminadorCount,
+      esqueletorCount:   this.esqueletorCount   || 0,
+      evilSoldierCount:  this.evilSoldierCount  || 0,
+      belcebuCount:      this.belcebuCount       || 0,
     })
 
     // ── Música por nivel ─────────────────────────────────────────────────────
@@ -367,6 +374,8 @@ export class GameScene extends Phaser.Scene {
     } else if (this.level === 2 && this.cache.audio.exists('musica_nivel_2')) {
       this._bgMusic = this.sound.add('musica_nivel_2', { loop: true, volume: 0.25 })
       this._bgMusic.play()
+    } else if (this.level === 3) {
+      this._playLevel3Music(0)
     }
     this.events.once('shutdown', () => {
       this.sound.stopAll()
@@ -432,14 +441,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   addVignette() {
-    const w = this.scale.width
-    const h = this.scale.height
-    const v = this.add.graphics()
-    v.setScrollFactor(0).setDepth(100)
-    v.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0.7, 0.7, 0, 0); v.fillRect(0, 0, w / 3, h)
-    v.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0, 0, 0.7, 0.7); v.fillRect((w * 2) / 3, 0, w / 3, h)
-    v.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0.7, 0, 0, 0.7); v.fillRect(0, 0, w, h / 3)
-    v.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0, 0.7, 0.7, 0); v.fillRect(0, (h * 2) / 3, w, h / 3)
   }
 
   update(time, delta) {
@@ -475,7 +476,50 @@ export class GameScene extends Phaser.Scene {
     }
     this.player.update(time, this.bullets)
     this.monsters.getChildren().forEach(m => m.update(time, this.player))
-    this.bullets.getChildren().forEach(b => { b.lifespan -= 16; if (b.lifespan <= 0) b.destroy() })
+    this.bullets.getChildren().forEach(b => { b.lifespan -= delta; if (b.lifespan <= 0) b.destroy() })
+    this._checkPickups()
+  }
+
+  _checkPickups() {
+    if (this.player.moving) return
+    const pc = this.player.gridCol
+    const pr = this.player.gridRow
+
+    for (const def of this._weaponDefs) {
+      for (const tile of this[def.groupKey].getChildren()) {
+        if (!tile.active) continue
+        const tc = Math.round((tile.x - TILE / 2) / TILE)
+        const tr = Math.round((tile.y - TILE / 2) / TILE)
+        if (tc !== pc || tr !== pr) continue
+        if (tile.icon) { this.tweens.killTweensOf(tile.icon); tile.icon.destroy() }
+        this.tweens.killTweensOf(tile)
+        tile.destroy()
+        const isNew = !this.player.inventory.has(def.wType)
+        this.player.pickupWeapon(def.wType)
+        this.score += 2
+        this.events.emit('scoreChanged', this.score)
+        const s = WEAPON_STATS[def.wType]
+        if (isNew) this.showWeaponBanner(this.player.x, this.player.y - 24, s.label, this._weaponColor(def.wType))
+        else        this.showFloatingText(this.player.x, this.player.y - 20, `${s.label} +munición`, this._weaponColor(def.wType))
+        break
+      }
+    }
+
+    for (const def of this._armorDefs) {
+      for (const box of this[def.groupKey].getChildren()) {
+        if (!box.active) continue
+        const tc = Math.round((box.x - TILE / 2) / TILE)
+        const tr = Math.round((box.y - TILE / 2) / TILE)
+        if (tc !== pc || tr !== pr) continue
+        this.tweens.killTweensOf(box)
+        box.destroy()
+        this.player.pickupArmor(def.aType)
+        this.player.heal(def.hpBonus)
+        const s = ARMOR_STATS[def.aType]
+        this.showFloatingText(this.player.x, this.player.y - 20, `${s.label} +${def.hpBonus}HP`, s.color)
+        break
+      }
+    }
   }
 
   _openWeaponMenu() {
@@ -593,8 +637,8 @@ export class GameScene extends Phaser.Scene {
     this.exit.clearTint()
     this.tweens.killTweensOf(this.exit)
     this.tweens.add({
-      targets: this.exit, alpha: 0.5, scaleX: 1.15, scaleY: 1.15,
-      duration: 900, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
+      targets: this.exit, alpha: 0.9,
+      duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
     })
     this.exitRing.clear()
     this.exitRing.fillStyle(0x00ff66, 0.18)
@@ -620,15 +664,19 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.fadeOut(900, 0, 255, 100)
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.stop('UIScene')
-      this.scene.start('GameScene', {
-        level: this.level + 1, score: this.score,
-        lives: this.lives, elapsedMs: this._elapsedMs,
-        inventory: [...this.player.inventory.entries()],
-        activeWeapon: this.player.activeWeapon,
-        savedArmor: this.player.armorType
-          ? { type: this.player.armorType, armor: this.player.armor, armorMax: this.player.armorMax }
-          : null,
-      })
+      if (this.level >= 4) {
+        this.scene.start('ComingSoonScene')
+      } else {
+        this.scene.start('GameScene', {
+          level: this.level + 1, score: this.score,
+          lives: this.lives, elapsedMs: this._elapsedMs,
+          inventory: [...this.player.inventory.entries()],
+          activeWeapon: this.player.activeWeapon,
+          savedArmor: this.player.armorType
+            ? { type: this.player.armorType, armor: this.player.armor, armorMax: this.player.armorMax }
+            : null,
+        })
+      }
     })
   }
 
@@ -646,22 +694,37 @@ export class GameScene extends Phaser.Scene {
     this.showFloatingText(player.x, player.y - 20, '+5 MAX HP', '#ff4444')
   }
 
+  _playLevel3Music(trackIndex) {
+    const keys = ['musica_nivel_3_1', 'musica_nivel_3_2', 'musica_nivel_3_3']
+    const key = keys[trackIndex % 3]
+    if (!this.cache.audio.exists(key)) return
+    if (this._bgMusic) { this._bgMusic.stop(); this._bgMusic.destroy() }
+    this._bgMusic = this.sound.add(key, { volume: 0.25 })
+    this._bgMusic.once('complete', () => {
+      if (this.scene.isActive('GameScene')) this._playLevel3Music(trackIndex + 1)
+    })
+    this._bgMusic.play()
+  }
+
   onBulletHitMonster(bullet, monster) {
     this.spawnHitParticle(bullet.x, bullet.y)
     const dmg = bullet.damage || 1
+    const mx = monster.x, my = monster.y
     bullet.destroy()
     const killed = monster.hit(dmg)
+    this.showDamageText(mx, my - 20, dmg)
     if (killed) {
       const pts = monster.scoreValue || 10
       this.score += pts
-      this.showFloatingText(monster.x, monster.y - 20, `+${pts}`, '#ffff00')
+      this.showFloatingText(mx, my - 42, `+${pts}`, '#ffff00')
       this.events.emit('scoreChanged', this.score)
-    } else {
-      this.showFloatingText(monster.x, monster.y - 16, `-${dmg}`, '#88ccff')
     }
   }
 
   onPlayerDied() {
+    if (this._dying) return
+    this._dying = true
+    this.player.invincible = true
     this.lives -= 1
     this.events.emit('livesChanged', this.lives)
     this.cameras.main.shake(500, 0.02)
@@ -688,6 +751,9 @@ export class GameScene extends Phaser.Scene {
     else if (m.monsterType === 'robot')        this.t700Count         = Math.max(0, this.t700Count         - 1)
     else if (m.monsterType === 'killmachine')  this.killMachineCount  = Math.max(0, this.killMachineCount  - 1)
     else if (m.monsterType === 'exterminador') this.exterminadorCount = Math.max(0, this.exterminadorCount - 1)
+    else if (m.monsterType === 'esqueletor')   this.esqueletorCount   = Math.max(0, (this.esqueletorCount  || 0) - 1)
+    else if (m.monsterType === 'evil_soldier') this.evilSoldierCount  = Math.max(0, (this.evilSoldierCount || 0) - 1)
+    else if (m.monsterType === 'belcebu')      this.belcebuCount      = Math.max(0, (this.belcebuCount     || 0) - 1)
     this.events.emit('monsterCountChanged', {
       mutant:       this.mutantCount,
       serpiente:    this.serpienteCount,
@@ -695,6 +761,9 @@ export class GameScene extends Phaser.Scene {
       t700:         this.t700Count,
       killMachine:  this.killMachineCount,
       exterminador: this.exterminadorCount,
+      esqueletor:   this.esqueletorCount   || 0,
+      evilSoldier:  this.evilSoldierCount  || 0,
+      belcebu:      this.belcebuCount      || 0,
     })
   }
 
@@ -876,15 +945,24 @@ export class GameScene extends Phaser.Scene {
 
   spawnSerpenteBullet(fromX, fromY, toX, toY, damage, speed = 400) {
     if (this.enemyProjectiles.getLength() >= 40) return
-    const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
-    proj.setDisplaySize(20, 20).setDepth(12).setTint(0x44ff44)
+    const acidTex = this.textures.exists('serpiente_acido') ? 'serpiente_acido' : 'poison_bullet'
+    const proj = this.physics.add.image(fromX, fromY, acidTex)
+    if (acidTex === 'serpiente_acido') {
+      const src = this.textures.get('serpiente_acido').getSourceImage()
+      const h = 32
+      proj.setDisplaySize(Math.round(src.width * h / src.height), h)
+    } else {
+      proj.setDisplaySize(20, 20).setTint(0x44ff44)
+    }
+    proj.setDepth(12)
     proj.projType = 'poison'
     proj.damage   = damage
     const dx = toX - fromX, dy = toY - fromY
     const horizontal = Math.abs(dx) >= Math.abs(dy)
     const vx = horizontal ? Math.sign(dx) * speed : 0
     const vy = horizontal ? 0 : Math.sign(dy) * speed
-    proj.setRotation(horizontal ? (dx >= 0 ? 0 : Math.PI) : (dy >= 0 ? Math.PI / 2 : -Math.PI / 2))
+    const _baseRot = horizontal ? (dx >= 0 ? 0 : Math.PI) : (dy >= 0 ? Math.PI / 2 : -Math.PI / 2)
+    proj.setRotation(acidTex === 'serpiente_acido' ? _baseRot + Math.PI : _baseRot)
     this.enemyProjectiles.add(proj)
     proj.body.setVelocity(vx, vy)
     const trail = this.add.particles(0, 0, 'poison_bullet', {
@@ -1019,6 +1097,72 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(2200, () => { if (proj.active) proj.destroy() })
   }
 
+  spawnExterminadorBullet(fromX, fromY, vx, vy, damage) {
+    if (this.enemyProjectiles.getLength() >= 80) return
+    const texKey = this.textures.exists('bala_exterminador') ? 'bala_exterminador' : 'poison_bullet'
+    const proj = this.physics.add.image(fromX, fromY, texKey)
+    if (texKey === 'bala_exterminador') {
+      const src = this.textures.get(texKey).getSourceImage()
+      const h = 60
+      proj.setDisplaySize(Math.round(src.width * h / src.height), h)
+    } else {
+      proj.setDisplaySize(22, 22).setTint(0x00eeff)
+    }
+    proj.setDepth(12).setRotation(Math.atan2(vy, vx))
+    proj.projType = 'normal'
+    proj.damage = damage
+    this.enemyProjectiles.add(proj)
+    proj.body.setVelocity(vx, vy)
+    this.time.delayedCall(2200, () => { if (proj.active) proj.destroy() })
+  }
+
+  // Bola de fuego — Evil Soldier (ametralladora: ángulo libre hacia el jugador)
+  spawnBolaFuego(fromX, fromY, toX, toY, damage, speed = 380) {
+    if (this.enemyProjectiles.getLength() >= 100) return
+    const texKey = this.textures.exists('bola_fuego_l3') ? 'bola_fuego_l3' : 'poison_bullet'
+    const proj = this.physics.add.image(fromX, fromY, texKey)
+    if (texKey === 'bola_fuego_l3') {
+      const src = this.textures.get(texKey).getSourceImage()
+      const h = 28
+      proj.setDisplaySize(Math.round(src.width * h / src.height), h)
+    } else {
+      proj.setDisplaySize(18, 18).setTint(0xff4400)
+    }
+    proj.setDepth(12)
+    proj.projType = 'normal'
+    proj.damage   = damage
+    const dx = toX - fromX, dy = toY - fromY
+    const angle = Math.atan2(dy, dx)
+    const vx = Math.cos(angle) * speed
+    const vy = Math.sin(angle) * speed
+    proj.setRotation(angle)
+    this.enemyProjectiles.add(proj)
+    proj.body.setAllowGravity(false)
+    proj.body.setVelocity(vx, vy)
+    this.time.delayedCall(2000, () => { if (proj.active) proj.destroy() })
+  }
+
+  // Bola de energía — Belcebú (ángulo libre hacia jugador)
+  spawnBolaEnergia(fromX, fromY, vx, vy, damage) {
+    if (this.enemyProjectiles.getLength() >= 100) return
+    const texKey = this.textures.exists('bola_energia_l3') ? 'bola_energia_l3' : 'poison_bullet'
+    const proj = this.physics.add.image(fromX, fromY, texKey)
+    if (texKey === 'bola_energia_l3') {
+      const src = this.textures.get(texKey).getSourceImage()
+      const h = 36
+      proj.setDisplaySize(Math.round(src.width * h / src.height), h)
+    } else {
+      proj.setDisplaySize(22, 22).setTint(0xaa00ff)
+    }
+    proj.setDepth(12).setRotation(Math.atan2(vy, vx))
+    proj.projType = 'normal'
+    proj.damage   = damage
+    this.enemyProjectiles.add(proj)
+    proj.body.setAllowGravity(false)
+    proj.body.setVelocity(vx, vy)
+    this.time.delayedCall(2500, () => { if (proj.active) proj.destroy() })
+  }
+
   spawnAcidSplash(x, y) {
     const p = this.add.particles(x, y, 'poison_bullet', {
       speed: { min: 40, max: 130 },
@@ -1081,6 +1225,42 @@ export class GameScene extends Phaser.Scene {
       color, stroke: '#000000', strokeThickness: 3,
     }).setDepth(200).setOrigin(0.5)
     this.tweens.add({ targets: txt, y: y - 40, alpha: 0, duration: 800, onComplete: () => txt.destroy() })
+  }
+
+  showDamageText(x, y, dmg) {
+    const txt = this.add.text(x, y, `-${Math.ceil(dmg)}`, {
+      fontSize: '22px', fontFamily: 'Courier New', fontStyle: 'bold',
+      color: '#ff3333', stroke: '#000000', strokeThickness: 4,
+    }).setDepth(200).setOrigin(0.5)
+    this.tweens.add({ targets: txt, y: y - 50, alpha: 0, duration: 700, onComplete: () => txt.destroy() })
+  }
+
+  _showLevelBanner() {
+    const LEVEL_NAMES = {
+      1: 'Nivel 1 — El Laberinto',
+      2: 'Nivel 2 — La Fortaleza Mecánica',
+      3: 'Nivel 3 — Bienvenidos al Inframundo',
+    }
+    const name = LEVEL_NAMES[this.level]
+    if (!name) return
+    const cam = this.cameras.main
+    const cx = cam.scrollX + cam.width / 2
+    const cy = cam.scrollY + cam.height / 2
+    const bg = this.add.rectangle(cx, cy, cam.width, 60, 0x000000, 0.7)
+      .setDepth(300).setScrollFactor(0).setAlpha(0)
+    const txt = this.add.text(cx, cy, name, {
+      fontSize: '22px', fontFamily: 'Courier New', fontStyle: 'bold',
+      color: '#ffffff', stroke: '#000000', strokeThickness: 4,
+    }).setDepth(301).setScrollFactor(0).setOrigin(0.5).setAlpha(0)
+    this.tweens.add({
+      targets: [bg, txt], alpha: 1, duration: 400,
+      onComplete: () => {
+        this.tweens.add({
+          targets: [bg, txt], alpha: 0, duration: 600, delay: 2000,
+          onComplete: () => { bg.destroy(); txt.destroy() },
+        })
+      },
+    })
   }
 
   showWeaponBanner(x, y, label, color) {

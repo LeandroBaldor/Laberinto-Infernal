@@ -7,8 +7,8 @@ export class Arania extends Monster {
     super(scene, x, y, 'arania')
 
     this.monsterType     = 'arania'
-    this.health          = 400
-    this.maxHealth       = 400
+    this.health          = 300
+    this.maxHealth       = 300
     this.scoreValue      = 300
     this.attackDamage    = 10
     this.detectionRange  = 999
@@ -17,7 +17,7 @@ export class Arania extends Monster {
     this.stepInterval    = 550 + Math.random() * 250
 
     this.setDisplaySize(TILE * 5, TILE * 5)
-    this.body.setSize(TILE * 3.5, TILE * 3.5)
+    this.body.setSize(TILE * 5, TILE * 5)
 
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY
