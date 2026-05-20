@@ -890,6 +890,13 @@ export class GameScene extends Phaser.Scene {
     return { vx: 0, vy: dy >= 0 ? speed : -speed }
   }
 
+  // Snap velocity to nearest 8-direction (←→↑↓ + diagonals)
+  _8dirVelocity(fromX, fromY, toX, toY, speed) {
+    const angle = Math.atan2(toY - fromY, toX - fromX)
+    const snapped = Math.round(angle / (Math.PI / 4)) * (Math.PI / 4)
+    return { vx: Math.cos(snapped) * speed, vy: Math.sin(snapped) * speed, angle: snapped }
+  }
+
   spawnPoisonBullet(fromX, fromY, toX, toY, damage, speed = 340) {
     const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
     proj.setDisplaySize(20, 20).setDepth(12)
@@ -923,11 +930,8 @@ export class GameScene extends Phaser.Scene {
     proj.setDisplaySize(22, 22).setDepth(12).setTint(0xcc44ff)
     proj.projType = 'poison'
     proj.damage   = damage
-    const dx = toX - fromX, dy = toY - fromY
-    const horizontal = Math.abs(dx) >= Math.abs(dy)
-    const vx = horizontal ? Math.sign(dx) * speed : 0
-    const vy = horizontal ? 0 : Math.sign(dy) * speed
-    proj.setRotation(horizontal ? (dx >= 0 ? 0 : Math.PI) : (dy >= 0 ? Math.PI / 2 : -Math.PI / 2))
+    const { vx, vy, angle: dir8 } = this._8dirVelocity(fromX, fromY, toX, toY, speed)
+    proj.setRotation(dir8)
     this.enemyProjectiles.add(proj)
     proj.body.setVelocity(vx, vy)
     const trail = this.add.particles(0, 0, 'poison_bullet', {
@@ -959,12 +963,8 @@ export class GameScene extends Phaser.Scene {
     proj.setDepth(12)
     proj.projType = 'poison'
     proj.damage   = damage
-    const dx = toX - fromX, dy = toY - fromY
-    const horizontal = Math.abs(dx) >= Math.abs(dy)
-    const vx = horizontal ? Math.sign(dx) * speed : 0
-    const vy = horizontal ? 0 : Math.sign(dy) * speed
-    const _baseRot = horizontal ? (dx >= 0 ? 0 : Math.PI) : (dy >= 0 ? Math.PI / 2 : -Math.PI / 2)
-    proj.setRotation(acidTex === 'serpiente_acido' ? _baseRot + Math.PI : _baseRot)
+    const { vx, vy, angle: dir8s } = this._8dirVelocity(fromX, fromY, toX, toY, speed)
+    proj.setRotation(acidTex === 'serpiente_acido' ? dir8s + Math.PI : dir8s)
     this.enemyProjectiles.add(proj)
     proj.body.setVelocity(vx, vy)
     const trail = this.add.particles(0, 0, 'poison_bullet', {

@@ -140,8 +140,7 @@ export class Arania extends Monster {
 
     if (this.aiState === 'CHASE' && tileDist <= this.biteRange && tileDist > 1 && time > this.lastBite + this.biteCooldown) {
       this.lastBite = time
-      const rad = Phaser.Math.DegToRad(this.angle + 90)
-      this.scene.spawnAraniaBullet(this.x, this.y, this.x + Math.cos(rad) * 1000, this.y + Math.sin(rad) * 1000, this.attackDamage)
+      this.scene.spawnAraniaBullet(this.x, this.y, player.x, player.y, this.attackDamage)
     }
 
     if (time < this._lastStep + this.stepInterval) return
