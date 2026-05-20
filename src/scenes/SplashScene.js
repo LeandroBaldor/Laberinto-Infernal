@@ -23,7 +23,13 @@ export class SplashScene extends Phaser.Scene {
       shadow: { offsetX: 0, offsetY: 0, color: '#ff2200', blur: 16, fill: true },
     }).setOrigin(0.5)
 
-    const prompt = this.add.text(width / 2, height / 2 + 100, 'PRESIONÁ CUALQUIER TECLA', {
+    this.add.text(width / 2, height / 2 + 62, 'By Yeyo', {
+      fontSize: '20px', fontFamily: "'Press Start 2P', Courier New",
+      color: '#cc33ff',
+      shadow: { offsetX: 0, offsetY: 0, color: '#cc33ff', blur: 16, fill: true },
+    }).setOrigin(0.5)
+
+    const prompt = this.add.text(width / 2, height / 2 + 116, 'PRESIONÁ CUALQUIER TECLA', {
       fontSize: '20px', fontFamily: font, color: '#ffffff',
     }).setOrigin(0.5)
 

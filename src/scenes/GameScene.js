@@ -666,15 +666,19 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.fadeOut(900, 0, 255, 100)
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.stop('UIScene')
-      this.scene.start('GameScene', {
-        level: this.level + 1, score: this.score,
-        lives: this.lives, elapsedMs: this._elapsedMs,
-        inventory: [...this.player.inventory.entries()],
-        activeWeapon: this.player.activeWeapon,
-        savedArmor: this.player.armorType
-          ? { type: this.player.armorType, armor: this.player.armor, armorMax: this.player.armorMax }
-          : null,
-      })
+      if (this.level >= 3) {
+        this.scene.start('ComingSoonScene')
+      } else {
+        this.scene.start('GameScene', {
+          level: this.level + 1, score: this.score,
+          lives: this.lives, elapsedMs: this._elapsedMs,
+          inventory: [...this.player.inventory.entries()],
+          activeWeapon: this.player.activeWeapon,
+          savedArmor: this.player.armorType
+            ? { type: this.player.armorType, armor: this.player.armor, armorMax: this.player.armorMax }
+            : null,
+        })
+      }
     })
   }
 
