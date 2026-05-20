@@ -139,6 +139,7 @@ export class BootScene extends Phaser.Scene {
     this.load.audio('sonido_esqueletor',            `${base}Nivel_3/esqueletor.mp3`)
     this.load.audio('sonido_evil_soldier',          `${base}Nivel_3/evil_soldier.mp3`)
     this.load.audio('sonido_belcebu',               `${base}Nivel_3/belcebú.mp3`)
+    this.load.audio('sonido_bola_energia_belcebu',  `${base}Nivel_3/bola_energia_belcebú.mp3`)
 
     // Nivel 7 — lanzallamas infernal
     this.load.image('lanzallamas_infernal_raw', `${base}Nivel_7/lanzallamas.png`)

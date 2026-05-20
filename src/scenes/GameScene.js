@@ -217,7 +217,7 @@ export class GameScene extends Phaser.Scene {
       { groupKey: 'shotgunPickups',wType: 'shotgun', texKey: 'shotgun',       count: 100, tint: 0xff8833 },
       { groupKey: 'futurePickups', wType: 'future',  texKey: 'future_weapon', count:  50, tint: 0x00ffff },
       ...(this.level >= 2 ? [
-        { groupKey: 'ametralladoraPickups', wType: 'ametralladora', texKey: 'ametralladora',      count: 100, tint: 0xffcc00 },
+        { groupKey: 'ametralladoraPickups', wType: 'ametralladora', texKey: 'ametralladora',      count:  50, tint: 0xffcc00 },
         { groupKey: 'llamasPickups',        wType: 'lanzallamas',   texKey: 'lanzallamas',         count:  50, tint: 0xff4400 },
       ] : []),
       ...(this.level >= 7 ? [
@@ -369,10 +369,10 @@ export class GameScene extends Phaser.Scene {
     // ── Música por nivel ─────────────────────────────────────────────────────
     this._bgMusic = null
     if (this.level === 1 && this.cache.audio.exists('musica_nivel_1')) {
-      this._bgMusic = this.sound.add('musica_nivel_1', { loop: true, volume: 0.25 })
+      this._bgMusic = this.sound.add('musica_nivel_1', { loop: true, volume: 0.375 })
       this._bgMusic.play()
     } else if (this.level === 2 && this.cache.audio.exists('musica_nivel_2')) {
-      this._bgMusic = this.sound.add('musica_nivel_2', { loop: true, volume: 0.25 })
+      this._bgMusic = this.sound.add('musica_nivel_2', { loop: true, volume: 0.375 })
       this._bgMusic.play()
     } else if (this.level === 3) {
       this._playLevel3Music(0)
@@ -650,6 +650,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   onExitReached() {
+    if (this._transitioning) return
     if (!this.player.hasKey) {
       if (!this._keyWarningCooldown) {
         this._keyWarningCooldown = true
@@ -658,25 +659,22 @@ export class GameScene extends Phaser.Scene {
       }
       return
     }
+    this._transitioning = true
     this.score += 500
     this.showFloatingText(this.player.x, this.player.y - 30, '+500 SALIDA!', '#00ff88')
     this.events.emit('scoreChanged', this.score)
     this.cameras.main.fadeOut(900, 0, 255, 100)
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.stop('UIScene')
-      if (this.level >= 4) {
-        this.scene.start('ComingSoonScene')
-      } else {
-        this.scene.start('GameScene', {
-          level: this.level + 1, score: this.score,
-          lives: this.lives, elapsedMs: this._elapsedMs,
-          inventory: [...this.player.inventory.entries()],
-          activeWeapon: this.player.activeWeapon,
-          savedArmor: this.player.armorType
-            ? { type: this.player.armorType, armor: this.player.armor, armorMax: this.player.armorMax }
-            : null,
-        })
-      }
+      this.scene.start('GameScene', {
+        level: this.level + 1, score: this.score,
+        lives: this.lives, elapsedMs: this._elapsedMs,
+        inventory: [...this.player.inventory.entries()],
+        activeWeapon: this.player.activeWeapon,
+        savedArmor: this.player.armorType
+          ? { type: this.player.armorType, armor: this.player.armor, armorMax: this.player.armorMax }
+          : null,
+      })
     })
   }
 
@@ -699,7 +697,7 @@ export class GameScene extends Phaser.Scene {
     const key = keys[trackIndex % 3]
     if (!this.cache.audio.exists(key)) return
     if (this._bgMusic) { this._bgMusic.stop(); this._bgMusic.destroy() }
-    this._bgMusic = this.sound.add(key, { volume: 0.25 })
+    this._bgMusic = this.sound.add(key, { volume: 0.375 })
     this._bgMusic.once('complete', () => {
       if (this.scene.isActive('GameScene')) this._playLevel3Music(trackIndex + 1)
     })

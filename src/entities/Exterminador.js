@@ -25,7 +25,7 @@ export class Exterminador extends Monster {
     this._lastShot = 0
 
     this._ambientTimer = scene.time.addEvent({
-      delay: 60000,
+      delay: 3000,
       loop: true,
       callback: () => {
         if (this.active && scene.cache.audio.exists('sonido_exterminador'))

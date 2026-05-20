@@ -203,7 +203,7 @@ export class Serpiente extends Monster {
         const mouthY = this.y + fdr * TILE * 1.5
         this.scene.spawnSerpenteBullet(mouthX, mouthY, mouthX + fdc * 1000, mouthY + fdr * 1000, this.attackDamage)
         if (this.scene.cache.audio.exists('sonidos_serpiente_gritando'))
-          this.scene.sound.play('sonidos_serpiente_gritando', { volume: 0.7 })
+          this.scene.sound.play('sonidos_serpiente_gritando', { volume: 0.35 })
       }
     }
 

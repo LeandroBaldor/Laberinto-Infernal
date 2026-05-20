@@ -27,20 +27,26 @@ export class Belcebu extends Monster {
     this._lastShot = 0
 
     this._soundTimer = scene.time.addEvent({
-      delay: 10000, loop: true,
+      delay: 3000, loop: true,
       callback: () => {
         if (!this.active || !scene.cache.audio.exists('sonido_belcebu')) return
         if (scene.sound.get('sonido_belcebu')?.isPlaying) return
         const player = scene.player
         if (!player) return
         const myDist2 = (this.x - player.x) ** 2 + (this.y - player.y) ** 2
-        const nearRange = (10 * 32) ** 2
-        if (myDist2 > nearRange) return
+        const maxRange = 30 * 32
+        if (myDist2 > maxRange ** 2) return
         const isClosest = !scene.monsters.getChildren().some(m =>
           m !== this && m.active && m.monsterType === 'belcebu' &&
           (m.x - player.x) ** 2 + (m.y - player.y) ** 2 < myDist2
         )
-        if (isClosest) scene.sound.play('sonido_belcebu', { volume: 0.4 })
+        if (isClosest) {
+          const dist = Math.sqrt(myDist2)
+          const t = 1 - Phaser.Math.Clamp(dist / maxRange, 0, 1)
+          const volume = 0.05 + t * 0.35
+          scene.sound.play('sonido_belcebu', { volume })
+          if (t > 0.7) scene.cameras.main.shake(700, 0.005)
+        }
       },
     })
   }
@@ -104,9 +110,9 @@ export class Belcebu extends Monster {
     const vy = Math.sin(snapped) * speed
     const handX = this.x + (this.flipX ? -TILE * 2.5 : TILE * 2.5)
     const handY = this.y - TILE * 0.5
+    if (this.scene.cache.audio.exists('sonido_bola_energia_belcebu'))
+      this.scene.sound.play('sonido_bola_energia_belcebu', { volume: 0.5 })
     this.scene.spawnBolaEnergia(handX, handY, vx, vy, this.attackDamage)
-    this.setTint(0xaa00ff)
-    this.scene.time.delayedCall(150, () => { if (this.active) this.clearTint() })
   }
 
   die() {
