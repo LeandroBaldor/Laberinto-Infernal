@@ -486,7 +486,10 @@ export class BootScene extends Phaser.Scene {
     try {
       const src = this.textures.get('key_img').getSourceImage()
       if (!src || src.width === 0 || src.height === 0) return
-      const W = 96, H = 60
+      // Escalar preservando aspect ratio — lado más largo = 128px
+      const scale = Math.min(128 / src.width, 128 / src.height)
+      const W = Math.max(1, Math.round(src.width  * scale))
+      const H = Math.max(1, Math.round(src.height * scale))
       const canvas = document.createElement('canvas')
       canvas.width = W; canvas.height = H
       const ctx = canvas.getContext('2d')

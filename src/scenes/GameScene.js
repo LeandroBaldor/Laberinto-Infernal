@@ -137,8 +137,16 @@ export class GameScene extends Phaser.Scene {
     usedCells.add(`${keyCell.row},${keyCell.col}`)
     const keyX = keyCell.col * TILE + TILE / 2
     const keyY = keyCell.row * TILE + TILE / 2
-    this.keyItem = this.physics.add.staticSprite(keyX, keyY, 'key')
-      .setDepth(4).setDisplaySize(TILE * 3, TILE * 1.8)
+    this.keyItem = this.physics.add.staticSprite(keyX, keyY, 'key').setDepth(4)
+    {
+      // Mantener aspect ratio de la textura — altura fija = 1 tile
+      const _kSrc = this.textures.get('key').getSourceImage()
+      const _kH = TILE * 1.0
+      const _kW = (_kSrc && _kSrc.height > 0)
+        ? Math.round(_kSrc.width * _kH / _kSrc.height)
+        : Math.round(_kH * 1.6)
+      this.keyItem.setDisplaySize(_kW, _kH)
+    }
     this.tweens.add({
       targets: this.keyItem,
       y: keyY - 4, angle: 8,
