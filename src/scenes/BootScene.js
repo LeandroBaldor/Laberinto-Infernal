@@ -492,6 +492,12 @@ export class BootScene extends Phaser.Scene {
       const ctx = canvas.getContext('2d')
       ctx.clearRect(0, 0, W, H)
       ctx.drawImage(src, 0, 0, W, H)
+      const imgData = ctx.getImageData(0, 0, W, H)
+      const d = imgData.data
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i] > 240 && d[i + 1] > 240 && d[i + 2] > 240) d[i + 3] = 0
+      }
+      ctx.putImageData(imgData, 0, 0)
       if (this.textures.exists('key')) this.textures.remove('key')
       this.textures.addCanvas('key', canvas)
       this.textures.remove('key_img')
