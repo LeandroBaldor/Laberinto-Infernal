@@ -114,7 +114,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('lanzallamas_fuego',         `${base}lanzallamas_fuego.png`)
 
     this.load.image('exit',                    `${base}puerta.png`)
-    this.load.image('key_img',                 `${base}llave.png`)
+    this.load.image('key_img',                 `${base}llave.png?t=${Date.now()}`)
     this.load.audio('musica_nivel_1',          `${base}musica_nivel_1.mp3`)
     this.load.audio('musica_nivel_2',          `${base}musica_nivel_2.mp3`)
     this.load.audio('musica_nivel_3_1',        `${base}Nivel_3/Musica/1.mp3`)
