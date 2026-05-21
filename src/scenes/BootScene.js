@@ -114,7 +114,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('lanzallamas_fuego',         `${base}lanzallamas_fuego.png`)
 
     this.load.image('exit',                    `${base}puerta.png`)
-    this.load.image('key',                     `${base}llave.png`)
+    this.load.image('key_img',                 `${base}llave.png`)
     this.load.audio('musica_nivel_1',          `${base}musica_nivel_1.mp3`)
     this.load.audio('musica_nivel_2',          `${base}musica_nivel_2.mp3`)
     this.load.audio('musica_nivel_3_1',        `${base}Nivel_3/Musica/1.mp3`)
@@ -183,9 +183,6 @@ export class BootScene extends Phaser.Scene {
       } else {
         this._makeAraniaFallback()
       }
-
-      // Key: strip white background if loaded (transparent PNGs don't need stripping)
-      if (loaded.has('key')) this._stripWhiteBackground('key')
 
       this.createTextures()
 
@@ -437,7 +434,8 @@ export class BootScene extends Phaser.Scene {
     this._makeWebBullet()
     this._makeHealth()
     this._makeWeaponTile()
-    if (!this.textures.exists('key')) this._makeKeyTexture()
+    this._makeKeyTexture()
+    if (this.textures.exists('key_img')) this._applyKeyImage()
     // Armor box fallbacks (overridden by real images later if available)
     this._makeArmorBox('armor_silver', 0x778899, 0xaabbcc, 0xddeeff)
     this._makeArmorBox('armor_gold',   0xaa8800, 0xddbb00, 0xffee55)
@@ -508,6 +506,28 @@ export class BootScene extends Phaser.Scene {
 
     g.generateTexture('key', W, H)
     g.destroy()
+  }
+
+  _applyKeyImage() {
+    try {
+      const src = this.textures.get('key_img').getSourceImage()
+      if (!src || src.width === 0 || src.height === 0) return
+      const canvas = document.createElement('canvas')
+      canvas.width = src.width; canvas.height = src.height
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(src, 0, 0)
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const d = img.data
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i] > 240 && d[i + 1] > 240 && d[i + 2] > 240) d[i + 3] = 0
+      }
+      ctx.putImageData(img, 0, 0)
+      if (this.textures.exists('key')) this.textures.remove('key')
+      this.textures.addCanvas('key', canvas)
+      this.textures.remove('key_img')
+    } catch (_) {
+      // Si falla, queda la textura procedural
+    }
   }
 
   _makeSingleWallFromImage(rawKey, destKey) {

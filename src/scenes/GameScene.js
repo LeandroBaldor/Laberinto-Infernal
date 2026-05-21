@@ -138,7 +138,7 @@ export class GameScene extends Phaser.Scene {
     const keyX = keyCell.col * TILE + TILE / 2
     const keyY = keyCell.row * TILE + TILE / 2
     this.keyItem = this.physics.add.staticSprite(keyX, keyY, 'key')
-      .setDepth(4).setDisplaySize(TILE * 1.5, TILE * 0.9)
+      .setDepth(4).setDisplaySize(TILE * 3, TILE * 1.8)
     this.tweens.add({
       targets: this.keyItem,
       y: keyY - 4, angle: 8,
