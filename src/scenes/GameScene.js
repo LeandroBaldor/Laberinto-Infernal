@@ -122,6 +122,11 @@ export class GameScene extends Phaser.Scene {
       this.exit.setDisplaySize(_eW, _eH)
     }
     this.exit.body.setSize(TILE, TILE)
+    this.exit.refreshBody()
+
+    // Guardar posición en grilla para chequeo en _checkPickups
+    this.exitCol = exitCell.col
+    this.exitRow = exitCell.row
 
     // Exit starts LOCKED — red tint until player picks up the key
     this.exit.setTint(0xff3333)
@@ -514,6 +519,13 @@ export class GameScene extends Phaser.Scene {
     if (this.player.moving) return
     const pc = this.player.gridCol
     const pr = this.player.gridRow
+
+    // ── Chequeo de salida por grilla (más fiable que overlap físico) ──────────
+    if (!this._transitioning && this.player.hasKey &&
+        pc === this.exitCol && pr === this.exitRow) {
+      this.onExitReached()
+      return
+    }
 
     for (const def of this._weaponDefs) {
       for (const tile of this[def.groupKey].getChildren()) {
