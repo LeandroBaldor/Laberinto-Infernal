@@ -142,10 +142,10 @@ export class GameScene extends Phaser.Scene {
       duration: 800, yoyo: true, repeat: 8, ease: 'Sine.easeInOut',
     })
     // Golden glow ring under key
-    const keyRing = this.add.graphics().setDepth(3)
-    keyRing.fillStyle(0xffdd00, 0.22)
-    keyRing.fillCircle(keyX, keyY, TILE * 1.2)
-    this.tweens.add({ targets: keyRing, alpha: 0.05, duration: 800, yoyo: true, repeat: -1 })
+    this.keyRing = this.add.graphics().setDepth(3)
+    this.keyRing.fillStyle(0xffdd00, 0.22)
+    this.keyRing.fillCircle(keyX, keyY, TILE * 1.2)
+    this.tweens.add({ targets: this.keyRing, alpha: 0.05, duration: 800, yoyo: true, repeat: -1 })
 
     const spawnEnemy = (EnemyClass, extraSetup) => {
       let cell, attempts = 0
@@ -630,6 +630,8 @@ export class GameScene extends Phaser.Scene {
   onKeyPickup(player, key) {
     if (!key.active) return
     key.destroy()
+    this.keyRing?.destroy()
+    this.keyRing = null
     player.hasKey = true
     this.events.emit('keyPickedUp')
 
@@ -714,7 +716,6 @@ export class GameScene extends Phaser.Scene {
     const mx = monster.x, my = monster.y
     bullet.destroy()
     const killed = monster.hit(dmg)
-    this.showDamageText(mx, my - 20, dmg)
     if (killed) {
       const pts = monster.scoreValue || 10
       this.score += pts

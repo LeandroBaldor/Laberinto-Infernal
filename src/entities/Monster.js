@@ -171,6 +171,8 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
       if (this.active) this.clearTint()
     })
 
+    this.showHealthBar()
+
     if (this.health <= 0) {
       this.die()
       return true
@@ -178,7 +180,70 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     return false
   }
 
+  showHealthBar() {
+    const W = 60, H = 8
+    const pct = Math.max(0, this.health / this.maxHealth)
+    const fillW = Math.max(1, Math.floor(W * pct))
+    const color = pct > 0.5 ? 0x00dd44 : pct > 0.25 ? 0xffaa00 : 0xff2200
+    const by = this.y - this.displayHeight / 2 - 18
+
+    if (!this._hpBg) {
+      this._hpBg    = this.scene.add.rectangle(this.x, by, W + 6, H + 6, 0x000000).setDepth(150).setAlpha(0.85)
+      this._hpTrack = this.scene.add.rectangle(this.x, by, W, H, 0x770000).setDepth(151)
+      this._hpFill  = this.scene.add.rectangle(this.x - W / 2, by, fillW, H, color).setDepth(152).setOrigin(0, 0.5)
+      this._hpLabel = this.scene.add.text(this.x, by - 13, '', {
+        fontSize: '14px', fontFamily: 'Courier New', fontStyle: 'bold',
+        color: '#ffffff', stroke: '#000000', strokeThickness: 4,
+      }).setDepth(153).setOrigin(0.5, 0.5)
+    } else {
+      this._hpFill.setSize(fillW, H)
+      this._hpFill.setFillStyle(color)
+    }
+
+    this._hpLabel.setText(`${Math.max(0, Math.ceil(this.health))} / ${this.maxHealth}`)
+    this._repositionHpBar(by)
+
+    this._hpBg.setVisible(true)
+    this._hpTrack.setVisible(true)
+    this._hpFill.setVisible(true)
+    this._hpLabel.setVisible(true)
+
+    if (this._hpHideTimer) this._hpHideTimer.remove()
+    this._hpHideTimer = this.scene.time.delayedCall(2500, () => this._hideHealthBar())
+  }
+
+  _repositionHpBar(by) {
+    const W = 60
+    const _by = by ?? (this.y - this.displayHeight / 2 - 18)
+    this._hpBg.setPosition(this.x, _by)
+    this._hpTrack.setPosition(this.x, _by)
+    this._hpFill.setPosition(this.x - W / 2, _by)
+    this._hpLabel.setPosition(this.x, _by - 13)
+  }
+
+  preUpdate(time, delta) {
+    super.preUpdate(time, delta)
+    if (this._hpBg?.visible) this._repositionHpBar()
+  }
+
+  _hideHealthBar() {
+    this._hpBg?.setVisible(false)
+    this._hpTrack?.setVisible(false)
+    this._hpFill?.setVisible(false)
+    this._hpLabel?.setVisible(false)
+  }
+
+  _destroyHealthBar() {
+    if (this._hpHideTimer) { this._hpHideTimer.remove(); this._hpHideTimer = null }
+    this._hpBg?.destroy()
+    this._hpTrack?.destroy()
+    this._hpFill?.destroy()
+    this._hpLabel?.destroy()
+    this._hpBg = this._hpTrack = this._hpFill = this._hpLabel = null
+  }
+
   die() {
+    this._destroyHealthBar()
     const particles = this.scene.add.particles(this.x, this.y, 'bullet', {
       speed: { min: 50, max: 150 },
       angle: { min: 0, max: 360 },

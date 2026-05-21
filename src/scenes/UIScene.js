@@ -214,6 +214,20 @@ export class UIScene extends Phaser.Scene {
     this._minimapDot  = this.add.circle(0, 0, 3, 0x00ff55).setDepth(203)
     this._minimapMeta = { x: MM_X, y: MM_Y, w: MM_W, h: MM_H, cols: mazeCols, rows: mazeRows }
     this._gameScene   = game
+
+    // TEST: puntos de llave (violeta) y puerta (rojo)
+    const toMM = (wx, wy) => ({
+      x: MM_X + (wx / (mazeCols * 32)) * MM_W,
+      y: MM_Y + (wy / (mazeRows * 32)) * MM_H,
+    })
+    if (game.keyItem) {
+      const p = toMM(game.keyItem.x, game.keyItem.y)
+      this.add.circle(p.x, p.y, 4, 0xaa00ff).setDepth(204)
+    }
+    if (game.exit) {
+      const p = toMM(game.exit.x, game.exit.y)
+      this.add.circle(p.x, p.y, 4, 0xff0000).setDepth(204)
+    }
   }
 
   update() {
