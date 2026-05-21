@@ -111,8 +111,16 @@ export class GameScene extends Phaser.Scene {
     const exitCell = getFarCell(floorCells, 1, 1, 35)
     const exitX = exitCell.col * TILE + TILE / 2
     const exitY = exitCell.row * TILE + TILE / 2
-    this.exit = this.physics.add.staticSprite(exitX, exitY, 'exit')
-      .setDepth(3).setDisplaySize(TILE * 2.5, TILE * 2.5)
+    this.exit = this.physics.add.staticSprite(exitX, exitY, 'exit').setDepth(3)
+    {
+      // Mantener aspect ratio de la puerta — altura fija = 3 tiles
+      const _eTex = this.textures.get('exit').getSourceImage()
+      const _eH = TILE * 3
+      const _eW = (_eTex && _eTex.height > 0)
+        ? Math.round(_eTex.width * _eH / _eTex.height)
+        : _eH
+      this.exit.setDisplaySize(_eW, _eH)
+    }
     this.exit.body.setSize(TILE, TILE)
 
     // Exit starts LOCKED — red tint until player picks up the key
@@ -125,6 +133,17 @@ export class GameScene extends Phaser.Scene {
     this.exitRing.fillStyle(0xff2200, 0.2)
     this.exitRing.fillCircle(exitX, exitY, TILE * 2)
     this.tweens.add({ targets: this.exitRing, alpha: 0.04, duration: 700, yoyo: true, repeat: -1 })
+
+    // Etiqueta de SALIDA — siempre visible sobre la puerta
+    this._exitLabel = this.add.text(exitX, exitY - TILE * 2.4, '[ SALIDA ]', {
+      fontSize: '13px', fontFamily: 'Courier New', color: '#ff4444',
+      stroke: '#000000', strokeThickness: 4,
+      padding: { x: 6, y: 3 },
+    }).setDepth(10).setOrigin(0.5)
+    this.tweens.add({
+      targets: this._exitLabel, alpha: 0.35,
+      duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+    })
 
     this.monsters = this.physics.add.group()
     const usedCells = new Set([`1,1`, `${exitCell.row},${exitCell.col}`])
@@ -658,6 +677,17 @@ export class GameScene extends Phaser.Scene {
     const ex = this.exit.x, ey = this.exit.y
     this.exitRing.fillCircle(ex, ey, TILE * 2)
 
+    // Actualizar etiqueta de salida a verde
+    if (this._exitLabel) {
+      this.tweens.killTweensOf(this._exitLabel)
+      this._exitLabel.setText('✓ SALIDA ABIERTA')
+      this._exitLabel.setStyle({ color: '#00ff88', stroke: '#000000', strokeThickness: 4 })
+      this.tweens.add({
+        targets: this._exitLabel, alpha: 0.4,
+        duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      })
+    }
+
     this.showFloatingText(player.x, player.y - 30, '¡LLAVE ENCONTRADA!', '#ffdd00')
     this.cameras.main.shake(200, 0.007)
   }
@@ -674,24 +704,46 @@ export class GameScene extends Phaser.Scene {
     }
     this._transitioning = true
     this.score += 500
-    this.showFloatingText(this.player.x, this.player.y - 30, '+500 SALIDA!', '#00ff88')
     this.events.emit('scoreChanged', this.score)
-    this.cameras.main.fadeOut(900, 0, 255, 100)
-    this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.stop('UIScene')
-      if (this.level >= 3) {
-        this.scene.start('ComingSoonScene')
-      } else {
-        this.scene.start('GameScene', {
-          level: this.level + 1, score: this.score,
-          lives: this.lives, elapsedMs: this._elapsedMs,
-          inventory: [...this.player.inventory.entries()],
-          activeWeapon: this.player.activeWeapon,
-          savedArmor: this.player.armorType
-            ? { type: this.player.armorType, armor: this.player.armor, armorMax: this.player.armorMax }
-            : null,
-        })
-      }
+
+    // Bloquear al jugador
+    this.player.invincible = true
+    if (this.player.body) this.player.body.setVelocity(0, 0)
+
+    // Overlay de nivel superado
+    const w = this.scale.width, h = this.scale.height
+    const overlayBg = this.add.rectangle(w / 2, h / 2, w, 100, 0x000000, 0.88)
+      .setScrollFactor(0).setDepth(400).setAlpha(0)
+    const overlayTitle = this.add.text(w / 2, h / 2 - 18, '¡ NIVEL SUPERADO !', {
+      fontFamily: 'Courier New', fontSize: '30px', color: '#00ff88',
+      stroke: '#000000', strokeThickness: 5,
+    }).setScrollFactor(0).setDepth(401).setOrigin(0.5).setAlpha(0)
+    const overlaySub = this.add.text(w / 2, h / 2 + 20, `+500 PTS  →  Nivel ${this.level + 1}`, {
+      fontFamily: 'Courier New', fontSize: '16px', color: '#ffff00',
+      stroke: '#000000', strokeThickness: 3,
+    }).setScrollFactor(0).setDepth(401).setOrigin(0.5).setAlpha(0)
+
+    this.cameras.main.shake(250, 0.008)
+    this.tweens.add({ targets: [overlayBg, overlayTitle, overlaySub], alpha: 1, duration: 350 })
+
+    this.time.delayedCall(2200, () => {
+      this.cameras.main.fadeOut(900, 0, 255, 100)
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.stop('UIScene')
+        if (this.level >= 3) {
+          this.scene.start('ComingSoonScene')
+        } else {
+          this.scene.start('GameScene', {
+            level: this.level + 1, score: this.score,
+            lives: this.lives, elapsedMs: this._elapsedMs,
+            inventory: [...this.player.inventory.entries()],
+            activeWeapon: this.player.activeWeapon,
+            savedArmor: this.player.armorType
+              ? { type: this.player.armorType, armor: this.player.armor, armorMax: this.player.armorMax }
+              : null,
+          })
+        }
+      })
     })
   }
 
