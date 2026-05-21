@@ -130,7 +130,10 @@ export class GameScene extends Phaser.Scene {
     const usedCells = new Set([`1,1`, `${exitCell.row},${exitCell.col}`])
 
     // ── KEY — must be picked up to unlock the exit ────────────────────────────
-    const keyCell = getFarCell(floorCells, exitCell.row, exitCell.col, 20)
+    const keyCandidates = floorCells.filter(
+      c => Math.abs(c.row - 1) + Math.abs(c.col - 1) >= 12
+    )
+    const keyCell = getFarCell(keyCandidates, exitCell.row, exitCell.col, 15)
     usedCells.add(`${keyCell.row},${keyCell.col}`)
     const keyX = keyCell.col * TILE + TILE / 2
     const keyY = keyCell.row * TILE + TILE / 2
