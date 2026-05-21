@@ -120,8 +120,14 @@ export class GameScene extends Phaser.Scene {
         ? Math.round(_eTex.width * _eH / _eTex.height)
         : _eH
       this.exit.setDisplaySize(_eW, _eH)
+      // Radio de detección en tiles = cuántos tiles ocupa la imagen en cada eje
+      this._exitHalfCols = Math.max(1, Math.round(_eW / 2 / TILE))
+      this._exitHalfRows = Math.max(1, Math.round(_eH / 2 / TILE))
     }
-    this.exit.body.setSize(TILE, TILE)
+    this.exit.body.setSize(
+      this._exitHalfCols * 2 * TILE,
+      this._exitHalfRows * 2 * TILE
+    )
     this.exit.refreshBody()
 
     // Guardar posición en grilla para chequeo en _checkPickups
@@ -520,11 +526,14 @@ export class GameScene extends Phaser.Scene {
     const pc = this.player.gridCol
     const pr = this.player.gridRow
 
-    // ── Chequeo de salida por grilla (más fiable que overlap físico) ──────────
-    if (!this._transitioning && this.player.hasKey &&
-        pc === this.exitCol && pr === this.exitRow) {
-      this.onExitReached()
-      return
+    // ── Chequeo de salida — cubre todos los tiles que ocupa la imagen ────────
+    if (!this._transitioning && this.player.hasKey) {
+      const dc = Math.abs(pc - this.exitCol)
+      const dr = Math.abs(pr - this.exitRow)
+      if (dc <= (this._exitHalfCols ?? 1) && dr <= (this._exitHalfRows ?? 1)) {
+        this.onExitReached()
+        return
+      }
     }
 
     for (const def of this._weaponDefs) {
