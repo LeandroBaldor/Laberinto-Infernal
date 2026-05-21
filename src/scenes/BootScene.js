@@ -114,6 +114,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('lanzallamas_fuego',         `${base}lanzallamas_fuego.png`)
 
     this.load.image('exit',                    `${base}puerta.png`)
+    this.load.image('key_img',                 `${base}llave.png`)
     this.load.audio('musica_nivel_1',          `${base}musica_nivel_1.mp3`)
     this.load.audio('musica_nivel_2',          `${base}musica_nivel_2.mp3`)
     this.load.audio('musica_nivel_3_1',        `${base}Nivel_3/Musica/1.mp3`)
@@ -434,6 +435,7 @@ export class BootScene extends Phaser.Scene {
     this._makeHealth()
     this._makeWeaponTile()
     this._makeKeyTexture()
+    if (this.textures.exists('key_img')) this._applyKeyImage()
     // Armor box fallbacks (overridden by real images later if available)
     this._makeArmorBox('armor_silver', 0x778899, 0xaabbcc, 0xddeeff)
     this._makeArmorBox('armor_gold',   0xaa8800, 0xddbb00, 0xffee55)
@@ -478,6 +480,22 @@ export class BootScene extends Phaser.Scene {
       this.textures.addCanvas(key, canvas)
     })
     this.textures.remove(rawKey)
+  }
+
+  _applyKeyImage() {
+    try {
+      const src = this.textures.get('key_img').getSourceImage()
+      if (!src || src.width === 0 || src.height === 0) return
+      const W = 96, H = 60
+      const canvas = document.createElement('canvas')
+      canvas.width = W; canvas.height = H
+      const ctx = canvas.getContext('2d')
+      ctx.clearRect(0, 0, W, H)
+      ctx.drawImage(src, 0, 0, W, H)
+      if (this.textures.exists('key')) this.textures.remove('key')
+      this.textures.addCanvas('key', canvas)
+      this.textures.remove('key_img')
+    } catch (_) { /* queda la textura procedural */ }
   }
 
   _makeKeyTexture() {
