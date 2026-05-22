@@ -452,7 +452,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     else b.lifespan = 1500
 
-    const _weaponSounds = { arrow: 'sonidos_arma_flecha', shotgun: 'sonidos_arma_escopeta', future: 'sonidos_arma_futuro', ametralladora: 'sonidos_arma_ametralladora', lanzallamas: 'sonidos_arma_lanzallamas' }
+    const _weaponSounds = { arrow: 'sonidos_arma_flecha', shotgun: 'sonidos_arma_escopeta', future: 'sonidos_arma_futuro', ametralladora: 'sonido_disparo_l2', lanzallamas: 'sonido_disparo_l2' }
     const _sndKey = _weaponSounds[this.activeWeapon]
     if (_sndKey && this.scene.cache.audio.exists(_sndKey))
       this.scene.sound.play(_sndKey, { volume: 0.7 })

@@ -136,6 +136,7 @@ export class BootScene extends Phaser.Scene {
     this.load.audio('sonido_killmachine_disparo',   `${base}Nivel_2/ametralladora_KillMachine.mp3`)
     this.load.audio('sonido_t700_disparo',          `${base}Nivel_2/weapon_t-700.mp3`)
     this.load.audio('sonido_exterminador',          `${base}Nivel_2/sound_Exterminador.mp3`)
+    this.load.audio('sonido_disparo_l2',            `${base}Nivel_2/weapon_Exterminador.mp3`)
     this.load.audio('sonido_esqueletor',            `${base}Nivel_3/esqueletor.mp3`)
     this.load.audio('sonido_evil_soldier',          `${base}Nivel_3/evil_soldier.mp3`)
     this.load.audio('sonido_belcebu',               `${base}Nivel_3/belcebú.mp3`)
