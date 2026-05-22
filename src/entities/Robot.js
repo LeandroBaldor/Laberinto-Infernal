@@ -11,7 +11,7 @@ export class Robot extends Monster {
 
     this.health = 150
     this.maxHealth = 150
-    this.attackDamage = 10
+    this.attackDamage = 5
     this.detectionRange = 10
     this.attackCooldown = 1000
     this.stepInterval = 380 + Math.random() * 160
