@@ -24,33 +24,23 @@ export class Exterminador extends Monster {
 
     this._lastShot = 0
 
-    this._ambientTimer = null
-    this._ambientSnd   = null
-    // Inicio escalonado para que no suenen todos los exterminadores a la vez
-    scene.time.delayedCall(500 + Math.random() * 3000, () => {
-      if (this.active) this._playAmbientSound()
-    })
-  }
-
-  _playAmbientSound() {
-    if (!this.active) return
-    if (!this.scene?.cache?.audio?.exists('sonido_exterminador')) return
-
-    const snd = this.scene.sound.add('sonido_exterminador', { volume: 0.8 })
-    this._ambientSnd = snd
-
-    snd.once('complete', () => {
-      this._ambientSnd = null
-      snd.destroy()
-      if (!this.active) return
-      // Esperar 5 segundos después de que termina, luego volver a sonar
-      this._ambientTimer = this.scene.time.delayedCall(5000, () => {
-        this._ambientTimer = null
-        if (this.active) this._playAmbientSound()
-      })
-    })
-
-    snd.play()
+    // Ciclo de sonido global — una sola instancia para TODOS los Exterminadores
+    if (!scene._extSndCycle) {
+      scene._extSndCycle = true
+      const playExtSnd = () => {
+        if (!scene.sys.isActive()) return
+        if (!scene.cache?.audio?.exists('sonido_exterminador')) return
+        const snd = scene.sound.add('sonido_exterminador', { volume: 0.8 })
+        snd.once('complete', () => {
+          snd.destroy()
+          scene.time.delayedCall(5000, playExtSnd)
+        })
+        snd.play()
+      }
+      scene.time.delayedCall(1000, playExtSnd)
+      // Limpiar flag al cerrar la escena para que el próximo nivel pueda arrancar
+      scene.events.once('shutdown', () => { scene._extSndCycle = false })
+    }
   }
 
   stepTo(col, row) {
@@ -115,8 +105,6 @@ export class Exterminador extends Monster {
   }
 
   die() {
-    if (this._ambientTimer) { this._ambientTimer.remove(); this._ambientTimer = null }
-    if (this._ambientSnd)   { this._ambientSnd.stop(); this._ambientSnd.destroy(); this._ambientSnd = null }
     const particles = this.scene.add.particles(this.x, this.y, 'bullet', {
       speed: { min: 100, max: 260 },
       angle: { min: 0, max: 360 },
