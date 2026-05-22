@@ -208,7 +208,7 @@ export class GameScene extends Phaser.Scene {
     if (this.level === 1) {
       this.mutantCount    = 25
       this.serpienteCount = 25
-      this.araniaCount    = 3
+      this.araniaCount    = 5
       this.t700Count      = 0
       this.killMachineCount = 0
       this.exterminadorCount = 0
@@ -228,7 +228,7 @@ export class GameScene extends Phaser.Scene {
       this.araniaCount       = 0
       this.t700Count         = 25
       this.killMachineCount  = 25
-      this.exterminadorCount = 3
+      this.exterminadorCount = 5
 
       for (let i = 0; i < this.t700Count; i++) spawnEnemy(Robot, null)
       for (let i = 0; i < this.killMachineCount; i++) spawnEnemy(KillMachine, null)
@@ -241,8 +241,8 @@ export class GameScene extends Phaser.Scene {
       this.killMachineCount  = 0
       this.exterminadorCount = 0
       this.esqueletorCount   = 25
-      this.evilSoldierCount  = 25
-      this.belcebuCount      = 3
+      this.evilSoldierCount  = 10
+      this.belcebuCount      = 5
 
       for (let i = 0; i < this.esqueletorCount; i++) spawnEnemy(Esqueletor, null)
       for (let i = 0; i < this.evilSoldierCount; i++) spawnEnemy(EvilSoldier, null)
@@ -314,9 +314,9 @@ export class GameScene extends Phaser.Scene {
 
     // ── Armor pickups ─────────────────────────────────────────────────────────
     this._armorDefs = [
-      { groupKey: 'armorSilver', aType: 'silver', texKey: 'armor_silver', count: 25, hpBonus: 10 },
-      { groupKey: 'armorGold',   aType: 'gold',   texKey: 'armor_gold',   count: 15, hpBonus: 20 },
-      { groupKey: 'armorFuture', aType: 'future', texKey: 'armor_future', count: 10, hpBonus: 40 },
+      { groupKey: 'armorSilver', aType: 'silver', texKey: 'armor_silver', count: 25, hpBonus:  50 },
+      { groupKey: 'armorGold',   aType: 'gold',   texKey: 'armor_gold',   count: 15, hpBonus: 100 },
+      { groupKey: 'armorFuture', aType: 'future', texKey: 'armor_future', count: 10, hpBonus: 200 },
     ]
     for (const def of this._armorDefs) {
       this[def.groupKey] = this.physics.add.staticGroup()

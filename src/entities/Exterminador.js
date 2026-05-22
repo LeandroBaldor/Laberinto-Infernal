@@ -12,9 +12,9 @@ export class Exterminador extends Monster {
     this.setDisplaySize(Math.round(this.width * targetH / this.height), Math.round(targetH))
     this.body.setSize(TILE * 5.5, TILE * 5.5)
 
-    this.health = 300
-    this.maxHealth = 300
-    this.attackDamage = 10
+    this.health = 600
+    this.maxHealth = 600
+    this.attackDamage = 90
     this.detectionRange = 10
     this.attackCooldown = 1500
     this.stepInterval = 500 + Math.random() * 200
