@@ -63,6 +63,8 @@ export class Exterminador extends Monster {
         if (this.active) this.scene.spawnExterminadorBullet(this.x, this.y, vx, vy, this.attackDamage)
       })
     }
+    if (this.scene.cache?.audio?.exists('sonido_disparo_l2'))
+      this.scene.sound.play('sonido_disparo_l2', { volume: 0.6 })
     this.setTint(0x00eeff)
     this.scene.time.delayedCall(200, () => { if (this.active) this.clearTint() })
   }
