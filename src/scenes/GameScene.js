@@ -1324,9 +1324,9 @@ export class GameScene extends Phaser.Scene {
 
   _showLevelBanner() {
     const LEVEL_NAMES = {
-      1: 'Nivel 1 — El Laberinto',
-      2: 'Nivel 2 — La Fortaleza Mecánica',
-      3: 'Nivel 3 — Bienvenidos al Inframundo',
+      1: 'Nivel 1: Amenaza Radioactiva',
+      2: 'Nivel 2: La Rebelión de las Máquinas',
+      3: 'Nivel 3: Bienvenidos al Inframundo',
     }
     const name = LEVEL_NAMES[this.level]
     if (!name) return
