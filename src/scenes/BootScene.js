@@ -61,7 +61,7 @@ export class BootScene extends Phaser.Scene {
     // Nivel 2 balas de robots (fondo blanco)
     this.load.image('bala_t700_raw',           `${base}Nivel_2/Balas_T-700.png`)
     this.load.image('bala_killmachine_raw',    `${base}Nivel_2/Balas_Kill_Machine.png`)
-    this.load.image('bala_exterminador_raw',   `${base}Nivel_2/Balas_exterminador.png`)
+    this.load.image('bala_exterminador_raw',   `${base}Nivel_2/Balas_exterminador.png?t=${Date.now()}`)
 
     // Nivel 2 armas pickup (nuevos diseños)
     this.load.image('pickup_sword_l2_raw',         `${base}Nivel_2/espada.png`)
