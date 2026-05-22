@@ -33,7 +33,7 @@ export class Exterminador extends Monster {
         const snd = scene.sound.add('sonido_exterminador', { volume: 0.8 })
         snd.once('complete', () => {
           snd.destroy()
-          scene.time.delayedCall(5000, playExtSnd)
+          scene.time.delayedCall(30000, playExtSnd)
         })
         snd.play()
       }
