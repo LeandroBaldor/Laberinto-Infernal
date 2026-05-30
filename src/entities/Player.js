@@ -237,6 +237,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       onUpdate: () => { if (this.body && this.active) this.body.reset(this.x, this.y) },
       onComplete: () => { this.moving = false; this.body.reset(tx, ty) },
     })
+
   }
 
   update(time, bullets) {
