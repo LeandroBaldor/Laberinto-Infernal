@@ -7,10 +7,10 @@ export class Serpiente extends Monster {
     super(scene, x, y, 'serpiente')
 
     this.monsterType     = 'serpiente'
-    this.health          = 300
-    this.maxHealth       = 300
+    this.health          = 50
+    this.maxHealth       = 50
     this.scoreValue      = 100
-    this.attackDamage    = 30
+    this.attackDamage    = 5
     this.detectionRange  = 12
     this.territoryRadius = 10
     this.attackCooldown  = 1500

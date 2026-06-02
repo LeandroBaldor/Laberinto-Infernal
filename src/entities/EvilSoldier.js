@@ -14,9 +14,9 @@ export class EvilSoldier extends Monster {
     this.body.setSize(TILE * 4.7, TILE * 4.7)
 
     this.monsterType     = 'evil_soldier'
-    this.health          = 300
-    this.maxHealth       = 300
-    this.attackDamage    = 30
+    this.health          = 100
+    this.maxHealth       = 100
+    this.attackDamage    = 5
     this.scoreValue      = 200
     this.detectionRange  = 10
     this.territoryRadius = 12

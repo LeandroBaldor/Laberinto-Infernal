@@ -12,9 +12,9 @@ export class KillMachine extends Monster {
     this.setDisplaySize(TILE * 3.125, TILE * 3.125)
     this.body.setSize(TILE * 3.125, TILE * 3.125)
 
-    this.health = 300
-    this.maxHealth = 300
-    this.attackDamage = 10
+    this.health = 50
+    this.maxHealth = 50
+    this.attackDamage = 5
     this.detectionRange = 10
     this.attackCooldown = 1200
     this.stepInterval = 450 + Math.random() * 150

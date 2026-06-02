@@ -14,10 +14,10 @@ export class Belcebu extends Monster {
     this.body.setSize(TILE * 8, TILE * 8)
 
     this.monsterType     = 'belcebu'
-    this.health          = 600
-    this.maxHealth       = 600
-    this.attackDamage    = 90
-    this.scoreValue      = 600
+    this.health          = 500
+    this.maxHealth       = 500
+    this.attackDamage    = 50
+    this.scoreValue      = 1000
     this.detectionRange  = 999
     this.territoryRadius = 999
     this.attackCooldown  = 2000

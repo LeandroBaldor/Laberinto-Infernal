@@ -12,9 +12,9 @@ export class Esqueletor extends Monster {
     this.body.setSize(TILE * 3.75, TILE * 3.75)
 
     this.monsterType    = 'esqueletor'
-    this.health         = 150
-    this.maxHealth      = 150
-    this.attackDamage   = 10
+    this.health         = 50
+    this.maxHealth      = 50
+    this.attackDamage   = 2.5
     this.scoreValue     = 100
     this.detectionRange = 8
     this.territoryRadius = 9

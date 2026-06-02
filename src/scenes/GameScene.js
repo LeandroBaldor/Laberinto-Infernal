@@ -206,7 +206,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     if (this.level === 1) {
-      this.mutantCount    = 25
+      this.mutantCount    = 50
       this.serpienteCount = 25
       this.araniaCount    = 5
       this.t700Count      = 0
@@ -226,7 +226,7 @@ export class GameScene extends Phaser.Scene {
       this.mutantCount       = 0
       this.serpienteCount    = 0
       this.araniaCount       = 0
-      this.t700Count         = 25
+      this.t700Count         = 50
       this.killMachineCount  = 25
       this.exterminadorCount = 5
 
@@ -240,8 +240,8 @@ export class GameScene extends Phaser.Scene {
       this.t700Count         = 0
       this.killMachineCount  = 0
       this.exterminadorCount = 0
-      this.esqueletorCount   = 25
-      this.evilSoldierCount  = 10
+      this.esqueletorCount   = 50
+      this.evilSoldierCount  = 25
       this.belcebuCount      = 5
 
       for (let i = 0; i < this.esqueletorCount; i++) spawnEnemy(Esqueletor, null)
