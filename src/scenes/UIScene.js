@@ -186,15 +186,15 @@ export class UIScene extends Phaser.Scene {
     const MM_Y  = 70 + PAD + labelH + 4   // label sits above this, fully below the 70px bar
 
     // Label "LABERINTO" sobre el minimapa
-    this.add.rectangle(MM_X - 2, MM_Y - labelH - 4, MM_W + 4, labelH, 0x00ff55).setOrigin(0, 0).setDepth(200)
+    this.add.rectangle(MM_X - 2, MM_Y - labelH - 4, MM_W + 4, labelH, 0x00ff55).setOrigin(0, 0).setDepth(200).setScrollFactor(0)
     this.add.text(MM_X + MM_W / 2, MM_Y - labelH / 2 - 4, 'LABERINTO', {
       fontSize: '26px', fontFamily: 'Courier New', color: '#000000',
       stroke: '#000000', strokeThickness: 0,
-    }).setOrigin(0.5, 0.5).setDepth(201)
+    }).setOrigin(0.5, 0.5).setDepth(201).setScrollFactor(0)
 
     // Border + background
-    this.add.rectangle(MM_X - 2, MM_Y - 2, MM_W + 4, MM_H + 4, 0x00aa44).setOrigin(0, 0).setDepth(200)
-    this.add.rectangle(MM_X,     MM_Y,     MM_W,     MM_H,     0x111122).setOrigin(0, 0).setDepth(201)
+    this.add.rectangle(MM_X - 2, MM_Y - 2, MM_W + 4, MM_H + 4, 0x00aa44).setOrigin(0, 0).setDepth(200).setScrollFactor(0)
+    this.add.rectangle(MM_X,     MM_Y,     MM_W,     MM_H,     0x111122).setOrigin(0, 0).setDepth(201).setScrollFactor(0)
 
     // Draw floor cells once into a RenderTexture (walls stay as dark background)
     const gfx = this.add.graphics()
@@ -206,12 +206,12 @@ export class UIScene extends Phaser.Scene {
         }
       }
     }
-    const rt = this.add.renderTexture(MM_X, MM_Y, MM_W, MM_H).setOrigin(0, 0).setDepth(202)
+    const rt = this.add.renderTexture(MM_X, MM_Y, MM_W, MM_H).setOrigin(0, 0).setDepth(202).setScrollFactor(0)
     rt.draw(gfx, 0, 0)
     gfx.destroy()
 
     // Player dot
-    this._minimapDot  = this.add.circle(0, 0, 3, 0x00ff55).setDepth(203)
+    this._minimapDot  = this.add.circle(0, 0, 3, 0x00ff55).setDepth(203).setScrollFactor(0)
     this._minimapMeta = { x: MM_X, y: MM_Y, w: MM_W, h: MM_H, cols: mazeCols, rows: mazeRows }
     this._gameScene   = game
 
