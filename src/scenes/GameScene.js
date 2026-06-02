@@ -300,7 +300,7 @@ export class GameScene extends Phaser.Scene {
 
     // ── Health packs ─────────────────────────────────────────────────────────
     this.healthPacks = this.physics.add.staticGroup()
-    for (let i = 0; i < 10 + this.level * 3; i++) {
+    for (let i = 0; i < 20 + this.level * 5; i++) {
       let cell, attempts = 0
       do {
         cell = floorCells[Math.floor(Math.random() * floorCells.length)]

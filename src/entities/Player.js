@@ -518,6 +518,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.health += amount
     this.scene.events.emit('maxHealthChanged', this.maxHealth)
     this.scene.events.emit('healthChanged', this.health)
+    this._playPickupSound()
   }
 
   getInfoLines() {
