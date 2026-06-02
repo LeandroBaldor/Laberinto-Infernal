@@ -407,6 +407,21 @@ export class GameScene extends Phaser.Scene {
       belcebuCount:      this.belcebuCount       || 0,
     })
 
+    // Emitir contadores iniciales una vez que UIScene esté lista
+    this.time.delayedCall(100, () => {
+      this.events.emit('monsterCountChanged', {
+        mutant:       this.mutantCount,
+        serpiente:    this.serpienteCount,
+        arania:       this.araniaCount,
+        t700:         this.t700Count,
+        killMachine:  this.killMachineCount,
+        exterminador: this.exterminadorCount,
+        esqueletor:   this.esqueletorCount   || 0,
+        evilSoldier:  this.evilSoldierCount  || 0,
+        belcebu:      this.belcebuCount       || 0,
+      })
+    })
+
     // ── Música por nivel ─────────────────────────────────────────────────────
     this._bgMusic = null
     if (this.level === 1 && this.cache.audio.exists('musica_nivel_1')) {
