@@ -36,8 +36,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.gridRow = Math.round((y - TILE / 2) / TILE)
     this.moving = false
 
-    this.health = 300
-    this.maxHealth = 300
+    this.health = 600
+    this.maxHealth = 600
     this.inventory = new Map()   // weaponType → ammo (-1 = unlimited)
     this.activeWeapon = null
     this.invincible = false

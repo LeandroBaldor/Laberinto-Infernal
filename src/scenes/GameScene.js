@@ -300,7 +300,7 @@ export class GameScene extends Phaser.Scene {
 
     // ── Health packs ─────────────────────────────────────────────────────────
     this.healthPacks = this.physics.add.staticGroup()
-    for (let i = 0; i < 5 + this.level * 2; i++) {
+    for (let i = 0; i < 10 + this.level * 3; i++) {
       let cell, attempts = 0
       do {
         cell = floorCells[Math.floor(Math.random() * floorCells.length)]
@@ -778,8 +778,8 @@ export class GameScene extends Phaser.Scene {
 
   onHealthPickup(player, pack) {
     pack.destroy()
-    player.pickupHealth(5)
-    this.showFloatingText(player.x, player.y - 20, '+5 MAX HP', '#ff4444')
+    player.pickupHealth(100)
+    this.showFloatingText(player.x, player.y - 20, '+100 HP', '#ff4444')
   }
 
   _playLevel3Music(trackIndex) {
