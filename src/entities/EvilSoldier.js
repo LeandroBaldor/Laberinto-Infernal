@@ -140,7 +140,11 @@ export class EvilSoldier extends Monster {
   }
 
   _fireShot(player) {
-    const mouthX = this.x + TILE * 0.3
+    // Mirar hacia el jugador al disparar
+    const facingRight = player.x >= this.x
+    this.setFlipX(!facingRight)
+    const offsetX = facingRight ? TILE * 0.3 : -TILE * 0.3
+    const mouthX = this.x + offsetX
     const mouthY = this.y - TILE * 1.5
     this.scene.spawnBolaFuego(mouthX, mouthY, player.x, player.y, this.attackDamage)
     this.setTint(0xff6600)

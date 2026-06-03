@@ -1247,7 +1247,13 @@ export class GameScene extends Phaser.Scene {
     proj.setRotation(angle)
     this.enemyProjectiles.add(proj)
     proj.body.setAllowGravity(false)
-    proj.body.setSize(24, 24)
+    // Centrar el hitbox en el display (no en la textura original que puede ser grande)
+    const bSize = 28
+    proj.body.setSize(bSize, bSize, false)
+    proj.body.setOffset(
+      (proj.displayWidth  - bSize) / 2,
+      (proj.displayHeight - bSize) / 2
+    )
     proj.body.setVelocity(vx, vy)
     this.time.delayedCall(2000, () => { if (proj.active) proj.destroy() })
   }
