@@ -1259,19 +1259,36 @@ export class GameScene extends Phaser.Scene {
     const proj = this.physics.add.image(fromX, fromY, texKey)
     if (texKey === 'bola_energia_l3') {
       const src = this.textures.get(texKey).getSourceImage()
-      const h = 36
+      const h = 72  // más grande (era 36)
       proj.setDisplaySize(Math.round(src.width * h / src.height), h)
     } else {
-      proj.setDisplaySize(22, 22).setTint(0xaa00ff)
+      proj.setDisplaySize(48, 48).setTint(0xaa00ff)
     }
     proj.setDepth(12).setRotation(Math.atan2(vy, vx))
-    proj.body.setSize(30, 30)
+    proj.body.setSize(56, 56)
     proj.projType = 'normal'
     proj.damage   = damage
     this.enemyProjectiles.add(proj)
     proj.body.setAllowGravity(false)
     proj.body.setVelocity(vx, vy)
-    this.time.delayedCall(2500, () => { if (proj.active) proj.destroy() })
+
+    // Efecto de partículas de energía en el borde
+    const trail = this.add.particles(0, 0, 'poison_bullet', {
+      speed:    { min: 20, max: 55 },
+      angle:    { min: 0, max: 360 },
+      scale:    { start: 0.55, end: 0 },
+      tint:     [0xff0000, 0xcc0000, 0xff3300, 0x880000, 0xffffff],
+      lifespan: { min: 120, max: 260 },
+      quantity: 2,
+      frequency: 30,
+    })
+    trail.startFollow(proj, 0, 0)
+    trail.setDepth(11)
+
+    this.time.delayedCall(2500, () => {
+      if (proj.active) proj.destroy()
+      trail.destroy()
+    })
   }
 
   spawnAcidSplash(x, y) {
