@@ -519,8 +519,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  takeDamage(amount, bypassInvincible = false) {
-    if (this.invincible && !bypassInvincible) return
+  takeDamage(amount) {
+    if (this.invincible) return
     if (this.armor > 0) {
       const absorbed = Math.min(this.armor, amount)
       this.armor -= absorbed
@@ -535,15 +535,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
       this.scene.events.emit('armorChanged', this.armor, this.armorMax, this.armorType)
     }
-    this.invincible = true
     if (amount <= 0) {
-      // Armor absorbed everything — brief flash, no HP loss
+      // Armor absorbed everything — brief flash, no HP loss, no invincibility
       this.scene.tweens.add({
         targets: this, alpha: 0.5, duration: 80, yoyo: true, repeat: 1,
-        onComplete: () => { this.alpha = 1; this.invincible = false },
+        onComplete: () => { this.alpha = 1 },
       })
       return
     }
+    this.invincible = true
     this.health -= amount
     this.scene.tweens.add({
       targets: this, alpha: 0.3, duration: 100, yoyo: true, repeat: 4,
