@@ -546,7 +546,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.invincible = true
     this.health -= amount
     this.scene.tweens.add({
-      targets: this, alpha: 0.3, duration: 100, yoyo: true, repeat: 4,
+      targets: this, alpha: 0.3, duration: 100, yoyo: true, repeat: 1,
       onComplete: () => { this.alpha = 1; this.invincible = false },
     })
     this.scene.events.emit('healthChanged', this.health)
