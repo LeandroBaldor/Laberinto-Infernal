@@ -300,23 +300,23 @@ export class GameScene extends Phaser.Scene {
 
     // ── Health packs ─────────────────────────────────────────────────────────
     this.healthPacks = this.physics.add.staticGroup()
-    for (let i = 0; i < 20 + this.level * 5; i++) {
+    for (let i = 0; i < 75; i++) {
       let cell, attempts = 0
       do {
         cell = floorCells[Math.floor(Math.random() * floorCells.length)]
         attempts++
       } while (usedCells.has(`${cell.row},${cell.col}`) && attempts < 50)
       usedCells.add(`${cell.row},${cell.col}`)
-      const hp = this.healthPacks.create(cell.col * TILE + TILE / 2, cell.row * TILE + TILE / 2, 'health').setDepth(2)
+      const hp = this.healthPacks.create(cell.col * TILE + TILE / 2, cell.row * TILE + TILE / 2, 'caja_vidas').setDepth(2).setDisplaySize(TILE * 1.25, TILE * 1.25)
       hp.body.setSize(TILE * 2, TILE * 2)
       hp.refreshBody()
     }
 
     // ── Armor pickups ─────────────────────────────────────────────────────────
     this._armorDefs = [
-      { groupKey: 'armorSilver', aType: 'silver', texKey: 'armor_silver', count: 25, hpBonus:  50 },
-      { groupKey: 'armorGold',   aType: 'gold',   texKey: 'armor_gold',   count: 15, hpBonus: 100 },
-      { groupKey: 'armorFuture', aType: 'future', texKey: 'armor_future', count: 10, hpBonus: 200 },
+      { groupKey: 'armorSilver', aType: 'silver', texKey: 'armor_silver', count: 25, hpBonus:  25 },
+      { groupKey: 'armorGold',   aType: 'gold',   texKey: 'armor_gold',   count: 15, hpBonus:  50 },
+      { groupKey: 'armorFuture', aType: 'future', texKey: 'armor_future', count: 10, hpBonus: 100 },
     ]
     for (const def of this._armorDefs) {
       this[def.groupKey] = this.physics.add.staticGroup()
@@ -537,7 +537,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   _checkPickups() {
-    if (this.player.moving) return
     const pc = this.player.gridCol
     const pr = this.player.gridRow
 

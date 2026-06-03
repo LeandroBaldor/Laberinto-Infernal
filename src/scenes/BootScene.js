@@ -78,7 +78,8 @@ export class BootScene extends Phaser.Scene {
     this.load.image('player_gold_ametralladora_raw',   `${base}Nivel_2/personaje_principal_armadura_dorada_ametralladora.png`)
     this.load.image('player_future_ametralladora_raw', `${base}Nivel_2/personaje_principal_armadura_futuro_ametralladora.png`)
 
-    // Armor pickup boxes
+    // Health & Armor pickup boxes
+    this.load.image('caja_vidas',       `${base}caja_vidas.png`)
     this.load.image('armor_silver_raw', `${base}caja_plateada.png`)
     this.load.image('armor_gold_raw',   `${base}caja_oro.png`)
     this.load.image('armor_future_raw', `${base}caja_futuro.png`)
