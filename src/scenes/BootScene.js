@@ -51,7 +51,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('evil_soldier_raw', `${base}Nivel_3/evil _soldier.png?t=${_ts3}`)
     this.load.image('belcebu_raw',      `${base}Nivel_3/belcebú.png?t=${_ts3}`)
     this.load.image('bola_fuego_l3_raw',   `${base}Nivel_3/bola_fuego.png?t=${_ts3}`)
-    this.load.image('bola_energia_l3_raw', `${base}Nivel_3/bola_energia.png?t=${_ts3}`)
+    this.load.image('bola_energia_l3_raw', `${base}Nivel_3/bolas_energia.png?t=${_ts3}`)
 
     // Nivel 2 robots
     this.load.image('robot_t700_raw',     `${base}Nivel_2/robot.png`)

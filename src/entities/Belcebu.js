@@ -98,13 +98,12 @@ export class Belcebu extends Monster {
     else                                 this._patrol()
   }
 
-  // Dispara 1 bola de energía por vez (ametralladora), dirección snapeada a 8 ángulos
+  // Dispara 1 bola de energía por vez directo al jugador
   _fireBolas(player) {
     const rawAngle = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
-    const snapped  = Math.round(rawAngle / (Math.PI / 4)) * (Math.PI / 4)
     const speed    = 300
-    const vx = Math.cos(snapped) * speed
-    const vy = Math.sin(snapped) * speed
+    const vx = Math.cos(rawAngle) * speed
+    const vy = Math.sin(rawAngle) * speed
     const handX = this.x + (this.flipX ? -TILE * 2.5 : TILE * 2.5)
     const handY = this.y - TILE * 0.5
     if (this.scene.cache.audio.exists('sonido_bola_energia_belcebu'))
