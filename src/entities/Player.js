@@ -1,12 +1,12 @@
 const TILE = 32
 
 export const WEAPON_STATS = {
-  sword:         { label: 'ESPADA',         dmg: 10,  ranged: false, ammoPerPickup: 10, speed: 0,   tint: null,     cooldown: 600 },
-  arrow:         { label: 'FLECHAS',        dmg: 20,  ranged: true,  ammoPerPickup: 10, speed: 400, tint: null,     cooldown: 400 },
-  shotgun:       { label: 'ESCOPETA',       dmg: 30,  ranged: true,  ammoPerPickup: 10, speed: 350, tint: null,     cooldown: 500 },
-  future:        { label: 'ARG.FUTURO',     dmg: 40,  ranged: true,  ammoPerPickup:  5, speed: 620, tint: 0x00ddff, cooldown: 350 },
-  ametralladora: { label: 'AMETRALLADORA',  dmg: 50,  ranged: true,  ammoPerPickup:  5, speed: 500, tint: null,     cooldown: 150 },
-  lanzallamas:          { label: 'LANZALLAMAS',         dmg: 50,  ranged: true,  ammoPerPickup:  5, speed: 300, tint: 0xff4400, cooldown: 300 },
+  sword:         { label: 'ESPADA',         dmg: 10,  ranged: false, ammoPerPickup: 50, speed: 0,   tint: null,     cooldown: 600 },
+  arrow:         { label: 'FLECHAS',        dmg: 20,  ranged: true,  ammoPerPickup: 30, speed: 400, tint: null,     cooldown: 400 },
+  shotgun:       { label: 'ESCOPETA',       dmg: 30,  ranged: true,  ammoPerPickup: 20, speed: 350, tint: null,     cooldown: 500 },
+  future:        { label: 'ARG.FUTURO',     dmg: 40,  ranged: true,  ammoPerPickup: 20, speed: 620, tint: 0x00ddff, cooldown: 350 },
+  ametralladora: { label: 'AMETRALLADORA',  dmg: 40,  ranged: true,  ammoPerPickup: 30, speed: 500, tint: null,     cooldown: 150 },
+  lanzallamas:          { label: 'LANZALLAMAS',         dmg: 50,  ranged: true,  ammoPerPickup: 10, speed: 300, tint: 0xff4400, cooldown: 300 },
   lanzallamas_infernal: { label: 'LANZALLAMAS INFERNAL', dmg: 60,  ranged: true,  ammoPerPickup: 8,  speed: 0,   tint: null,     cooldown: 1800 },
 }
 
