@@ -999,6 +999,7 @@ export class GameScene extends Phaser.Scene {
   spawnPoisonBullet(fromX, fromY, toX, toY, damage, speed = 340) {
     const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
     proj.setDisplaySize(20, 20).setDepth(12)
+    proj.body.setSize(20, 20)
     proj.projType = 'poison'
     proj.damage   = damage
     const angle = Math.atan2(toY - fromY, toX - fromX)
@@ -1027,6 +1028,7 @@ export class GameScene extends Phaser.Scene {
     if (this.enemyProjectiles.getLength() >= 40) return
     const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
     proj.setDisplaySize(22, 22).setDepth(12).setTint(0xcc44ff)
+    proj.body.setSize(22, 22)
     proj.projType = 'poison'
     proj.damage   = damage
     const { vx, vy, angle: dir8 } = this._8dirVelocity(fromX, fromY, toX, toY, speed)
@@ -1060,6 +1062,7 @@ export class GameScene extends Phaser.Scene {
       proj.setDisplaySize(20, 20).setTint(0x44ff44)
     }
     proj.setDepth(12)
+    proj.body.setSize(24, 24)
     proj.projType = 'poison'
     proj.damage   = damage
     const { vx, vy, angle: dir8s } = this._8dirVelocity(fromX, fromY, toX, toY, speed)
@@ -1085,6 +1088,7 @@ export class GameScene extends Phaser.Scene {
     if (this.enemyProjectiles.getLength() >= 80) return
     const proj = this.physics.add.image(fromX, fromY, 'bullet')
     proj.setDisplaySize(30, 30).setDepth(12).setTint(0xdd00ff)
+    proj.body.setSize(30, 30)
     proj.projType = 'normal'
     proj.damage = damage
     proj.body.setVelocity(vx, vy)
@@ -1096,6 +1100,7 @@ export class GameScene extends Phaser.Scene {
     if (this.enemyProjectiles.getLength() >= 80) return
     const proj = this.physics.add.image(fromX, fromY, 'bullet')
     proj.setDisplaySize(10, 10).setDepth(12).setTint(0x4488ff)
+    proj.body.setSize(10, 10)
     proj.projType = 'normal'
     proj.damage = damage
     proj.body.setVelocity(vx, vy)
@@ -1108,6 +1113,7 @@ export class GameScene extends Phaser.Scene {
     const tex = this.textures.exists(texKey) ? texKey : 'poison_bullet'
     const proj = this.physics.add.image(fromX, fromY, tex)
     proj.setDisplaySize(60, 38).setDepth(12)
+    proj.body.setSize(40, 28)
     proj.projType = 'normal'
     proj.damage   = damage
     const dx = toX - fromX, dy = toY - fromY
@@ -1163,6 +1169,7 @@ export class GameScene extends Phaser.Scene {
     if (this.enemyProjectiles.getLength() >= 80) return
     const proj = this.physics.add.image(fromX, fromY, 'poison_bullet')
     proj.setDisplaySize(22, 22).setDepth(12).setTint(0x00eeff)
+    proj.body.setSize(22, 22)
     proj.projType = 'normal'
     proj.damage   = damage
     const dx = toX - fromX, dy = toY - fromY
@@ -1210,6 +1217,7 @@ export class GameScene extends Phaser.Scene {
       proj.setDisplaySize(22, 22).setTint(0x00eeff)
     }
     proj.setDepth(12).setRotation(Math.atan2(vy, vx))
+    proj.body.setSize(28, 28)
     proj.projType = 'normal'
     proj.damage = damage
     this.enemyProjectiles.add(proj)
@@ -1239,6 +1247,7 @@ export class GameScene extends Phaser.Scene {
     proj.setRotation(angle)
     this.enemyProjectiles.add(proj)
     proj.body.setAllowGravity(false)
+    proj.body.setSize(24, 24)
     proj.body.setVelocity(vx, vy)
     this.time.delayedCall(2000, () => { if (proj.active) proj.destroy() })
   }
@@ -1256,6 +1265,7 @@ export class GameScene extends Phaser.Scene {
       proj.setDisplaySize(22, 22).setTint(0xaa00ff)
     }
     proj.setDepth(12).setRotation(Math.atan2(vy, vx))
+    proj.body.setSize(30, 30)
     proj.projType = 'normal'
     proj.damage   = damage
     this.enemyProjectiles.add(proj)
@@ -1282,6 +1292,7 @@ export class GameScene extends Phaser.Scene {
     if (this.enemyProjectiles.getLength() >= 40) return
     const proj = this.physics.add.image(fromX, fromY, 'web_bullet')
     proj.setDisplaySize(12, 12).setDepth(12)
+    proj.body.setSize(12, 12)
     proj.projType = 'web'
     const { vx, vy } = this._cardinalVelocity(fromX, fromY, toX, toY, 130)
     proj.body.setVelocity(vx, vy)
