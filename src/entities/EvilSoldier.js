@@ -22,7 +22,7 @@ export class EvilSoldier extends Monster {
     this.territoryRadius = 12
     this.attackCooldown  = 1200
     this.stepInterval    = 500 + Math.random() * 150
-    this.armor           = 10
+
 
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY
@@ -59,9 +59,6 @@ export class EvilSoldier extends Monster {
     ]
   }
 
-  hit(damage = 1) {
-    return super.hit(Math.max(1, damage - this.armor))
-  }
 
   // Lurch estilo Mutante
   stepTo(col, row) {

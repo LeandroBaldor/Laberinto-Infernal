@@ -20,7 +20,7 @@ export class Esqueletor extends Monster {
     this.territoryRadius = 9
     this.attackCooldown = 900
     this.stepInterval   = 420 + Math.random() * 200
-    this.armor          = 10
+
 
     this._stepCount = 0
     this._facingDir = 'down'
@@ -55,9 +55,6 @@ export class Esqueletor extends Monster {
     ]
   }
 
-  hit(damage = 1) {
-    return super.hit(Math.max(1, damage - this.armor))
-  }
 
   stepTo(col, row) {
     const dCol = col - this.gridCol

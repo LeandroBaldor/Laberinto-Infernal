@@ -22,7 +22,7 @@ export class Belcebu extends Monster {
     this.territoryRadius = 999
     this.attackCooldown  = 2000
     this.stepInterval    = 480 + Math.random() * 200
-    this.armor           = 10
+
 
     this._lastShot = 0
 
@@ -59,9 +59,6 @@ export class Belcebu extends Monster {
     ]
   }
 
-  hit(damage = 1) {
-    return super.hit(Math.max(1, damage - this.armor))
-  }
 
   // Solo movimiento horizontal; orienta el sprite según dirección
   stepTo(col, row) {
