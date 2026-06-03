@@ -1,8 +1,10 @@
 import { Monster } from './Monster.js'
 
 const TILE = 32
-const SHOT_COOLDOWN = 3000
 const SHOT_RANGE    = 12
+const BURST_VOLLEYS = 5      // cuántas veces dispara los 4 cañones por ráfaga
+const BURST_DELAY   = 280    // ms entre cada volley (da separación visible entre bolas)
+const BURST_PAUSE   = 3200   // ms de pausa entre ráfagas
 
 export class Exterminador extends Monster {
   constructor(scene, x, y) {
@@ -22,7 +24,10 @@ export class Exterminador extends Monster {
     this.monsterType = 'exterminador'
     this.territoryRadius = 999
 
-    this._lastShot = 0
+    this._lastBurst   = 0
+    this._firing      = false
+    this._volleyCount = 0
+    this._nextVolley  = 0
 
     // Ciclo de sonido global — una sola instancia para TODOS los Exterminadores
     if (!scene._extSndCycle) {
@@ -53,20 +58,28 @@ export class Exterminador extends Monster {
     return super.stepTo(col, row)
   }
 
-  _fireBurst(player) {
+  // Dispara 1 volley: 4 bolas simultáneas desde los 4 cañones apuntando al jugador
+  _fireVolley(player) {
     const angle = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
     const speed = 320
     const vx = Math.cos(angle) * speed
     const vy = Math.sin(angle) * speed
-    for (let k = 0; k < 8; k++) {
-      this.scene.time.delayedCall(k * 120, () => {
-        if (this.active) this.scene.spawnExterminadorBullet(this.x, this.y, vx, vy, this.attackDamage)
-      })
+
+    // Posiciones de los 4 cañones (esquinas del sprite)
+    const offsets = [
+      { dx: -TILE * 1.5, dy: -TILE * 1.5 },
+      { dx:  TILE * 1.5, dy: -TILE * 1.5 },
+      { dx: -TILE * 1.5, dy:  TILE * 1.5 },
+      { dx:  TILE * 1.5, dy:  TILE * 1.5 },
+    ]
+    for (const { dx, dy } of offsets) {
+      this.scene.spawnExterminadorBullet(this.x + dx, this.y + dy, vx, vy, this.attackDamage)
     }
+
     if (this.scene.cache?.audio?.exists('sonido_disparo_l2'))
-      this.scene.sound.play('sonido_disparo_l2', { volume: 0.6 })
+      this.scene.sound.play('sonido_disparo_l2', { volume: 0.45 })
     this.setTint(0x00eeff)
-    this.scene.time.delayedCall(200, () => { if (this.active) this.clearTint() })
+    this.scene.time.delayedCall(80, () => { if (this.active) this.clearTint() })
   }
 
   update(time, player) {
@@ -78,10 +91,26 @@ export class Exterminador extends Monster {
 
     this._updateAiState(player, tileDist)
 
-    if (this.aiState === 'CHASE' && tileDist <= SHOT_RANGE && tileDist > 1 && time > this._lastShot + SHOT_COOLDOWN) {
-      this._lastShot = time
-      this._fireBurst(player)
-      return
+    if (this.aiState === 'CHASE' && tileDist <= SHOT_RANGE && tileDist > 1) {
+      // Iniciar nueva ráfaga
+      if (!this._firing && time > this._lastBurst + BURST_PAUSE) {
+        this._firing      = true
+        this._volleyCount = 0
+        this._nextVolley  = time
+      }
+      // Disparar siguiente volley de la ráfaga
+      if (this._firing && time >= this._nextVolley && this._volleyCount < BURST_VOLLEYS) {
+        this._fireVolley(player)
+        this._volleyCount++
+        this._nextVolley = time + BURST_DELAY
+        if (this._volleyCount >= BURST_VOLLEYS) {
+          this._firing    = false
+          this._lastBurst = time
+        }
+        return
+      }
+    } else {
+      this._firing = false
     }
 
     if (this.moving) return
