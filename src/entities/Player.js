@@ -519,8 +519,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  takeDamage(amount) {
-    if (this.invincible) return
+  takeDamage(amount, bypassInvincible = false) {
+    if (this.invincible && !bypassInvincible) return
     if (this.armor > 0) {
       const absorbed = Math.min(this.armor, amount)
       this.armor -= absorbed

@@ -350,18 +350,17 @@ export class GameScene extends Phaser.Scene {
     // Enemy projectiles hit player
     this.physics.add.overlap(this.player, this.enemyProjectiles, (player, proj) => {
       if (!proj.active) return
-      if (player.invincible) return   // jugador invencible: proyectil pasa de largo
       if (proj.acidTrail && proj.acidTrail.active) proj.acidTrail.destroy()
       if (proj.projType === 'poison') {
         this.spawnAcidSplash(proj.x, proj.y)
-        player.takeDamage(proj.damage)
+        player.takeDamage(proj.damage, true)
         this.showFloatingText(player.x, player.y - 24, `VENENO -${proj.damage}`, '#44ff88')
         this._flashGreen()
       } else if (proj.projType === 'web') {
         player.immobilize(10000)
         this.showFloatingText(player.x, player.y - 24, 'ATRAPADO 10s', '#ddddff')
       } else if (proj.projType === 'normal') {
-        player.takeDamage(proj.damage)
+        player.takeDamage(proj.damage, true)
         this.showFloatingText(player.x, player.y - 24, `-${proj.damage}`, '#ff4444')
         this._flashRed()
       }
