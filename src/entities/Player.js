@@ -31,6 +31,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this._baseScaleX = this.scaleX
     this._baseScaleY = this.scaleY
     this._stepCount  = 0
+    this._walkPhase  = 0   // 0 or 1, alternates each step (left/right foot)
+    this._baseY      = y   // tracks the "ground" Y so bob is relative
 
     this.gridCol = Math.round((x - TILE / 2) / TILE)
     this.gridRow = Math.round((y - TILE / 2) / TILE)
@@ -212,30 +214,76 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this._footstepSound?.play()
 
     this._stepCount++
-    const lean      = (this._stepCount % 2 === 0) ? -7 : 7
-    const baseAngle = this.angle
+    this._walkPhase = this._stepCount % 2  // alternates 0/1 (izq/der)
 
-    // Lean side to side with each step
+    const stepDur   = 110   // duración del paso en ms
+    const isVertical = dRow !== 0   // arriba/abajo vs izq/der
+
+    // ── 1. Lean (inclinación lateral) ─────────────────────────────────────
+    // Más sutil que antes, pero combinado con el bob da ilusión real de piernas
+    const baseAngle = this.angle
+    const leanAmt   = isVertical ? 3 : 5   // menos lean al ir arriba/abajo
+    const leanDir   = (this._walkPhase === 0) ? -leanAmt : leanAmt
     this.scene.tweens.add({
       targets: this,
-      angle: baseAngle + lean,
-      duration: 55,
+      angle: baseAngle + leanDir,
+      duration: stepDur * 0.45,
       ease: 'Sine.easeOut',
       yoyo: true,
       onComplete: () => {
         this.scene.tweens.add({
-          targets: this,
-          angle: baseAngle,
-          duration: 55,
-          ease: 'Sine.easeOut',
+          targets: this, angle: baseAngle,
+          duration: stepDur * 0.35, ease: 'Sine.easeOut',
         })
       },
     })
 
+    // ── 2. Bob vertical (sube al levantar pie, baja al apoyar) ────────────
+    // Simula el movimiento natural de la cadera al caminar
+    const bobAmt = 3   // píxeles hacia arriba en el punto medio del paso
     this.scene.tweens.add({
-      targets: this, x: tx, y: ty, duration: 110, ease: 'Linear',
+      targets: this,
+      y: ty - bobAmt,        // sube a mitad del paso
+      duration: stepDur * 0.5,
+      ease: 'Sine.easeOut',
+      onComplete: () => {
+        // luego baja al destino final (impacto del pie)
+        this.scene.tweens.add({
+          targets: this, y: ty,
+          duration: stepDur * 0.5, ease: 'Bounce.easeOut',
+        })
+      },
+    })
+
+    // ── 3. Squash & Stretch (aplasta al aterrizar, estira al subir) ────────
+    // Escala el sprite para reforzar el peso del personaje
+    const sx = this._baseScaleX
+    const sy = this._baseScaleY
+    this.scene.tweens.add({
+      targets: this,
+      scaleX: sx * 1.06,    // se ensancha ligeramente al cargar peso
+      scaleY: sy * 0.94,
+      duration: stepDur * 0.5,
+      ease: 'Sine.easeOut',
+      onComplete: () => {
+        this.scene.tweens.add({
+          targets: this,
+          scaleX: sx, scaleY: sy,
+          duration: stepDur * 0.5, ease: 'Sine.easeInOut',
+        })
+      },
+    })
+
+    // ── 4. Movimiento X (solo avance horizontal, sin bob doble) ───────────
+    this.scene.tweens.add({
+      targets: this, x: tx, duration: stepDur, ease: 'Linear',
       onUpdate: () => { if (this.body && this.active) this.body.reset(this.x, this.y) },
-      onComplete: () => { this.moving = false; this.body.reset(tx, ty) },
+      onComplete: () => {
+        this.moving = false
+        this.body.reset(tx, ty)
+        // Restaurar escala por si quedó desalineada
+        this.setScale(this._baseScaleX, this._baseScaleY)
+      },
     })
 
   }
