@@ -9,8 +9,8 @@ export class Robot extends Monster {
     this.setDisplaySize(TILE * 2.25, TILE * 2.25)
     this.body.setSize(TILE * 2.25, TILE * 2.25)
 
-    this.health = 25
-    this.maxHealth = 25
+    this.health = 50
+    this.maxHealth = 50
     this.attackDamage = 2.5
     this.detectionRange = 10
     this.attackCooldown = 1000

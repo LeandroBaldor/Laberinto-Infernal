@@ -7,8 +7,8 @@ export class Arania extends Monster {
     super(scene, x, y, 'arania')
 
     this.monsterType     = 'arania'
-    this.health          = 300
-    this.maxHealth       = 300
+    this.health          = 600
+    this.maxHealth       = 600
     this.scoreValue      = 300
     this.attackDamage    = 50
     this.detectionRange  = 999

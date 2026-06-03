@@ -7,8 +7,8 @@ export class Mutante extends Monster {
     super(scene, x, y, 'monster')
 
     this.monsterType     = 'mutante'
-    this.health          = 25
-    this.maxHealth       = 25
+    this.health          = 50
+    this.maxHealth       = 50
     this.scoreValue      = 50
     this.attackDamage    = 2.5
     this.detectionRange  = 8
