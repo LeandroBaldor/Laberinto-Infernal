@@ -347,25 +347,7 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.healthPacks, this.onHealthPickup, null, this)
     this.physics.add.overlap(this.bullets, this.monsters, this.onBulletHitMonster, null, this)
 
-    // Enemy projectiles hit player
-    this.physics.add.overlap(this.player, this.enemyProjectiles, (player, proj) => {
-      if (!proj.active) return
-      if (proj.acidTrail && proj.acidTrail.active) proj.acidTrail.destroy()
-      if (proj.projType === 'poison') {
-        this.spawnAcidSplash(proj.x, proj.y)
-        player.takeDamage(proj.damage, true)
-        this.showFloatingText(player.x, player.y - 24, `VENENO -${proj.damage}`, '#44ff88')
-        this._flashGreen()
-      } else if (proj.projType === 'web') {
-        player.immobilize(10000)
-        this.showFloatingText(player.x, player.y - 24, 'ATRAPADO 10s', '#ddddff')
-      } else if (proj.projType === 'normal') {
-        player.takeDamage(proj.damage, true)
-        this.showFloatingText(player.x, player.y - 24, `-${proj.damage}`, '#ff4444')
-        this._flashRed()
-      }
-      proj.destroy()
-    }, null, this)
+    // Enemy projectiles hit player — checked via AABB in _checkEnemyProjectileHits() each update
 
 
     // Weapon & armor pickups handled by _checkPickups() in update()
@@ -533,7 +515,39 @@ export class GameScene extends Phaser.Scene {
     this.player.update(time, this.bullets)
     this.monsters.getChildren().forEach(m => m.update(time, this.player))
     this.bullets.getChildren().forEach(b => { b.lifespan -= delta; if (b.lifespan <= 0) b.destroy() })
+    this._checkEnemyProjectileHits()
     this._checkPickups()
+  }
+
+  _checkEnemyProjectileHits() {
+    const player = this.player
+    if (!player || !player.active || !player.body) return
+    const pb = player.body
+
+    this.enemyProjectiles.getChildren().slice().forEach(proj => {
+      if (!proj.active || !proj.body) return
+      const eb = proj.body
+
+      // AABB intersection entre physics bodies reales
+      if (pb.right <= eb.x || eb.right <= pb.x || pb.bottom <= eb.y || eb.bottom <= pb.y) return
+
+      // Hit confirmado
+      if (proj.acidTrail && proj.acidTrail.active) proj.acidTrail.destroy()
+      if (proj.projType === 'poison') {
+        this.spawnAcidSplash(proj.x, proj.y)
+        player.takeDamage(proj.damage)
+        this.showFloatingText(player.x, player.y - 24, `VENENO -${proj.damage}`, '#44ff88')
+        this._flashGreen()
+      } else if (proj.projType === 'web') {
+        player.immobilize(10000)
+        this.showFloatingText(player.x, player.y - 24, 'ATRAPADO 10s', '#ddddff')
+      } else {
+        player.takeDamage(proj.damage)
+        this.showFloatingText(player.x, player.y - 24, `-${proj.damage}`, '#ff4444')
+        this._flashRed()
+      }
+      proj.destroy()
+    })
   }
 
   _checkPickups() {
