@@ -98,17 +98,22 @@ export class Belcebu extends Monster {
     else                                 this._patrol()
   }
 
-  // Dispara 1 bola de energía por vez directo al jugador
+  // Dispara 4 bolas en fila hacia el jugador (con delay entre cada una)
   _fireBolas(player) {
-    const rawAngle = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
-    const speed    = 300
-    const vx = Math.cos(rawAngle) * speed
-    const vy = Math.sin(rawAngle) * speed
-    const handX = this.x + (this.flipX ? -TILE * 2.5 : TILE * 2.5)
-    const handY = this.y - TILE * 0.5
+    const speed = 300
     if (this.scene.cache.audio.exists('sonido_bola_energia_belcebu'))
       this.scene.sound.play('sonido_bola_energia_belcebu', { volume: 0.5 })
-    this.scene.spawnBolaEnergia(handX, handY, vx, vy, this.attackDamage)
+    for (let i = 0; i < 4; i++) {
+      this.scene.time.delayedCall(i * 180, () => {
+        if (!this.active) return
+        const angle = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
+        const vx = Math.cos(angle) * speed
+        const vy = Math.sin(angle) * speed
+        const handX = this.x + (this.flipX ? -TILE * 2.5 : TILE * 2.5)
+        const handY = this.y - TILE * 0.5
+        this.scene.spawnBolaEnergia(handX, handY, vx, vy, this.attackDamage)
+      })
+    }
   }
 
   die() {
