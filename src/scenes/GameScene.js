@@ -347,7 +347,7 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.healthPacks, this.onHealthPickup, null, this)
     this.physics.add.overlap(this.bullets, this.monsters, this.onBulletHitMonster, null, this)
 
-    // Enemy projectiles hit player — checked via AABB in _checkEnemyProjectileHits() each update
+    this.physics.add.overlap(this.player, this.enemyProjectiles, this._onEnemyProjHit, null, this)
 
 
     // Weapon & armor pickups handled by _checkPickups() in update()
@@ -515,39 +515,27 @@ export class GameScene extends Phaser.Scene {
     this.player.update(time, this.bullets)
     this.monsters.getChildren().forEach(m => m.update(time, this.player))
     this.bullets.getChildren().forEach(b => { b.lifespan -= delta; if (b.lifespan <= 0) b.destroy() })
-    this._checkEnemyProjectileHits()
+
     this._checkPickups()
   }
 
-  _checkEnemyProjectileHits() {
-    const player = this.player
-    if (!player || !player.active || !player.body) return
-    const pb = player.body
-
-    this.enemyProjectiles.getChildren().slice().forEach(proj => {
-      if (!proj.active || !proj.body) return
-      const eb = proj.body
-
-      // AABB intersection entre physics bodies reales
-      if (pb.right <= eb.x || eb.right <= pb.x || pb.bottom <= eb.y || eb.bottom <= pb.y) return
-
-      // Hit confirmado
-      if (proj.acidTrail && proj.acidTrail.active) proj.acidTrail.destroy()
-      if (proj.projType === 'poison') {
-        this.spawnAcidSplash(proj.x, proj.y)
-        player.takeDamage(proj.damage)
-        this.showFloatingText(player.x, player.y - 24, `VENENO -${proj.damage}`, '#44ff88')
-        this._flashGreen()
-      } else if (proj.projType === 'web') {
-        player.immobilize(10000)
-        this.showFloatingText(player.x, player.y - 24, 'ATRAPADO 10s', '#ddddff')
-      } else {
-        player.takeDamage(proj.damage)
-        this.showFloatingText(player.x, player.y - 24, `-${proj.damage}`, '#ff4444')
-        this._flashRed()
-      }
-      proj.destroy()
-    })
+  _onEnemyProjHit(player, proj) {
+    if (!proj.active) return
+    if (proj.acidTrail && proj.acidTrail.active) proj.acidTrail.destroy()
+    if (proj.projType === 'poison') {
+      this.spawnAcidSplash(proj.x, proj.y)
+      player.takeDamage(proj.damage)
+      this.showFloatingText(player.x, player.y - 24, `VENENO -${proj.damage}`, '#44ff88')
+      this._flashGreen()
+    } else if (proj.projType === 'web') {
+      player.immobilize(10000)
+      this.showFloatingText(player.x, player.y - 24, 'ATRAPADO 10s', '#ddddff')
+    } else {
+      player.takeDamage(proj.damage)
+      this.showFloatingText(player.x, player.y - 24, `-${proj.damage}`, '#ff4444')
+      this._flashRed()
+    }
+    proj.destroy()
   }
 
   _checkPickups() {
@@ -1208,17 +1196,6 @@ export class GameScene extends Phaser.Scene {
     })
   }
 
-  spawnEnergyBall(fromX, fromY, vx, vy, damage) {
-    if (this.enemyProjectiles.getLength() >= 80) return
-    const proj = this.physics.add.image(fromX, fromY, 'bullet')
-    proj.setDisplaySize(30, 30).setDepth(12).setTint(0xdd00ff)
-    proj.projType = 'normal'
-    proj.damage = damage
-    proj.body.setVelocity(vx, vy)
-    this.enemyProjectiles.add(proj)
-    this.time.delayedCall(2200, () => { if (proj.active) proj.destroy() })
-  }
-
   spawnExterminadorBullet(fromX, fromY, vx, vy, damage) {
     if (this.enemyProjectiles.getLength() >= 80) return
     const texKey = this.textures.exists('bala_exterminador') ? 'bala_exterminador' : 'poison_bullet'
@@ -1230,7 +1207,7 @@ export class GameScene extends Phaser.Scene {
     } else {
       proj.setDisplaySize(22, 22).setTint(0x00eeff)
     }
-    proj.setDepth(12).setRotation(Math.atan2(vy, vx))
+    proj.setDepth(12).setRotation(Math.atan2(vy, vx) + Math.PI)
     proj.body.setSize(28, 28)
     proj.projType = 'normal'
     proj.damage = damage

@@ -65,16 +65,19 @@ export class Exterminador extends Monster {
     const vx = Math.cos(angle) * speed
     const vy = Math.sin(angle) * speed
 
-    // Posiciones de los 4 cañones (esquinas del sprite)
+    // Posiciones de los 4 cañones (esquinas del sprite), escalonados para separar proyectiles
     const offsets = [
       { dx: -TILE * 1.5, dy: -TILE * 1.5 },
       { dx:  TILE * 1.5, dy: -TILE * 1.5 },
       { dx: -TILE * 1.5, dy:  TILE * 1.5 },
       { dx:  TILE * 1.5, dy:  TILE * 1.5 },
     ]
-    for (const { dx, dy } of offsets) {
-      this.scene.spawnExterminadorBullet(this.x + dx, this.y + dy, vx, vy, this.attackDamage)
-    }
+    offsets.forEach(({ dx, dy }, i) => {
+      this.scene.time.delayedCall(i * 80, () => {
+        if (!this.active) return
+        this.scene.spawnExterminadorBullet(this.x + dx, this.y + dy, vx, vy, this.attackDamage)
+      })
+    })
 
     if (this.scene.cache?.audio?.exists('sonido_disparo_l2'))
       this.scene.sound.play('sonido_disparo_l2', { volume: 0.45 })
