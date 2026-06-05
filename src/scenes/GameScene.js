@@ -300,7 +300,7 @@ export class GameScene extends Phaser.Scene {
 
     // ── Health packs ─────────────────────────────────────────────────────────
     this.healthPacks = this.physics.add.staticGroup()
-    for (let i = 0; i < 75; i++) {
+    for (let i = 0; i < 15; i++) {
       let cell, attempts = 0
       do {
         cell = floorCells[Math.floor(Math.random() * floorCells.length)]
@@ -314,9 +314,9 @@ export class GameScene extends Phaser.Scene {
 
     // ── Armor pickups ─────────────────────────────────────────────────────────
     this._armorDefs = [
-      { groupKey: 'armorSilver', aType: 'silver', texKey: 'armor_silver', count: 25, hpBonus:  25 },
-      { groupKey: 'armorGold',   aType: 'gold',   texKey: 'armor_gold',   count: 15, hpBonus:  50 },
-      { groupKey: 'armorFuture', aType: 'future', texKey: 'armor_future', count: 10, hpBonus: 100 },
+      { groupKey: 'armorSilver', aType: 'silver', texKey: 'armor_silver', count: 10, hpBonus: 25 },
+      { groupKey: 'armorGold',   aType: 'gold',   texKey: 'armor_gold',   count:  5, hpBonus: 25 },
+      { groupKey: 'armorFuture', aType: 'future', texKey: 'armor_future', count:  3, hpBonus: 25 },
     ]
     for (const def of this._armorDefs) {
       this[def.groupKey] = this.physics.add.staticGroup()
@@ -794,8 +794,8 @@ export class GameScene extends Phaser.Scene {
 
   onHealthPickup(player, pack) {
     pack.destroy()
-    player.pickupHealth(100)
-    this.showFloatingText(player.x, player.y - 20, '+100 HP', '#ff4444')
+    player.pickupHealth(50)
+    this.showFloatingText(player.x, player.y - 20, '+50 HP', '#ff4444')
   }
 
   _playLevel3Music(trackIndex) {
