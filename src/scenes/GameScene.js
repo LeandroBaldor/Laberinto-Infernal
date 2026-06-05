@@ -521,6 +521,7 @@ export class GameScene extends Phaser.Scene {
 
   _onEnemyProjHit(player, proj) {
     if (!proj.active) return
+    console.log('[HIT] proj type:', proj.projType, 'damage:', proj.damage)
     if (proj.acidTrail && proj.acidTrail.active) proj.acidTrail.destroy()
     if (proj.projType === 'poison') {
       this.spawnAcidSplash(proj.x, proj.y)

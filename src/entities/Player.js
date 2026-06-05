@@ -25,7 +25,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const _pSrc = this.scene.textures.get('player').getSourceImage()
     const _targetH = TILE * 2
     this.setDisplaySize(Math.round(_pSrc.width * _targetH / _pSrc.height), Math.round(_targetH))
-    this.body.setSize(TILE, TILE)
+    this.body.setSize(_pSrc.width, _pSrc.height)
     this.setDepth(10)
 
     this._baseScaleX = this.scaleX
@@ -520,6 +520,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   takeDamage(amount) {
+    console.log('[DMG] amount:', amount, 'invincible:', this.invincible, 'hp:', this.health)
     if (this.invincible) return
     if (this.armor > 0) {
       const absorbed = Math.min(this.armor, amount)
