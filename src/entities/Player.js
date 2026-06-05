@@ -520,7 +520,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   takeDamage(amount) {
-    console.log('[DMG] amount:', amount, 'invincible:', this.invincible, 'hp:', this.health)
     if (this.invincible) return
     if (this.armor > 0) {
       const absorbed = Math.min(this.armor, amount)
