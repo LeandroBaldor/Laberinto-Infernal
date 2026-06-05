@@ -16,7 +16,7 @@ export class Exterminador extends Monster {
 
     this.health = 600
     this.maxHealth = 600
-    this.attackDamage = 100
+    this.attackDamage = 50
     this.detectionRange = 10
     this.attackCooldown = 1500
     this.stepInterval = 500 + Math.random() * 200
