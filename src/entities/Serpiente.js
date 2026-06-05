@@ -10,7 +10,7 @@ export class Serpiente extends Monster {
     this.health          = 300
     this.maxHealth       = 300
     this.scoreValue      = 100
-    this.attackDamage    = 5
+    this.attackDamage    = 20
     this.detectionRange  = 12
     this.territoryRadius = 10
     this.attackCooldown  = 1500

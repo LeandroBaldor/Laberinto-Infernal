@@ -10,7 +10,7 @@ export class Arania extends Monster {
     this.health          = 600
     this.maxHealth       = 600
     this.scoreValue      = 300
-    this.attackDamage    = 50
+    this.attackDamage    = 100
     this.detectionRange  = 999
     this.territoryRadius = 10
     this.attackCooldown  = 2000

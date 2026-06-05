@@ -14,7 +14,7 @@ export class KillMachine extends Monster {
 
     this.health = 300
     this.maxHealth = 300
-    this.attackDamage = 5
+    this.attackDamage = 20
     this.detectionRange = 10
     this.attackCooldown = 1200
     this.stepInterval = 450 + Math.random() * 150

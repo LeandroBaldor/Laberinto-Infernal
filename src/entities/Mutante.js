@@ -10,7 +10,7 @@ export class Mutante extends Monster {
     this.health          = 50
     this.maxHealth       = 50
     this.scoreValue      = 50
-    this.attackDamage    = 2.5
+    this.attackDamage    = 10
     this.detectionRange  = 8
     this.territoryRadius = 10
     this.attackCooldown  = 1000
